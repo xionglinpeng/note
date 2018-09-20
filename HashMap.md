@@ -8,7 +8,7 @@ HashMap是基于数组和链表实现的
 
 首先我们看看HashMap的成员变量，HashMap有6个静态常量
 
-```
+```java
     /**
      * 默认的初始容量-必须是2的幂。
      */
@@ -99,45 +99,45 @@ HashMap是基于数组和链表实现的
 ```
 
 HashMap数组默认容量大小，2的4次幂，即16（注意：这里设置为1 << 4是有原因的，后面再具体描述）。
-```
+```java
 static final int DEFAULT_INITIAL_CAPACITY = 1 << 4; // aka 16
 ```
 
 HashMap数组的最大容量，2的30次幂
-```
+```java
 static final int MAXIMUM_CAPACITY = 1 << 30;
 ```
 
 默认加载因子
-```
+```java
 static final float DEFAULT_LOAD_FACTOR = 0.75f;
 ```
 
 
 判断是否需要将链表转换为树的阈值
-```
+```java
 static final int TREEIFY_THRESHOLD = 8;
 ```
 
 存储数据的Node节点数组表
 
-```
+```java
 transient Node<K,V>[] table;
 ```
 
 HashMap存放数量的大小
-```
+```java
 transient int size;
 ```
 
 这个属性翻译为“阈值”，即HashMap进行扩容的阈值（loadFactor * capacity）,但是在初始化时是用于作为容量的大小
-```
+```java
 int threshold;
 ```
 
 负载因子，计算扩容阈值的比例
 
-```
+```java
 final float loadFactor;
 ```
 
@@ -155,7 +155,7 @@ final float loadFactor;
 
 注意这里的`setValue()`方法，是设置新值返回旧值
 
-```
+```java
 /**
  * 基本哈希bin节点，用于大多数条目。
  * (参见下面的TreeNode子类，以及LinkedHashMap中的条目子类)
@@ -204,7 +204,7 @@ static class Node<K,V> implements Map.Entry<K,V> {
 # put方法
 
 
-```
+```java
 public V put(K key, V value) {
     return putVal(hash(key), key, value, false, true);
 }
@@ -266,7 +266,7 @@ final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
 ```
 # get方法
 
-```
+```java
 public V get(Object key) {
     Node<K,V> e;
     return (e = getNode(hash(key), key)) == null ? null : e.value;
@@ -300,7 +300,7 @@ final Node<K,V> getNode(int hash, Object key) {
 
 # 扩容
 
-```
+```java
 final Node<K,V>[] resize() {
     Node<K,V>[] oldTab = table;
     int oldCap = (oldTab == null) ? 0 : oldTab.length;
@@ -388,7 +388,7 @@ final Node<K,V>[] resize() {
 # hash运算
 
 进行hash运算的源码如下：首先判断key是否为null，如果为null，则直接返回0，如果不为null，则计算器hashCode，并且与其低十六位异或运算。
-```
+```java
 static final int hash(Object key) {
     int h;
     return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
@@ -414,7 +414,7 @@ static final int hash(Object key) {
 # 取模运算
 
 在我们阅读put方法源码的时候发现，有一段代码：`(n - 1) & hash`，其是通过key的hash值与表的长度减1的值进行位与运算来的得到其位置的，换算一下：
-```
+```java
 key.hash & (table.length - 1)
 ```
 那么为什么要通过这种方式来定位key的位置呢？
@@ -437,42 +437,47 @@ key.hash & (table.length - 1)
 
 前提条件：
 - o为2的n次幂；例如:
+  $$
+  2^0/2^1/2^2/2^3/.....
+  $$
 
-```math
-2^0/2^1/2^2/2^3/.....  
-```
 
 - 所有2的n次幂整数的二进制位1(0n)，0n表示n个0；例如:
+  $$
+  2^2 = ...0000100
+  \\
+  2^3 = ...0001000
+  $$
 
-```math
-2^2 = ...0000100
 
-2^3 = ...0001000
-```
 - 所有（2的n次幂整数-1）的二进制位01n，1n表示n个1；例如:
 
-```math
+$$
 2^2-1 = 3 = ...0000011
-
+\\
 2^3-1 = 7 = ...0000111
-```
+$$
+
+
 
 
 任意十进制数可以转换为以下二进制表示的公式
-```math
-B_nB_{n-1}B_{n-2}B_{n-3}...B_2B_1B_0 = B_n*2^n + B_{n-1}*2^{n-1} + B_{n-2}*2^{n-2} + B_{n-3}*2^{n-3} + ... + B_2*2^2 + B_1*2^1 + B_0*2^0
+$$
+B_nB_{n-1}B_{n-2}...B_2B_1B_0 = B_n*2^n + B_{n-1}*2^{n-1} + B_{n-2}*2^{n-2} + ... + B_2*2^2 + B_1*2^1 + B_0*2^0
+$$
 
 
-```
 除法运算规则
-
-```math
+$$
 (a+b)\div c = (a\div c)+(b\div c) = \frac{a}{c}+\frac{b}{c}
-```
+$$
+
+
 所以又有如下表示
-```math
-(B_nB_{n-1}B_{n-2}B_{n-3}...B_2B_1B_0)\div2^k = \frac{B_n*2^n}{2^k} + \frac{B_{n-1}*2^{n-1}}{2^k} + \frac{B_{n-2}*2^{n-2}}{2^k} + \frac{B_{n-3}*2^{n-3}}{2^k} + ... + \frac{B_2*2^2}{2^k} + \frac{B_1*2^1}{2^k} + \frac{B_0*2^0}{2^k}
-```
+$$
+(B_nB_{n-1}B_{n-2}B_{n-3}...B_2B_1B_0)\div2^k = \\\frac{B_n*2^n}{2^k} + \frac{B_{n-1}*2^{n-1}}{2^k} + \frac{B_{n-2}*2^{n-2}}{2^k} + \frac{B_{n-3}*2^{n-3}}{2^k} + ... + \frac{B_2*2^2}{2^k} + \frac{B_1*2^1}{2^k} + \frac{B_0*2^0}{2^k}
+$$
+
 
 
 
@@ -480,37 +485,70 @@ Bit位都为1或0，所以
 
 当 0<=k<=n 时，余数为
 
-```math
+$$
 B_{k-1}*2^{k-1} + B_{k-2}*2^{k-2} + B_{k-3}*2^{k-3} + ... + B_2*2^2 + B_1*2^1 + B_0*2^0
-```
+$$
+
+
+
 
 当 k > n，余数为整个十进制整数。
 
 假设
-
-```math
+$$
 58\div 2^2 = 14...2
-```
+$$
 
-```math
+$$
 111010/2^2 = \frac{111010}{2^2}
+$$
+
+
+
+
+
+
+```math
+
 ```
 
 ```math
+
+```
+
+
+$$
 (2^5 + 2^4 + 2^3 + 2^0 + 2^1 + 2^0)/2^2 = \frac{2^5}{2^2} + \frac{2^4}{2^2} + \frac{2^3}{2^2} + \frac{2^0}{2^2} + \frac{2^1}{2^2} + \frac{2^0}{2^2} = \frac{2^5}{2^2} + \frac{2^4}{2^2} + \frac{2^3}{2^2} + \frac{2^1}{2^2}
-```
+$$
 
-```math
-(100000 + 10000 + 1000 + 0 + 10 + 0)/100 = \frac{100000}{100} + \frac{10000}{100} + \frac{1000}{100} + \frac{0}{100} + \frac{10}{100} + \frac{0}{100} = \frac{100000}{100} + \frac{10000}{100} + \frac{1000}{100} + \frac{10}{100}
-```
 
-```math
+
+$$
+(100000 + 10000 + 1000 + 0 + 10 + 0)/100 = \\\frac{100000}{100} + \frac{10000}{100} + \frac{1000}{100} + \frac{0}{100} + \frac{10}{100} + \frac{0}{100} = \frac{100000}{100} + \frac{10000}{100} + \frac{1000}{100} + \frac{10}{100}
+$$
+
+
+
+
+
+$$
 \frac{...000111010}{...000000100}
-```
+$$
 
-```math
+
+
+
+
+
+
+$$
 \frac{...000111010}{2^2-1} = \frac{...000111010}{...000000011} = ...000000010
-```
+$$
+
+
+
+
+
 
 
 ```math

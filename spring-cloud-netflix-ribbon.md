@@ -1,4 +1,4 @@
-# spring-cloud-netflix-ribbon
+# Spring-Cloud-Netflix-Ribbon
 
 
 

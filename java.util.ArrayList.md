@@ -2,6 +2,8 @@
 
 #  java.util.ArrayList
 
+`java.util.ArrayList`是基于数组实现的列表。
+
 
 
 ```java
@@ -49,7 +51,26 @@ private int size;
 private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
 ```
 
+##Constructor
 
+`java.util.ArrayList`有三个构造函数。
+
+### ArrayList()
+
+构造一个空的列表，会在首次添加元素时，初始化容量为10。
+
+```java
+/**
+ * 构造初始容量为10的空列表。
+ */
+public ArrayList() {
+    this.elementData = DEFAULTCAPACITY_EMPTY_ELEMENTDATA;
+}
+```
+
+### ArrayList(int initialCapacity)
+
+构造一个指定容量的列表，如果指定的容量为0，则会直接构造一个空列表，如果指定容量小于0，则会直接抛出`IllegalArgumentException`异常。
 
 ```java
 /**
@@ -68,14 +89,13 @@ public ArrayList(int initialCapacity) {
                                            initialCapacity);
     }
 }
+```
 
-/**
- * 构造初始容量为10的空列表。
- */
-public ArrayList() {
-    this.elementData = DEFAULTCAPACITY_EMPTY_ELEMENTDATA;
-}
+### ArrayList(Collection<? extends E> c)
 
+
+
+```java
 /**
  * 构造包含指定集合元素的列表，按照集合的迭代器返回它们的顺序。
  *
@@ -95,11 +115,74 @@ public ArrayList(Collection<? extends E> c) {
 }
 ```
 
+
+## 扩容计算
+
+1. 调用` calculateCapacity(...)`计算容量，如果当前元素的数组缓冲区等于`DEFAULTCAPACITY_EMPTY_ELEMENTDATA`，则在当前最小容量与默认容量（`DEFAULT_CAPACITY`）取最大值作为容量，否则，取当前最小容量。
+2. 调用`ensureExplicitCapacity(...)`确定明确的容量，如果计算的容量已经大于元素数组缓冲区的最大大小时，调用`grow(...)`扩容。
+3. 首先扩容50%为新的容量（向右位移1位（`>>1`）,相当于$\div2$）。
+4. 如果扩容后的容量比最小容量还小，则以最小容量`minCapacity`为新的容量。
+5. 如果新容量大于限制的最大容量`MAX_ARRAY_SIZE`，则使用最小容量`minCapacity`与限制最大容量比较，返回Integer最大值或限制最大容量作为新容量。
+6. 使用`Arrays.copyOf(T[] original, int newLength)`将旧元素数组缓冲区拷贝为一个新的数组，并保存至元素数组缓冲区。
+
+```java
+private static int calculateCapacity(Object[] elementData, int minCapacity) {
+    if (elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA) {
+        return Math.max(DEFAULT_CAPACITY, minCapacity);
+    }
+    return minCapacity;
+}
+
+//确定内部容量
+private void ensureCapacityInternal(int minCapacity) {
+    ensureExplicitCapacity(calculateCapacity(elementData, minCapacity));
+}
+//确定明确的容量
+private void ensureExplicitCapacity(int minCapacity) {
+    modCount++;
+    // overflow-conscious code
+    if (minCapacity - elementData.length > 0)
+        grow(minCapacity);
+}
+
+/**
+ * Increases the capacity to ensure that it can hold at least the
+ * number of elements specified by the minimum capacity argument.
+ * 增加容量，以确保它至少可以容纳最小容量参数指定的元素数量。
+ * @param minCapacity 预期的最小容量
+ */
+private void grow(int minCapacity) {
+    // overflow-conscious code
+    int oldCapacity = elementData.length;
+    //扩容%50
+    int newCapacity = oldCapacity + (oldCapacity >> 1);
+    //如果最小容量小于扩容容量，则使用最小容量
+    if (newCapacity - minCapacity < 0)
+        newCapacity = minCapacity;
+    if (newCapacity - MAX_ARRAY_SIZE > 0)
+        newCapacity = hugeCapacity(minCapacity);
+    // minCapacity is usually close to size, so this is a win:
+    //拷贝为一个新的数组
+    elementData = Arrays.copyOf(elementData, newCapacity);
+}
+
+private static int hugeCapacity(int minCapacity) {
+    if (minCapacity < 0) // overflow
+        throw new OutOfMemoryError();
+    return (minCapacity > MAX_ARRAY_SIZE) ?
+        Integer.MAX_VALUE :
+    MAX_ARRAY_SIZE;
+}
+```
+
+
+
+
 ## 添加
 
 ### add(E e)
 
-add方法首先调用了`private void ensureCapacityInternal(int minCapacity)`用于确定内部容量，如果还有什么容量，就什么也不做，如果元素缓冲区已经满了，则进行扩容操作。然后是元素缓冲区尾部追加元素。
+add方法首先调用了`private void ensureCapacityInternal(int minCapacity)`用于确定内部容量，如果还有剩余容量，就什么也不做，如果元素缓冲区已经满了，则进行扩容操作。然后是元素缓冲区尾部追加元素。
 
 所以可以得出`ArrayList`的一个特点：尽量避免扩容，那么插入元素非常快。
 
@@ -165,6 +248,8 @@ public void add(int index, E element) {
 
 ### addAll
 
+批量添加方法跟单个添加是类似的，只不过一个单个元素操作，一个是多个元素操作，但是其流程都是一样的。
+
 ```java
 /**
  * 将指定集合中的所有元素追加到此列表的末尾，按照指定集合的迭代器返回它们的顺序。
@@ -221,65 +306,6 @@ public boolean addAll(int index, Collection<? extends E> c) {
 }
 ```
 
-### 扩容计算
-
-1. 调用` calculateCapacity(...)`计算容量，如果当前元素的数组缓冲区等于`DEFAULTCAPACITY_EMPTY_ELEMENTDATA`，则去当前最小容量与默认容量（`DEFAULT_CAPACITY`）去最大值作为容量，否则，去当前最小容量。
-2. 调用`ensureExplicitCapacity(...)`确定明确的容量，如果计算的容量已经大于元素数组缓冲区的最大大小时，调用`grow(...)`扩容。
-3. 首先扩容50%为新的容量（向右位移1位（`>>1`）,相当于$\div2$）。
-4. 如果扩容后的容量比最小容量还小，则以最小容量`minCapacity`为新的容量。
-5. 如果新容量大于限制的最大容量`MAX_ARRAY_SIZE`，则使用最小容量`minCapacity`与限制最大容量比较，返回Integer最大值或限制最大容量作为新容量。
-6. 使用`Arrays.copyOf(T[] original, int newLength)`将旧元素数组缓冲区拷贝为一个新的数组，并保存至元素数组缓冲区。
-
-```java
-private static int calculateCapacity(Object[] elementData, int minCapacity) {
-    if (elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA) {
-        return Math.max(DEFAULT_CAPACITY, minCapacity);
-    }
-    return minCapacity;
-}
-
-//确定内部容量
-private void ensureCapacityInternal(int minCapacity) {
-    ensureExplicitCapacity(calculateCapacity(elementData, minCapacity));
-}
-//确定明确的容量
-private void ensureExplicitCapacity(int minCapacity) {
-    modCount++;
-    // overflow-conscious code
-    if (minCapacity - elementData.length > 0)
-        grow(minCapacity);
-}
-
-/**
- * Increases the capacity to ensure that it can hold at least the
- * number of elements specified by the minimum capacity argument.
- * 增加容量，以确保它至少可以容纳最小容量参数指定的元素数量。
- * @param minCapacity 预期的最小容量
- */
-private void grow(int minCapacity) {
-    // overflow-conscious code
-    int oldCapacity = elementData.length;
-    //扩容%50
-    int newCapacity = oldCapacity + (oldCapacity >> 1);
-    //如果最小容量小于扩容容量，则使用最小容量
-    if (newCapacity - minCapacity < 0)
-        newCapacity = minCapacity;
-    if (newCapacity - MAX_ARRAY_SIZE > 0)
-        newCapacity = hugeCapacity(minCapacity);
-    // minCapacity is usually close to size, so this is a win:
-    //拷贝为一个新的数组
-    elementData = Arrays.copyOf(elementData, newCapacity);
-}
-
-private static int hugeCapacity(int minCapacity) {
-    if (minCapacity < 0) // overflow
-        throw new OutOfMemoryError();
-    return (minCapacity > MAX_ARRAY_SIZE) ?
-        Integer.MAX_VALUE :
-    MAX_ARRAY_SIZE;
-}
-```
-
 
 
 ## 获取
@@ -298,7 +324,7 @@ private static int hugeCapacity(int minCapacity) {
  * @throws IndexOutOfBoundsException {@inheritDoc}
  */
 public E get(int index) {
-    rangeCheck(index);
+    rangeCheck(index);//范围检查
     return elementData(index);
 }
 ```
@@ -306,6 +332,8 @@ public E get(int index) {
 ## 删除
 
 #### remove(int index)
+
+首先先获取要删除索引位的元素，然后在计算在删除索引位之后的元素数量，如果后面还有元素，则将后面的所有元素向前移动一位（拷贝为一个新的数组），然后将最后一个索引位置为null（帮助GC），然后返回之前的被删除的元素。
 
 ```java
 /**
@@ -337,6 +365,8 @@ public E remove(int index) {
 ```
 
 #### remove(Object o)
+
+跟`indexOf()`方法有些类似，依次迭代匹配得到要删除元素的索引，然后调用私有方法`fastRemove()`删除。
 
 ```java
 /**
@@ -386,6 +416,10 @@ private void fastRemove(int index) {
 
 #### removeAll(Collection<?> c)
 
+`A.removeAll(B)`，删除集合A中包含在B中的元素，即A有而B没有的元素（A有B也有的都被删除了）。
+
+如果数组缓存区发生变化，返回`true`，而不是执行成功返回`true`。
+
 ```java
 /**
  * 从这个列表中删除指定集合中包含的所有元素。
@@ -405,6 +439,10 @@ public boolean removeAll(Collection<?> c) {
 ```
 
 ####  retainAll(Collection<?> c)
+
+`A.retainAll(B)`，删除集合A中不包含在B中的元素，结果是A和B的交集，即A和B都有的元素。
+
+如果数组缓存区发生变化，返回`true`，而不是执行成功返回`true`。
 
 ```java
 /**
@@ -427,6 +465,14 @@ public boolean retainAll(Collection<?> c) {
 
 #### batchRemove(Collection<?> c, boolean complement)
 
+`batchRemove()`是私有方法
+
+依次迭代数据缓存区中的每一个元素，将每一个元素去判断是个包含（不包含）在指定集合c中，如果当前迭代的元素包含（不包含）在指定集合c中，那么就将这个包含（不包含）在指定集合c中的元素取出，顺序放入数据缓存区中。这些包含（不包含）的元素是最终被保留的元素，其他元素都被删除了。
+
+包含还是不包含由参数`complement`，`true`表示包含，`false`表示不包含。
+
+如果数组缓存区发生变化，返回`true`，而不是执行成功返回`true`。
+
 ```java
 private boolean batchRemove(Collection<?> c, boolean complement) {
     //数组缓冲区
@@ -442,7 +488,7 @@ private boolean batchRemove(Collection<?> c, boolean complement) {
                 elementData[w++] = elementData[r];
     } finally {
         // 保留与AbstractCollection的行为兼容性，
-        // r在正常情况下是不可能不等于size的，除非c.contains()抛出了依次。
+        // r在正常情况下是不可能不等于size的，除非c.contains()抛出了异常。
         if (r != size) {
             //将还没有被是否被包含的元素拷贝到数组缓冲区w索引之后
             System.arraycopy(elementData, r,
@@ -631,9 +677,31 @@ private void readObject(java.io.ObjectInputStream s)
 }
 ```
 
-## other
+## Base Methods
+
+### clear()
+
+清空列表，通过源码可知，其清空列表就是依次循环迭代，将列表的每一个索引位的值都置为null，然后将`size`赋值为0。
+
+```java
+/**
+ * 从这个列表中删除所有元素。
+ * 此调用返回后，列表将为空。
+ */
+public void clear() {
+    modCount++;
+
+    // clear to let GC do its work
+    for (int i = 0; i < size; i++)
+        elementData[i] = null;
+
+    size = 0;
+}
+```
 
 ###  trimToSize()
+
+一般情况下，`size`和数组缓冲区（`elementData`）的大小是相等的，在特殊情况下也会不相等，例如`clear()`方法，所以`trimToSize()`就是使`size`和数组缓冲区（`elementData`）的大小不相等时，使其相等。
 
 ```java
 /**
@@ -694,6 +762,8 @@ public boolean contains(Object o) {
 
 ### indexOf(Object o)
 
+依次按索引迭代每一个元素，如果要查询的元素o为null，则依次比较每个元素是否等于null，如果比较到有一个元素为null，则不再进行后续比较了，并且直接第一个匹配到为null元素的索引。如果查询的元素不为null，则使用o的`equals()`方法依次比较，直到找到第一个匹配的元素，并返回其索引。
+
 ```java
 /**
  * 返回该列表中指定元素的第一次出现的索引，如果该列表不包含该元素，则返回-1。
@@ -717,6 +787,8 @@ public int indexOf(Object o) {
 ```
 
 ### lastIndexOf(Object o)
+
+与`indexOf(Object o)`，只不过其是从尾部开始迭代查找。
 
 ```java
 /**
@@ -783,28 +855,18 @@ public Object[] toArray() {
 
 ```java
 /**
- * Returns an array containing all of the elements in this list in proper
- * sequence (from first to last element); the runtime type of the returned
- * array is that of the specified array.  If the list fits in the
- * specified array, it is returned therein.  Otherwise, a new array is
- * allocated with the runtime type of the specified array and the size of
- * this list.
+ * 返回一个数组，该数组以适当的顺序包含列表中的所有元素(从第一个元素到最后一个元素);
+ * 返回的数组的运行时类型是指定数组的运行时类型。  如果列表符合指定的数组，它将在其中返回。
+ * 否则，将使用指定数组的运行时类型和此列表的大小分配一个新数组。
  *
- * <p>If the list fits in the specified array with room to spare
- * (i.e., the array has more elements than the list), the element in
- * the array immediately following the end of the collection is set to
- * <tt>null</tt>.  (This is useful in determining the length of the
- * list <i>only</i> if the caller knows that the list does not contain
- * any null elements.)
+ * <p>如果列表符合指定的数组，则有剩余空间(i.e., 数组的元素比列表的要多), 
+ * 紧跟在集合末尾的数组中的元素被设置为<tt>null</tt>。
+ * (这在确定列表<i>的长度时非常有用，只有在调用者知道列表不包含任何空元素时才会使用</i>。)
  *
- * @param a the array into which the elements of the list are to
- *          be stored, if it is big enough; otherwise, a new array of the
- *          same runtime type is allocated for this purpose.
- * @return an array containing the elements of the list
- * @throws ArrayStoreException if the runtime type of the specified array
- *         is not a supertype of the runtime type of every element in
- *         this list
- * @throws NullPointerException if the specified array is null
+ * @param a 要存储列表元素的数组(如果它足够大);否则，将为此目的分配相同运行时类型的新数组。
+ * @return 包含列表元素的数组
+ * @throws ArrayStoreException 如果指定数组的运行时类型不是列表中每个元素的运行时类型的超类型
+ * @throws NullPointerException 如果指定的数组为空
  */
 @SuppressWarnings("unchecked")
 public <T> T[] toArray(T[] a) {
@@ -817,26 +879,6 @@ public <T> T[] toArray(T[] a) {
     return a;
 }
 ```
-
-### clear()
-
-```java
-/**
- * 从这个列表中删除所有元素。
- * 此调用返回后，列表将为空。
- */
-public void clear() {
-    modCount++;
-
-    // clear to let GC do its work
-    for (int i = 0; i < size; i++)
-        elementData[i] = null;
-
-    size = 0;
-}
-```
-
-
 
 ## 1.8新增API
 
@@ -872,7 +914,9 @@ default void forEach(Consumer<? super T> action) {
 }
 ```
 
-forEach在ArrayList中的实现
+forEach在ArrayList中的实现：
+
+for循环迭代数组缓冲区中每一个元素，依次迭代消费。如果在迭代期间，数组缓冲区元素发生变化，则抛出`ConcurrentModificationException`异常。
 
 ```java
 @Override
@@ -940,6 +984,8 @@ default boolean removeIf(Predicate<? super E> filter) {
 
 removeIf在ArrayList中的实现
 
+删除断定为真的元素
+
 ```java
 @Override
 public boolean removeIf(Predicate<? super E> filter) {
@@ -951,7 +997,7 @@ public boolean removeIf(Predicate<? super E> filter) {
    	//用于统计被删除元素的数量
     int removeCount = 0;
     //创建一个BitSet对象，大小为size
-    final BitSet removeSet = new BitSet(si ze);
+    final BitSet removeSet = new BitSet(size);
     final int expectedModCount = modCount;
     //集合元素数量
     final int size = this.size;
@@ -960,7 +1006,7 @@ public boolean removeIf(Predicate<? super E> filter) {
         @SuppressWarnings("unchecked")
         //泛型类型推断转换
         final E element = (E) elementData[i];
-        //filter断定，如果断定为真，则将要被删除元素的所有添加到BitSet中
+        //filter断定，如果断定为真，则将要被删除元素的索引添加到BitSet中
         if (filter.test(element)) {
             //标记指定的索引位位false，对应数组缓冲区要被删除的元素
             removeSet.set(i);

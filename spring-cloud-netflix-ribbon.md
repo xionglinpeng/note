@@ -2,7 +2,7 @@
 
 
 
-![](C:\Users\HP\Desktop\md\RibbonLoadBalancerClient.png)
+![](.\RibbonLoadBalancerClient.png)
 
 ## ServiceInstanceChooser
 

@@ -194,7 +194,7 @@ appendonly yes
 现在我们已经有了六个正在运行中的Redis实例，接下来我们需要使用这些实例来创建集群，并为每个节点编写配置文件。通过使用Redis集群命令行工具`redis-trib`，编写节点配置文件的工作可以非常容易地完成：`redis-trib`位于Redis源码的src文件夹中，它是一个Ruby程序，这个程序通过向实例发送特殊命令来完成**创建新集群**，**检查集群**，或者**对集群进行重新分片（reshared）**等工作。
 
 ```shell
-./redis-trib.rb create --replicas 1 192.168.56.2:6379 192.168.56.2:6380 192.168.56.4:6379 192.168.56.4:6380 192.168.56.8:6379 192.168.56.5:6380
+./redis-trib.rb create --replicas 1 192.168.56.2:6379 192.168.56.2:6380 192.168.56.4:6379 192.168.56.4:6380 192.168.56.5:6379 192.168.56.5:6380
 ```
 
 
@@ -299,6 +299,14 @@ Done installing documentation for redis after 1 seconds
 [ERR] Sorry, can't connect to node 192.168.56.2:6380
 ```
 
+bind
+
+protected
+
+requirepass
+
+
+
 # [redis创建集群——[ERR\] Sorry, can't connect to node 192.168.X.X](https://www.cnblogs.com/lmy2018/p/8514787.html)
 
 
@@ -334,3 +342,108 @@ https://blog.csdn.net/feinifi/article/details/78251486
 https://blog.csdn.net/zhengwei125/article/details/80019887
 
 https://blog.csdn.net/weijifeng_/article/details/80115093
+
+
+
+执行成功之后
+
+```shell
+[root@localhost src]# ./redis-trib.rb create --replicas 1 192.168.56.2:6379 192.168.56.2:6380 192.168.56.4:6379 192.168.56.4:6380 192.168.56.5:6379 192.168.56.5:6380
+>>> Creating cluster
+>>> Performing hash slots allocation on 6 nodes...
+Using 3 masters:
+192.168.56.2:6379
+192.168.56.4:6379
+192.168.56.5:6379
+Adding replica 192.168.56.4:6380 to 192.168.56.2:6379
+Adding replica 192.168.56.5:6380 to 192.168.56.4:6379
+Adding replica 192.168.56.2:6380 to 192.168.56.5:6379
+M: 73abb17d55a3087a036f2833f25ac09ce66db55d 192.168.56.2:6379
+   slots:0-5460 (5461 slots) master
+S: 42f5ec2af130650c0ef08680c3c95b01d420fb76 192.168.56.2:6380
+   replicates 6330d9a4e55823149636a318d0588d5fc04be67c
+M: d5b7a3d14e26ffd6f5deed9f769d26ba5c1bd335 192.168.56.4:6379
+   slots:5461-10922 (5462 slots) master
+S: ef7e3d917b0cd450efec5b43265b78adacacc37b 192.168.56.4:6380
+   replicates 73abb17d55a3087a036f2833f25ac09ce66db55d
+M: 6330d9a4e55823149636a318d0588d5fc04be67c 192.168.56.5:6379
+   slots:10923-16383 (5461 slots) master
+S: 9287acc5d6a96c9b1762a53f50fd0ead09ded1c9 192.168.56.5:6380
+   replicates d5b7a3d14e26ffd6f5deed9f769d26ba5c1bd335
+Can I set the above configuration? (type 'yes' to accept): yes
+>>> Nodes configuration updated
+>>> Assign a different config epoch to each node
+>>> Sending CLUSTER MEET messages to join the cluster
+Waiting for the cluster to join.......
+>>> Performing Cluster Check (using node 192.168.56.2:6379)
+M: 73abb17d55a3087a036f2833f25ac09ce66db55d 192.168.56.2:6379
+   slots:0-5460 (5461 slots) master
+   1 additional replica(s)
+S: 9287acc5d6a96c9b1762a53f50fd0ead09ded1c9 192.168.56.5:6380
+   slots: (0 slots) slave
+   replicates d5b7a3d14e26ffd6f5deed9f769d26ba5c1bd335
+S: 42f5ec2af130650c0ef08680c3c95b01d420fb76 192.168.56.2:6380
+   slots: (0 slots) slave
+   replicates 6330d9a4e55823149636a318d0588d5fc04be67c
+M: d5b7a3d14e26ffd6f5deed9f769d26ba5c1bd335 192.168.56.4:6379
+   slots:5461-10922 (5462 slots) master
+   1 additional replica(s)
+M: 6330d9a4e55823149636a318d0588d5fc04be67c 192.168.56.5:6379
+   slots:10923-16383 (5461 slots) master
+   1 additional replica(s)
+S: ef7e3d917b0cd450efec5b43265b78adacacc37b 192.168.56.4:6380
+   slots: (0 slots) slave
+   replicates 73abb17d55a3087a036f2833f25ac09ce66db55d
+[OK] All nodes agree about slots configuration.
+>>> Check for open slots...
+>>> Check slots coverage...
+[OK] All 16384 slots covered.
+```
+
+
+
+使用`redis-cli`登入Redis客户端，会有如下错误提示
+
+```shell
+[root@localhost src]# ./redis-cli
+127.0.0.1:6379> setex name 10 redis
+(error) MOVED 5798 192.168.56.4:6379
+```
+
+
+
+设置一个值，它会告诉你“重定向到位置为192.168.56.4:6379的槽[5798]”
+
+```shell
+[root@localhost src]# ./redis-cli -c
+127.0.0.1:6379> setex name 10 redis
+-> Redirected to slot [5798] located at 192.168.56.4:6379
+OK
+```
+
+
+
+查看集群信息
+
+查看集群信息使用命令`cluster info`:
+
+```shell
+192.168.56.4:6379> cluster info
+cluster_state:ok
+cluster_slots_assigned:16384
+cluster_slots_ok:16384
+cluster_slots_pfail:0
+cluster_slots_fail:0
+cluster_known_nodes:6
+cluster_size:3
+cluster_current_epoch:6
+cluster_my_epoch:3
+cluster_stats_messages_ping_sent:685
+cluster_stats_messages_pong_sent:678
+cluster_stats_messages_meet_sent:5
+cluster_stats_messages_sent:1368
+cluster_stats_messages_ping_received:678
+cluster_stats_messages_pong_received:690
+cluster_stats_messages_received:1368
+```
+

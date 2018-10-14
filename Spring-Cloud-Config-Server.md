@@ -177,7 +177,7 @@ spring.cloud.config.server.native.search-locations=
 
 
 
-
+### 健康监测
 
 ### 安全保护
 
@@ -211,7 +211,13 @@ spring.cloud.config.password=0310d588-6ad8-452a-a44a-9713ebca20d1
 
 ### 加密解密
 
-#### Encryption
+在Spring Cloud Config中通过在属性值前使用`{cipher}`前缀来标注该内容是一个加密值，当微服务客户端加载配置时，配置中心会自动为带有`{cipher}`前缀的值进行解密。比如下面的例子：
+
+```properties
+spring.datasource.password={cipher}0028cd5d522499d795c6cd236a374bc1e58600c6c384c2853349100188bb5f8a
+```
+
+#### 相关端点
 
 `org.springframework.cloud.config.server.encryption.EncryptionController`
 
@@ -224,6 +230,76 @@ spring.cloud.config.password=0310d588-6ad8-452a-a44a-9713ebca20d1
 [POST]:[/decrypt]
 [POST]:[/decrypt/{name}/{profiles}]
 ```
+
+#### 对称加密
+
+- 前提
+
+  为了启用该功能，需要在配置中心的运行环境中安装布线长度的JCE（Java Cryptography Extension）版本。虽然，JCE功能在JRE中自带，但是默认使用的是有长度限制的版本。
+
+  **下载Java Cryptography Extension (JCE) **
+
+  [download JCE](https://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html)。
+
+  解压之后文件如下：
+
+  ```
+  local_policy.jar
+  README.txt
+  US_export_policy.jar
+  ```
+
+  **安装JCE**
+
+  将`local_policy.jar`和`US_export_policy.jar`拷贝至`jre/lib/security`目录下。
+
+  安装完成之后启动Config Server。
+
+  请求端点`/encrypt/status`：
+
+  ```shell
+  [root@localhost ~] curl http://localhost:8888/encrypt/status
+  {"description":"No key was installed for encryption service","status":"NO_KEY"}
+  ```
+
+  返回了如上信息，其已经明确说明了“加密服务没有安装密钥”，所以下一步就是配置秘钥。
+
+- 配置秘钥
+
+  此秘钥是进行加密的秘钥（对称性秘钥）。
+
+  **注意：**必须配置在`bootstrap.properties`以及更高优先级的配置中。
+
+  ```properties
+  encrypt.key=7d9b280a-edc8-4a07-b0cd-65fbab04a102
+  ```
+
+  启动服务，再次请求端点`/encrypt/status`，信息如下：
+
+  ```json
+  [root@localhost ~] curl http://localhost:8888/encrypt/status
+  {"status":"OK"}
+  ```
+
+- 使用`/encrypt`端点和`/decrypt`端点加解密
+
+  **注意：**它们都是`POST`请求
+
+  ```bash
+  [root@localhost ~] curl http://localhost:8888/encrypt -d root
+  0028cd5d522499d795c6cd236a374bc1e58600c6c384c2853349100188bb5f8a
+  
+  [root@localhost ~] curl http://localhost:8888/decrypt -d 0028cd5d522499d795c6cd236a374bc1e58600c6c384c2853349100188bb5f8a
+  root
+  ```
+
+> 测试的环境为JDK10，没有安装JCE，加密对称加密功能仍然可用。查阅到的资料是需要安装，可能是不同的版本的差异，也可能使使用了有限长度的默认JCE。
+
+#### 非对称加密
+
+
+
+
 
 ### 高可用配置
 
@@ -244,9 +320,7 @@ spring.cloud.config.discovery.service-id=star-travel-guest-config-server
 
 ### URI指定配置中心
 
-
-
-
+Spring Cloud Config的客户端在启动的时候，默认会从工程的classpath中加载配置信息并启动应用。只有当我们配置`spring.cloud.config.uri`的时候，客户端应用才会尝试连接Spring Cloud Config的服务端来获取远程配置信息并初始化Spring环境配置。同时，我们必须将该参数配置在bootstrao.properties、环境变量或是其他优先级高于应用Jar包内的配置信息中，才能正确加载到远程配置。若不指定`spring.cloud.config.uri`参数的话，Spring Cloud Config的客户端会默认尝试连接``
 
 ### 服务化配置中心
 
@@ -256,7 +330,60 @@ spring.cloud.config.discovery.service-id=star-travel-guest-config-server
 
 ### 失败快速响应与重试
 
+#### 失败快速响应
 
+Spring Cloud Config的客户端会预先加载很多其他信息，然后再开始连接Config Server进行属性的注入，当我们构建的应用较为复杂的时候，可能在连接Config Server之前花费较长的启动时间，而在一些特殊场景下，我们又希望可以快速知道当前应用示顺序地从Config Server获取到配置信息，这对在初期构建调试环境时，可以减少很多等待启动的时间。
+
+要实现上述功能只需要在`bootstrap.properties`配置文件中添加如下配置：
+
+```properties
+# 默认值false
+spring.cloud.config.fail-fast=true
+```
+
+在添加和不添加的情况下启动服务，可以发现，添加了配置之后，就会报如下错误；而不添加时，在报错之前已经加载了很多其他的内容。
+
+```java
+java.lang.IllegalStateException: Could not locate PropertySource and the fail fast property is set, failing
+```
+
+#### 失败快速重试
+
+`spring.cloud.config.fail-fast`配置了快速响应失败，但是，如果只是因为网络波动等其他间歇性原型导致的问题，直接启动失败似乎代价有些高。所以，Config客户端还提供了自动重试的功能，在开启重试功能之前，先确保已经配置了`spring.cloud.config.fail-fast=true`。
+
+只需要在添加`spring-retry`、`spring-boot-starter-aop`已经即可：
+
+```xml
+<dependency>
+    <groupId>org.springframework.retry</groupId>
+    <artifactId>spring-retry</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-aop</artifactId>
+</dependency>
+
+```
+
+再次启动客户端查看日志，可以看到如下日志打印了6次：
+
+```java
+[  restartedMain] c.c.c.ConfigServicePropertySourceLocator : Fetching config from server at : http://localhost:8888
+[  restartedMain] c.c.c.ConfigServicePropertySourceLocator : Connect Timeout Exception on Url - http://localhost:8888. Will be trying the next url if available
+```
+
+重试自定义配置
+
+```properties
+# 初始重试间隔时间（单位为毫秒），默认为1000毫秒
+spring.cloud.config.retry.initial-interval=1000
+# 下一间隔的乘数，默认为1.1，所以当最初间隔为1000毫秒时，下一次失败后的间隔为1100毫秒
+spring.cloud.config.retry.multiplier=1.1
+# 最大重试次数，默认为6次
+spring.cloud.config.retry.max-attempts=6
+# 最大间隔时间，默认为2000毫秒
+spring.cloud.config.retry.max-interval=200
+```
 
 ### 获取远程配置
 
@@ -302,10 +429,66 @@ spring.cloud.config.discovery.service-id=star-travel-guest-config-server
 
 ### 动态刷新配置
 
+客户端添加`actuator`依赖
 
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+```
 
+开启`refresh`端点管理
 
+```properties
+management.endpoints.web.exposure.include=refresh
+```
+
+添加`@RefreshScope`注解
+
+```java
+package com.star.travel.guest.destination.controller;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RefreshScope
+public class Controller {
+    
+    @Value("${name}")
+    private String name;
+
+    @RequestMapping("/name")
+    public Object name(){
+        return name;
+    }
+}
+```
+
+测试：
+
+有配置`name=success`
+
+1. 首先先请求`http://localhost:8080/name`，返回结果`success`。
+
+2. 请求`http://localhost:8080/actuator/refresh`端点，结果是`[]`。
+
+3. 修改配置为`name=success-2018`。
+
+4. 再次请求`http://localhost:8080/name`，结果仍然是`success`。
+
+5. 请求`http://localhost:8080/actuator/refresh`端点，结果是`[“name”]`。
+
+6. 再次请求`http://localhost:8080/name`，结果是`success-2018`。
+
+**注意：**1.x.x版本的Spring Boot和2.x.x版本的Spring Boot是有差异的，上述测试例子是基于2.x.x版本的Spring Boot。
+
+> 该功能还可以同Git仓库的Web Hook功能进行关联，，当有Git提交变化时，就给对应的配置主机发送/actuator/refresh请求来实现配置信息的实时更新。但是，当我们的系统发展壮大之后，维护这样的刷新清单也将成为一个非常大的负担，而且很容易犯错，那么就可以通过Spring Cloud Bus来实现以消息总线的方式进行配置变更的通知，并完成集群上的批量配置更新。
 
 ## BUG
 
-1. 使用高可用配置时，Config Client虽然能发现配置服务，但是Config Client本身却不能被注册为服务？
+1. 测试版本`Finchley.SR1`。使用高可用配置时，Config Client虽然能发现配置服务，但是Config Client本身却不能被注册为服务。
+2. `Dalston.SR3`、`Dalston.SR2`版本不能对配置文件加密，若需要调整到`Dalston.SR1`或者期待`Dalston.SR4`的发布。

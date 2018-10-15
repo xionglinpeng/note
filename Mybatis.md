@@ -58,6 +58,8 @@
 
 `<case>`标签下面可以包含的标签和`resultMap`一样，用法也一样。
 
+### 使用枚举或其他对象
+
 
 
 ## MyBatis缓存配置
@@ -249,6 +251,100 @@ MyBatis中很少会同时使用Mapper接口注解方式和XML映射文件，所�
 - `aggressiveLazyLoading`：
 
 - `lazyLoadTriggerMethods`：当调用配置中的方法时，加载全部的延迟加载数据。默认值为“`equals`”、“`clone`”、“`hashCode`”、“`toString`”。
+
+
+
+
+
+## XML配置
+
+### 类型处理（typeHandlers）
+
+#### 处理枚举类型
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -41,7 +41,80 @@
 
 #### 一对多映射
 
+collection集合的嵌套结果映射
 
+和`association`类似，集合的嵌套结果映射就是指通过一次SQL查询将所有的结果查询出来，然后通过配置的结果映射，将数据映射到不同的对象中去。在一对多的关系中，主表的一条数据会对应关联表的多条数据库，因此一般查询时会查询出多个结果，按照一对多的数据库结构存储数据的时候，最终的结果数会小于等于查询的总记录数。
+
+
+
+```xml
+   <resultMap id="BaseResultMap" type="com.threes.city.entity.City">
+        <id column="id" property="id" />
+        <id column="uuid" property="uuid" />
+        <result column="name" property="name" />
+        <result column="serial_number" property="serialNumber" />
+        <result column="remark" property="remark" />
+        <result column="deleted" property="deleted" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+    </resultMap>
+
+    <resultMap id="allCitysResultMap" extends="BaseResultMap" type="com.threes.city.entity.City">
+        <collection property="districts" columnPrefix="district_"
+                    resultMap="com.threes.city.mapper.DistrictMapper.allDistrictResultMap"/>
+    </resultMap>
+```
+
+
+
+```xml
+<select id="selectAllCities" resultMap="allCitysResultMap">
+    SELECT
+        c.`uuid`,
+        c.`name`,
+        c.`serial_number`,
+        c.`remark`,
+        cd.`uuid` AS district_uuid,
+        cd.`city_uuid` AS district_city_uuid,
+        cd.`name` AS district_name,
+        cd.`serial_number` AS district_serial_number,
+        cd.`remark` AS district_remark,
+        cdc.`uuid` AS district_circle_uuid,
+        cdc.`city_district_uuid` AS district_circle_city_district_uuid,
+        cdc.`name` AS district_circle_name,
+        cdc.`serial_number` AS district_circle_serial_number,
+        cdc.`remark` AS district_circle_remark
+    FROM
+    	`city` c
+        LEFT JOIN `city_district` cd
+        ON c.`uuid` = cd.`city_uuid`
+        LEFT JOIN `city_district_circle` cdc
+        ON cd.`uuid` = cdc.`city_district_uuid`
+    WHERE c.`deleted` = 1 AND cd.`deleted` = 1 AND cdc.`deleted` = 1
+</select>
+```
+
+
+
+
+
+- `property`: 
+- `columnPrefix`: 
+- `resultMap`: 
+
+
+
+Mybatis在处理结果的时候，会判断结果是否相同，如果是相同的结果，则只会保留第一个结果，所以这个问题的关键点就是Mybatis如何判断结果是否相同。Mybatis判断结果是否相同时，最简单的情况就是在映射配置中只是有一个`id`标签。
+
+
+
+我们对`id`的理解一般是，它配置的字段为表的主键（联合主键时可以配置多个`id`标签）因为Mybatis的`resultMap`只用于配置结果如何映射，并不知道这个表具体如何。`id`的唯一作用就是在嵌套的映射配置时判断数据是否相同，当配置`id`标签时，Mybatis只需要逐条比较所有数据中`id`标签配置的字段值是否相同即可。在配置嵌套结果查询时，配置`id`标签可以提高处理效率。
+
+如果没有配置`id`时，Mybatis就会把`resultMap`中配置的所有字段进行比较，如果所有字段的值都相同就合并，只要有一个字段值不同，就不合并。但是由于Mybatis要对所有字段进行比较，因此当字段数为M时，如果查询的结果有N条，就需要进行M$$\times$$N次比较，相比配置`id`时的N次比较，效率相差更多，所以要尽可能配置`id`标签。
+
+**注意：**
+
+> 在嵌套结果配置id属性时，如果查询语句中没有查询id属性配置的列，就会导致id对应的值为null。这种情况下，所有值的id都相同，因此会使嵌套的集合中只有一条数据。所以在配置id列时，查询语句中必须包含改列。
 
 #### 鉴别器映射
 

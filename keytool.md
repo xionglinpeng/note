@@ -1,5 +1,7 @@
 # keytool
 
+https://www.jb51.net/softs/542444.html#downintro2
+
 keytool是一个Java数据证书的管理工具，keytool将密钥（key）和证书（certificates）存在一个称为keystore的文件中。在keystore里，包含两种数据：
 
 - 密钥实体（key entity）—— 密钥（secret key）又或者是私钥和配对公钥（采用非对称加密）
@@ -323,3 +325,9 @@ https://www.cnblogs.com/xdp-gacl/p/3750965.html
 https://www.jb51.net/softs/542444.html
 
 https://blog.csdn.net/oMaverick1/article/details/53331380
+
+
+
+markdown公式：
+
+https://blog.csdn.net/jyfu2_12/article/details/79207643

@@ -135,6 +135,73 @@ Mybatis在处理结果的时候，会判断结果是否相同，如果是相同�
 
 
 
+## 自定义类型处理器
+
+
+
+```java
+package com.threes.curriculaum.type;
+
+import com.threes.enums.SuitBasics;
+import org.apache.ibatis.type.JdbcType;
+import org.apache.ibatis.type.TypeHandler;
+
+import java.sql.CallableStatement;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+public class SuitBasicsTypeHandler implements TypeHandler<List<SuitBasics>> {
+
+    @Override
+    public void setParameter(PreparedStatement ps, int i, List<SuitBasics> parameter, JdbcType jdbcType) throws SQLException {
+        String suitBasics = parameter.stream().map(SuitBasics::toString).collect(Collectors.joining(","));
+        ps.setString(i,suitBasics);
+    }
+
+    @Override
+    public List<SuitBasics> getResult(ResultSet rs, String columnName) throws SQLException {
+        String suitBasics = rs.getString(columnName);
+        return Arrays.stream(suitBasics.split(",")).map(SuitBasics::valueOf).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<SuitBasics> getResult(ResultSet rs, int columnIndex) throws SQLException {
+        String suitBasics = rs.getString(columnIndex);
+        return Arrays.stream(suitBasics.split(",")).map(SuitBasics::valueOf).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<SuitBasics> getResult(CallableStatement cs, int columnIndex) throws SQLException {
+        String suitBasics = cs.getString(columnIndex);
+        return Arrays.stream(suitBasics.split(",")).map(SuitBasics::valueOf).collect(Collectors.toList());
+    }
+}
+
+```
+
+
+
+
+
+```java
+@TableField(value = "`suit_basics`",el = "suitBasicsMapping, jdbcType=VARCHAR")
+private List<SuitBasics> suitBasics;
+
+public String getSuitBasicsMapping() {
+    return suitBasics.stream().map(SuitBasics::toString).collect(Collectors.joining(","));
+}
+```
+
+
+
+
+
 ## MyBatis缓存配置
 
 ### 一级缓存

@@ -1,5 +1,45 @@
 # keytool
 
+
+
+证书类型
+
+| 格式   | 扩展名         | 描述                                                    | 特点                                                         |
+| ------ | -------------- | ------------------------------------------------------- | ------------------------------------------------------------ |
+| DER    | .cer/.crt/.rsa | 【ASN.1 DER】用于存放证书                               | 不含私钥，二进制                                             |
+| PKCS7  | .p7b/.p7r      | 【PKCS #7】加密信息语法标准                             | 1、p7b以树状展示证书链，不含私钥<br/>2、p7r为CA对证书请求签名的回复，只能用于导入 |
+| CMS    | .p7c/.p7m/.p7s | 【Cryptographic Message Syntax】                        | 1、p7c只保存证书<br />2、p7m：signature with enveloped data <br />3、p7s：时间戳签名文件 |
+| PEM    | .pem           | 【Printable Encoded Message】                           | 1、该编码格式在RFC1421中定义，其实PEM是【Privacy-Enhanced Mail】的简写，但它也同样广泛运用于秘钥管理。<br />2、ASCII文件<br />3、一般基于base 64编码 |
+| PKCS10 | .p10/.csr      | 【PKCS #10】公钥加密标准【Certificate Signing Request】 | 1、证书签名请求文件<br />2、ASCII文件<br />3、CA签名后以p7文件回复 |
+| SPC    | .pvk/.spc      | 【Software Publishing Certificate】                     | 微软公司特有的双证书文件格式，经常用于代码签名，其中<br />1、pvk用于保存私钥<br />2、spc用于保存公钥 |
+|        |                |                                                         |                                                              |
+
+
+
+## 证书
+
+证书是来自某个实体的经数字签名的声明，它声明另一个实体的公钥具有某一特定的值。
+
+## 公钥
+
+## 身份
+
+## 签名
+
+所谓签名，就是用实体的（签名人，在证书中也称为签发人）私钥对某些数据进行计算。
+
+### 私钥
+
+是一些数字，每个数字都对应仅被以该数字作为私钥的特定实体所知。在所有公钥密码系统中，私钥和公钥均成对出现，在DSA等具体的公钥密码系统中，一个私钥只对应一个公钥，私钥用于计算签名。
+
+### 实体
+
+实体是您在某种程度上对其加以信任的个人、组织、程序、计算机、企业、银行等。
+
+通常，公钥密码系统需要访问用户的公钥。在大型互联网环境中，并不能确保通信实体之间已经预先建立起联系，也无法确保受信任的存储库与所用的公钥都存在。于是人们发明了证书作为公钥分配问题的解决办法。现在，认证机构（CA）可充当可信任的第三方。
+
+
+
 keytool是一个Java数据证书的管理工具，keytool将密钥（key）和证书（certificates）存在一个称为keystore的文件中。在keystore里，包含两种数据：
 
 - 密钥实体（key entity）—— 密钥（secret key）又或者是私钥和配对公钥（采用非对称加密）
@@ -102,6 +142,8 @@ keytool -genkeypair [OPTION]...
 
 ```shell
 keytool -genkeypair -alias "test1" -keyalg "RSA" -keystore "test.keystore"  
+
+keytool -genkeypair -alias "star-travel-guest-config-server" -keystore "D:\program\Workspace\study\star-travel-guest\star-travel-guest-config-server\src\main\resources\config-server.keystore" -storepass "129f7cab-2bd2-48c6-ad02-d5931f3a8862" -keypass "123456" -keyalg "RSA"
 ```
 
 

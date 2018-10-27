@@ -24,35 +24,32 @@ https://blog.csdn.net/z28126308/article/details/71126677
 
 https://blog.csdn.net/z28126308/article/details/71126677
 
+ 
+
+- keytool gui(可视化keytool工具) v1.6 正式版   
+
+https://www.jb51.net/softs/542444.html#downintro2
+
 [TOC]
 
 ## @Api
 
 用在请求类上，标识对类的说明。
 
-```java
-@Api：用在请求的类上，表示对类的说明
-   常用参数：
-      tags="说明该类的作用，非空时将覆盖value的值"
-       value="描述类的作用"
-   其他参数：
-      description           对api资源的描述，在1.5版本后不再支持
-      basePath              基本路径可以不配置，在1.5版本后不再支持
-      position              如果配置多个Api 想改变显示的顺序位置，在1.5版本后不再支持
-      produces              设置MIME类型列表（output），例："application/json, application/xml"，默认为空
-      consumes              设置MIME类型列表（input），例："application/json, application/xml"，默认为空
-      protocols             设置特定协议，例：http， https， ws， wss。
-      authorizations        获取授权列表（安全声明），如果未设置，则返回一个空的授权值。
-      hidden                默认为false， 配置为true 将在文档中隐藏
+### *properties*
 
-   示例：
-        @Api(tags="登录请求")
-        @Controller
-        @RequestMapping(value="/highPregnant")
-        public class LoginController {}
-```
+- `value`：描述类的作用
+- `tags`：说明该类的作用，非空时将覆盖value的值
+- `description`：对api资源的描述，在1.5版本后不再支持
+- `basePath`：基本路径可以不配置，在1.5版本后不再支持
+- `position`：如果配置多个Api 想改变显示的顺序位置，在1.5版本后不再支持
+- `produces`：设置MIME类型的列表（output），例如：“`application/json, application/xml`”，默认为空。
+- `consumes`：设置MIME类型的列表（output），例如：“`application/json, application/xml`”，默认为空。
+- `protocols`：设置特定协议，多个协议用逗号分隔。例如：可选值:`http`、`https`、`ws`、`wss`。
+- `authorizations`：获取授权列表（安全声明），如果未设置，则返回一个空的授权值。
+- `hidden`：默认为false，设置为true，将在文档中隐藏。
 
-
+### *sound code*
 
 ```java
 package io.swagger.annotations;
@@ -64,60 +61,53 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks a class as a Swagger resource.
+ * 将一个类标记为一个Swagger资源。
  * <p>
  * By default, Swagger-Core will only include and introspect only classes that are annotated
  * with {@code @Api} and will ignore other resources (JAX-RS endpoints, Servlets and
- * so on).
+ * so on).默认情况下，Swagger-Core只包含并内省了用{@code @Api}注释的类，并且忽略了其他资源(JAX-RS端点、servlet等)。
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface Api {
     /**
-     * Implicitly sets a tag for the operations, legacy support (read description).
-     * <p>
-     * In swagger-core 1.3.X, this was used as the 'path' that is to host the API Declaration of the
-     * resource. This is no longer relevant in swagger-core 1.5.X.
-     * <p>
-     * If {@link #tags()} is <i>not</i> used, this value will be used to set the tag for the operations described by this
-     * resource. Otherwise, the value will be ignored.
-     * <p>
-     * The leading / (if exists) will be removed.
+     * 隐式设置操作的标签，遗留支持(读描述)。
+     * 在swagger-core 1.3.X，它被用作“path”，用于托管资源的API声明。
+     * 这与swagger-core 1.5.X不再相关。
+     * 如果{@link #tags()}未被使用，此值将用于设置此资源描述的操作的标记。否则,该值将被忽略。
+     * leading/(如果存在)将被删除。
      *
-     * @return tag name for operations under this resource, unless {@link #tags()} is defined.
+     * @return 除非定义了{@link #tags()}，否则此资源下操作的标记名。
      */
     String value() default "";
 
     /**
-     * A list of tags for API documentation control.
-     * Tags can be used for logical grouping of operations by resources or any other qualifier.
-     * <p>
-     * A non-empty value will override the value provided in {@link #value()}.
+     * API文档控制的标记列表。
+     * 标记可用于根据资源或任何其他限定符对操作进行逻辑分组。
+     * 非空值将覆盖{@link #value()}中提供的值。
      *
-     * @return a string array of tag values
+     * @return 标记值的字符串数组
      * @since 1.5.2-M1
      */
     String[] tags() default "";
 
     /**
-     * Not used in 1.5.X, kept for legacy support.
+     * 1.5.X没有使用，用于遗留支持。
      *
-     * @return a longer description about this API, no longer used.
+     * @return 关于这个API的更长的描述，不再使用。
      */
     @Deprecated String description() default "";
 
     /**
-     * Not used in 1.5.X, kept for legacy support.
-     *
-     * @return the basePath for this operation, no longer used.
+     * 1.5.X没有使用，用于遗留支持。
+     * @return 这个操作的basePath，不再使用。
      */
     @Deprecated String basePath() default "";
 
     /**
-     * Not used in 1.5.X, kept for legacy support.
-     *
-     * @return the position of this API in the resource listing, no longer used.
+     * 1.5.X没有使用，用于遗留支持。
+     * @return 此API在资源列表中的位置，不再使用。
      */
     @Deprecated int position() default 0;
 
@@ -183,42 +173,33 @@ public @interface Api {
 
 
 
-
-
-
-
-## Target
-```
-@Target(ElementType.TYPE)
-```
-## Attribute
-### `description`
-接口集合描述
->example : `description = "用户"`
-
-# 
-
 ## @ApiOperation
 
-用在请求方法上，说明方法的用途、作用
+用在请求的方法上，说明方法的用途、作用。
+
+### *properties*
+
+- `value`：说明方法的用途，作用
+- `notes`：方法的备注说明
+- `tags`：操作标签，非空时将覆盖value值
+- `response`：响应类型（即返回对象）
+- `responseContainer`：声明包装的响应容器（返回对象类型），有效值是“List”、“Set”或“Map”。其他任何值都将被忽略。
+- `responseReference`：指定对响应类型的引用，将覆盖任何指定的response()类。
+- `httpMethod`：请求方式，可选值：`GET`、`HEAD`、`POST`、`PUT`、`DELETE`、`OPTIONS`和`PATCH`。
+- `position`：如果配置多个Api，想要改变显示的顺序位置。在1.5.x版本都不在支持。
+- `nickname`：第三方工具唯一标识，默认为空。
+- `produces`：设置MIME类型的列表（output），例如：“`application/json, application/xml`”，默认为空。
+- `consumes`：设置MIME类型的列表（output），例如：“`application/json, application/xml`”，默认为空。
+- `protocols`：设置特定协议，多个协议用逗号分隔。例如：可选值:`http`、`https`、`ws`、`wss`。
+- `authorizations`：获取授权列表（安全声明），如果未设置，则返回一个空的授权值。
+- `hidden`：默认为false，设置为true，将在文档中隐藏。
+- `responseHeaders`：响应头列表
+- `code`：响应的HTTP状态码，默认为200。
+- `extensions`：扩展属性列表数组。
+
+### *sound code*
 
 ```java
-/**
- * Copyright 2016 SmartBear Software
- * <p>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package io.swagger.annotations;
 
 import java.lang.annotation.ElementType;
@@ -227,105 +208,97 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Describes an operation or typically a HTTP method against a specific path.
+ * 描述针对特定路径的操作或HTTP方法。
  * <p>
- * Operations with equivalent paths are grouped in a single Operation Object.
- * A combination of a HTTP method and a path creates a unique operation.
+ * 具有等效路径的操作在单个操作对象中分组。
+ * HTTP方法和路径的组合创建了一个独特的操作。
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ApiOperation {
     /**
-     * Corresponds to the `summary` field of the operation.
+     * 对应于操作的“摘要”字段。
      * <p>
-     * Provides a brief description of this operation. Should be 120 characters or less
-     * for proper visibility in Swagger-UI.
+     * 提供此操作的简要描述。应该是120个字符或更少，以适当的能见度在Swagger-UI。
      */
     String value();
 
     /**
-     * Corresponds to the 'notes' field of the operation.
+     * 对应于操作的“notes”字段。
      * <p>
-     * A verbose description of the operation.
+     * 操作的详细描述。
      */
     String notes() default "";
 
     /**
-     * A list of tags for API documentation control.
-     * <p>
-     * Tags can be used for logical grouping of operations by resources or any other qualifier.
-     * A non-empty value will override the value received from {@link Api#value()} or {@link Api#tags()}
-     * for this operation.
-     *
+     * API文档控制的标记列表。
+     * 标记可用于根据资源或任何其他限定符对操作进行逻辑分组。
+     * 非空值将覆盖该操作从{@link Api#value()}或{@link Api#tags()}收到的值。
      * @since 1.5.2-M1
      */
     String[] tags() default "";
 
     /**
-     * The response type of the operation.
+     * 操作的响应类型。
      * <p>
-     * In JAX-RS applications, the return type of the method would automatically be used, unless it is
-     * {@code javax.ws.rs.core.Response}. In that case, the operation return type would default to `void`
-     * as the actual response type cannot be known.
+     * 在JAX-RS应用程序中，将自动使用方法的返回类型， 除非是{@code javax.ws.rs.core.Response}。      * 在这种情况下，操作返回类型默认为“void”，因为无法知道实际的响应类型。
      * <p>
-     * Setting this property would override any automatically-derived data type.
+     * 设置此属性将覆盖任何自动派生的数据类型。
      * <p>
-     * If the value used is a class representing a primitive ({@code Integer}, {@code Long}, ...)
-     * the corresponding primitive type will be used.
+     * 如果使用的值是一个基本类型({@code Integer}， {@code Long}，…)的类，
+     * 则将使用相应的基本类型。
      */
     Class<?> response() default Void.class;
 
     /**
-     * Declares a container wrapping the response.
+     * 声明包装响应的容器。
      * <p>
-     * Valid values are "List", "Set" or "Map". Any other value will be ignored.
+     * 有效值是“List”、“Set”或“Map”。其他任何值都将被忽略。
      */
     String responseContainer() default "";
 
     /**
-     * Specifies a reference to the response type. The specified reference can be either local or remote and
-     * will be used as-is, and will override any specified response() class.
+     * 指定对响应类型的引用。指定的引用可以是本地引用，也可以是远程引用，并将按原样使用， 
+     * 并将覆盖任何指定的response()类。
      */
 
     String responseReference() default "";
 
     /**
-     * Corresponds to the `method` field as the HTTP method used.
+     * 与使用的HTTP方法对应的“method”字段。
      * <p>
-     * If not stated, in JAX-RS applications, the following JAX-RS annotations would be scanned
-     * and used: {@code @GET}, {@code @HEAD}, {@code @POST}, {@code @PUT}, {@code @DELETE} and {@code @OPTIONS}.
-     * Note that even though not part of the JAX-RS specification, if you create and use the {@code @PATCH} annotation,
-     * it will also be parsed and used. If the httpMethod property is set, it will override the JAX-RS annotation.
+     * 如果没有说明，在JAX-RS应用程序中，将扫描并使用以下JAX-RS注释:{@code @GET}、
+     * {@code @HEAD}、{@code @POST}、{@code @PUT}、{@code @DELETE}和{@code @OPTIONS}。
+     * 注意，即使不是JAX-RS规范的一部分，如果您创建并使用{@code @PATCH}注释，
+     * 它也将被解析和使用。如果设置了httpMethod属性，它将覆盖JAX-RS注释。
      * <p>
-     * For Servlets, you must specify the HTTP method manually.
+     * 对于servlet，必须手动指定HTTP方法。
      * <p>
-     * Acceptable values are "GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS" and "PATCH".
+     * 可接受的值是“GET”、“HEAD”、“POST”、“PUT”、“DELETE”、“OPTIONS”和“PATCH”。
      */
     String httpMethod() default "";
 
     /**
-     * Not used in 1.5.X, kept for legacy support.
+     * 1.5.X未使用，用于遗留支持。
      */
     @Deprecated int position() default 0;
 
     /**
-     * Corresponds to the `operationId` field.
+     * 对应于“operationId”字段。
      * <p>
-     * The operationId is used by third-party tools to uniquely identify this operation. In Swagger 2.0, this is
-     * no longer mandatory and if not provided will remain empty.
+     * 第三方工具使用operationId来惟一地标识该操作。在时髦的2.0中,
+     * 这不再是强制性的，如果不提供将保持为空。
      */
     String nickname() default "";
 
     /**
-     * Corresponds to the `produces` field of the operation.
+     * 对应于操作的“produces”字段。
      * <p>
-     * Takes in comma-separated values of content types.
-     * For example, "application/json, application/xml" would suggest this operation
-     * generates JSON and XML output.
+     * 接受内容类型的逗号分隔值。
+     * 例如，“application/json, application/xml”将建议此操作生成json和xml输出。
      * <p>
-     * For JAX-RS resources, this would automatically take the value of the {@code @Produces}
-     * annotation if such exists. It can also be used to override the {@code @Produces} values
-     * for the Swagger documentation.
+     * 对于JAX-RS资源，如果存在{@code @Produces}注释，则会自动获取{@code @Produces}注释的值。
+     * 它还可以用于覆盖Swagger文档的{@code @Produces}值。
      */
     String produces() default "";
 
@@ -343,45 +316,41 @@ public @interface ApiOperation {
     String consumes() default "";
 
     /**
-     * Sets specific protocols (schemes) for this operation.
-     * <p>
-     * Comma-separated values of the available protocols. Possible values: http, https, ws, wss.
-     *
-     * @return the protocols supported by the operations under the resource.
+     * 为该操作设置特定的协议(方案)。
+     * 多个协议用逗号分隔。可能的值:http、https、ws、wss。
+     * @return 资源下的操作支持的协议。
      */
     String protocols() default "";
 
     /**
-     * Corresponds to the `security` field of the Operation Object.
-     * <p>
-     * Takes in a list of the authorizations (security requirements) for this operation.
-     *
-     * @return an array of authorizations required by the server, or a single, empty authorization value if not set.
+     * 对应于操作对象的“security”字段。
+     * 在该操作的授权(安全要求)的列表中获取。
+     * @return 服务器需要的授权数组，或未设置的单个空授权值。
      * @see Authorization
      */
     Authorization[] authorizations() default @Authorization(value = "");
 
     /**
-     * Hides the operation from the list of operations.
+     * 从操作列表中隐藏操作。
      */
     boolean hidden() default false;
 
     /**
      * A list of possible headers provided alongside the response.
-     *
-     * @return a list of response headers.
+     * 响应旁边可能提供的标头列表。
+     * @return 一个响应头列表。
      */
     ResponseHeader[] responseHeaders() default @ResponseHeader(name = "", response = Void.class);
 
     /**
-     * The HTTP status code of the response.
+     * 响应的HTTP状态代码。
      * <p>
-     * The value should be one of the formal <a target="_blank" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html">HTTP Status Code Definitions</a>.
+     * 值的形式应该是<a target="_blank" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html">HTTP状态代码定义</a>.
      */
     int code() default 200;
 
     /**
-     * @return an optional array of extensions
+     * @return 可选的扩展数组
      */
 
     Extension[] extensions() default @Extension(properties = @ExtensionProperty(name = "", value = ""));
@@ -389,35 +358,20 @@ public @interface ApiOperation {
 
 ```
 
+### *example*
 
 
-## Target
-
-```
-@Target(ElementType.METHOD)
-```
-## Attribute
-### `value`
-接口描述
->example : `value = "首字母排序全部商户"`
-
--------------------------------------------
 
 
-# `@ApiImplicitParams`
+
+## @ApiImplicitParams
+
 一个包装器，以允许多个`@ApiImplicitParam`对象的列表。
 
-## Target
 
-```
-@Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE, ElementType.TYPE})
-```
-## Attribute
-### `value`
-参数的集合
-```
-ApiImplicitParam[] value();
-```
+
+
+
 >example :
 
 -------------------------------------------
@@ -430,36 +384,10 @@ ApiImplicitParam[] value();
 })
 ```
 
+## @ApiImplicitParam
 
-# `@ApiImplicitParam`
 
-## Target
 
-```
-@Target(ElementType.METHOD)
-```
-## Attribute
-### `name`
-参数的名称
-```
-String name() default "";
-```
->example : `name = "limit"`
-
-### `defaultValue`
-参数的默认值
-
-```
-String defaultValue() default "";
-```
->example : `defaultValue = "xxx"`
-### `required`
-指定是否需要参数。路径参数应该根据需要设置。
-
-```
-boolean required() default false;
-```
->example : `required = false`
 ### `paramType`
 参数的参数类型。可以取值 : 
 - `path`
@@ -479,14 +407,12 @@ String dataType() default "";
 ```
 >example : `dataType = "int"`
 
-# `@ApiIgnore`
+## @ApiIgnore
+
 使标注的接口不显示在swagger文档中不显示。
-## Target
-```
-@Target({ElementType.METHOD, ElementType.TYPE, ElementType.PARAMETER})
-```
-## Attribute
-### `value`
+
+
+
 简要说明为什么忽略此参数/操作。
 ```
 String value() default "";
@@ -539,33 +465,7 @@ public Object getUsers(@ModelAttribute User user) {
 ```java
 
 
-@ApiOperation：用在请求的方法上，说明方法的用途、作用
-   常用参数：
-      value="说明方法的用途、作用"
-       notes="方法的备注说明"
-   其他参数：
-      tags                操作标签，非空时将覆盖value的值
-      response            响应类型（即返回对象）
-      responseContainer   声明包装的响应容器（返回对象类型）。有效值为 "List", "Set" or "Map"。
-      responseReference  指定对响应类型的引用。将覆盖任何指定的response（）类
-      httpMethod        指定HTTP方法，"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS" and "PATCH"
-      position            如果配置多个Api 想改变显示的顺序位置，在1.5版本后不再支持
-      nickname         第三方工具唯一标识，默认为空
-      produces            设置MIME类型列表（output），例："application/json, application/xml"，默认为空
-      consumes            设置MIME类型列表（input），例："application/json, application/xml"，默认为空
-      protocols           设置特定协议，例：http， https， ws， wss。
-      authorizations      获取授权列表（安全声明），如果未设置，则返回一个空的授权值。
-      hidden              默认为false， 配置为true 将在文档中隐藏
-      responseHeaders       响应头列表
-      code            响应的HTTP状态代码。默认 200
-      extensions       扩展属性列表数组
 
-   示例：
-        @ResponseBody
-        @PostMapping(value="/login")
-        @ApiOperation(value = "登录检测", notes="根据用户名、密码判断该用户是否存在")
-        public UserModel login(@RequestParam(value = "name", required = false) String account,
-        @RequestParam(value = "pass", required = false) String password){}
 
 
 @ApiImplicitParams：用在请求的方法上，表示一组参数说明

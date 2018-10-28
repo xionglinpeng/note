@@ -1,8 +1,67 @@
 # Spring Boot
 
+## 配置SSL
+
+```shell
+C:\Users\xlp>keytool -genkeypair -alias root -keypass 597646251 -storepass 597646251 -storetype PKCS12 -validity 3600 -keystore "root.keystore" -dname "CN=LINPENG.XIONG, OU=存在信号, O=存在信号, L=成都市, ST=四川省, C=zh_CN"
+```
+
+将证书`root.keystore`添加到classpath下，添加如下配置：
+
+```properties
+spring.application.name=spring-ssl
+
+server.port=8443
+server.ssl.enabled=true
+server.ssl.key-store=classpath:root.keystore
+server.ssl.key-alias=root
+server.ssl.key-store-password=597646251
+server.ssl.key-store-type=PKCS12
+server.ssl.key-store-provider=SUN
+```
+
+再写一个接口
+
+```java
+@GetMapping("/hello")
+@ResponseBody
+public Object hello() {
+    return "Hello SSL.";
+}
+```
+
+启动服务，可以发现控制台答应了如下内容：
+
+```
+Tomcat initialized with port(s): 8443 (https)
+......
+Tomcat started on port(s): 8443 (https) with context path ''
+```
+
+先使用http访问/hello接口：http://localhost:8443/hello，结果返回了如下错误信息：
+
+```
+Bad Request
+This combination of host and port requires TLS.
+```
+
+再使用HTTPS访问：https://localhost:8443/hello，结果提示了如下错误信息：
+
+```
+localhost 使用了不受支持的协议。
+```
+
+
+
+
+
+
+
 ## 端点管理
 
 #### HTTP管理服务器(ManagementServerProperties)
+
+HTTP管理服务器定义了端点的访问地址
 
 ```properties
 # 管理端点应该绑定到的网络地址，如果将端口设置为-1，则表示禁用所有端点。
@@ -25,6 +84,8 @@ management.endpoints.enabled-by-default=true
 
 
 #### 端点WEB配置 (WebEndpointProperties)
+
+端点WEB配置定义了端点的访问路径
 
 ```properties
 # 端点管理基础路径，默认“/actuator。

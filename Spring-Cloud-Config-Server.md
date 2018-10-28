@@ -297,9 +297,44 @@ spring.datasource.password={cipher}0028cd5d522499d795c6cd236a374bc1e58600c6c384c
 
 #### 非对称加密
 
+Spring Cloud Cofig的配置中心不仅可以使用对称性加密，也可以使用非对称性加密（比如RSA秘钥对）。虽然
 
+非对称性加密的秘钥生成与配置相对复杂一些，但是它具有更高的安全性。
 
+首先使用JDK的keytool工具生成一个秘钥对:
 
+```shell
+keytool -genkeypair -alias "star-travel-guest-config-server" -keyalg "RSA" -keysize 2048 -validity 360 -keypass "xxxxxxxxx" -storepass "*********" -keystore "./config-server.keystore" -dname "CN=localhost, OU=xlp, O=xlp, L=china, ST=china, C=china"
+```
+
+关于keytool工具及其相关内容的更详细介绍这里不再说明，请查阅相关资料。
+
+添加配置：
+
+**注意：**必须配置在`bootstrap.properties`以及更高优先级的配置中。
+
+```properties
+# 存储库中条目的别名
+encrypt.key-store.alias=star-travel-guest-config-server
+# 密钥存储文件的位置，例如classpath:/keystore.jks
+# 也可以是file://${user.home}/...
+encrypt.key-store.location=classpath:/config-server.keystore
+# 存储库密码
+encrypt.key-store.password=*********
+# 密钥密码(默认为与密码相同)
+encrypt.key-store.secret=xxxxxxxxx
+```
+
+非对称加密的配置信息也可以通过环境变量的方式进行配置，它们对应的具体变量名如下：
+
+```
+ENCRYPT_KEY_STORE_LOCATION
+ENCRYPT_KEY_STORE_ALIAS
+ENCRYPT_KEY_STORE_PSAAWORD
+ENCRYPT_KEY_STORE_SECRET
+```
+
+配置完成之后除了加密的方式不同，其他的操作都跟前面的对称加密一样。
 
 ### 高可用配置
 

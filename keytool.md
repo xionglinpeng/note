@@ -1,44 +1,11 @@
 # keytool
 
+
 keytool百度百科：https://baike.baidu.com/item/keytool/5885709?fr=aladdin#2
 
 keytool是个秘钥和证书管理工具。它使用户能够管理自己的私钥仓库(keystore)对及相关的X.509证书链（用以验证与[私钥](https://baike.baidu.com/item/%E7%A7%81%E9%92%A5/8973452)对应的[公钥](https://baike.baidu.com/item/%E5%85%AC%E9%92%A5/6447788)），用于（通过数字签名）自我认证（用户向别的用户/服务认证自己）或数据完整性以及认证服务。
 
 在JDK1.4以后的版本中都包含了这一工具，它的位置是`%JAVA_HOME%\bin\keytool.exe`。
-
-
-
-
-
-
-
-
-
-Dubbo只是实现了服务治理，其他组件需要另外整合以实现对应的功能，比如：
-分布式配置：可以使用淘宝的diamond、百度的disconf来实现分布式配置管理。
-服务跟踪：可以使用京东开源的Hydra
-批量任务：可以使用当当开源的Elastic-Job
-而Spring Cloud下面有17个子项目（可能还会新增）分别覆盖了微服务架构下的方方面面，服务治理只是其中的一个方面
-2、Dubbo的RPC来实现服务间调用的一些痛点
-a、服务提供方与调用方接口依赖方式太强：调用方对提供方的抽象接口存在强依赖关系，需要严格的管理版本依赖，才不会出现服务方与调用方的不一致导致应用无法编译成功等一系列问题；
-b、服务对平台敏感，难以简单复用：通常我们在提供对外服务时，都会以REST的方式提供出去，这样可以实现跨平台的特点。
-在Dubbo中我们要提供REST接口时，不得不实现一层代理，用来将RPC接口转换成REST接口进行对外发布。所以当当网在dubbox（基于Dubbo的开源扩展）中增加了对REST支持。
-
-
-
-
-
-# keytool gui(可视化keytool工具) v1.6 正式版
-
-https://www.jb51.net/softs/542444.html
-
-# dubbo工程结构分析
-
-https://blog.csdn.net/oMaverick1/article/details/53331380
-
-
-
-
 
 ## 证书简要说明
 
@@ -177,7 +144,6 @@ C:\Users\xlp\Desktop>keytool -importcert -trustcacerts -alias test -keystore "D:
 ```
 
 ## keytool -help
-
 keytool是一个Java数据证书的管理工具，keytool将密钥（key）和证书（certificates）存在一个称为keystore的文件中。在keystore里，包含两种数据：
 
 - 密钥实体（key entity）—— 密钥（secret key）又或者是私钥和配对公钥（采用非对称加密）
@@ -1168,6 +1134,3 @@ keytool -genseckey [OPTION]...
 - 如果秘钥库类型不是`JCEKS`，报错：`keytool 错误: java.security.KeyStoreException: Key protection  algorithm not found: java.security.NoSuchAlgorithmException: unrecognized algorithm name: DES`。
 
 java默认的密钥库类型为`JKS`（java9之后为`PKCS12`）， 除这种类型外，还有`PKCS12`、`JCEKS`两种类型，要存储secret key要使用`JCEKS`类型，另外两种不支持。
-
-
-

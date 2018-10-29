@@ -4,7 +4,7 @@
 
 ### 高级结果映射
 
-#### 一对一映射
+#### 6.1.1、一对一映射
 
 通过一次查询将结果映射到不同对象的方式，称之为关联的前台结果映射。
 
@@ -39,35 +39,58 @@
 
 
 
-#### 一对多映射
+#### 6.1.2、一对多映射
 
-collection集合的嵌套结果映射
+##### 6.1.2.1、collection集合的嵌套结果映射
 
 和`association`类似，集合的嵌套结果映射就是指通过一次SQL查询将所有的结果查询出来，然后通过配置的结果映射，将数据映射到不同的对象中去。在一对多的关系中，主表的一条数据会对应关联表的多条数据库，因此一般查询时会查询出多个结果，按照一对多的数据库结构存储数据的时候，最终的结果数会小于等于查询的总记录数。
 
 
 
 ```xml
-   <resultMap id="BaseResultMap" type="com.threes.city.entity.City">
-        <id column="id" property="id" />
-        <id column="uuid" property="uuid" />
-        <result column="name" property="name" />
-        <result column="serial_number" property="serialNumber" />
-        <result column="remark" property="remark" />
-        <result column="deleted" property="deleted" />
-        <result column="create_time" property="createTime" />
-        <result column="update_time" property="updateTime" />
-    </resultMap>
+<resultMap id="BaseResultMap" type="com.threes.city.entity.City">
+    <id column="id" property="id" />
+    <id column="uuid" property="uuid" />
+    <result column="name" property="name" />
+    <result column="serial_number" property="serialNumber" />
+    <result column="remark" property="remark" />
+    <result column="deleted" property="deleted" />
+    <result column="create_time" property="createTime" />
+    <result column="update_time" property="updateTime" />
+</resultMap>
 
-    <resultMap id="allCitysResultMap" extends="BaseResultMap" type="com.threes.city.entity.City">
-        <collection property="districts" columnPrefix="district_"
-                    resultMap="com.threes.city.mapper.DistrictMapper.allDistrictResultMap"/>
-    </resultMap>
+<resultMap id="allCitysResultMap" extends="BaseResultMap" type="com.threes.city.entity.City">
+    <collection property="districts" columnPrefix="district_"
+ resultMap="com.threes.city.mapper.DistrictMapper.allDistrictResultMap"/>
+</resultMap>
 ```
 
 
 
 ```xml
+<resultMap id="BaseResultMap" type="com.threes.entity.city.District">
+    <id column="id" property="id" />
+    <id column="uuid" property="uuid" />
+    <result column="create_time" property="createTime" />
+    <result column="update_time" property="updateTime" />
+    <result column="city_uuid" property="cityUuid" />
+    <result column="name" property="name" />
+    <result column="serial_number" property="serialNumber" />
+    <result column="remark" property="remark" />
+    <result column="deleted" property="deleted" />
+</resultMap>
+
+<resultMap id="allDistrictResultMap" extends="BaseResultMap" type="com.threes.entity.city.District">
+    <collection property="children" columnPrefix="circle_"
+                resultMap="com.threes.city.mapper.DistrictCircleMapper.BaseResultMap"/>
+</resultMap>
+```
+
+
+
+
+
+```mysql
 <select id="selectAllCities" resultMap="allCitysResultMap">
     SELECT
         c.`uuid`,
@@ -102,13 +125,19 @@ collection集合的嵌套结果映射
 - `columnPrefix`: 
 - `resultMap`: 
 
-
+理解Mybatis处理的规则对使用一对多配置是非常重要的，如果只是一知半解，很容易就会遇到各种莫名其妙的问题，所以针对Mybatis处理中的要点，下面进行一个详细的阐述：
 
 Mybatis在处理结果的时候，会判断结果是否相同，如果是相同的结果，则只会保留第一个结果，所以这个问题的关键点就是Mybatis如何判断结果是否相同。Mybatis判断结果是否相同时，最简单的情况就是在映射配置中只是有一个`id`标签。
 
+例如：
+
+```xml
+<id column="id" property="id" />
+```
 
 
-我们对`id`的理解一般是，它配置的字段为表的主键（联合主键时可以配置多个`id`标签）因为Mybatis的`resultMap`只用于配置结果如何映射，并不知道这个表具体如何。`id`的唯一作用就是在嵌套的映射配置时判断数据是否相同，当配置`id`标签时，Mybatis只需要逐条比较所有数据中`id`标签配置的字段值是否相同即可。在配置嵌套结果查询时，配置`id`标签可以提高处理效率。
+
+我们对`id`的理解一般是，它配置的字段为表的主键（联合主键时可以配置多个`id`标签）因为**Mybatis的`resultMap`只用于配置结果如何映射，并不知道这个表具体如何。`id`的唯一作用就是在嵌套的映射配置时判断数据是否相同**，当配置`id`标签时，Mybatis只需要逐条比较所有数据中`id`标签配置的字段值是否相同即可。在配置嵌套结果查询时，配置`id`标签可以提高处理效率。
 
 如果没有配置`id`时，Mybatis就会把`resultMap`中配置的所有字段进行比较，如果所有字段的值都相同就合并，只要有一个字段值不同，就不合并。但是由于Mybatis要对所有字段进行比较，因此当字段数为M时，如果查询的结果有N条，就需要进行M$$\times$$N次比较，相比配置`id`时的N次比较，效率相差更多，所以要尽可能配置`id`标签。
 
@@ -116,7 +145,88 @@ Mybatis在处理结果的时候，会判断结果是否相同，如果是相同�
 
 > 在嵌套结果配置id属性时，如果查询语句中没有查询id属性配置的列，就会导致id对应的值为null。这种情况下，所有值的id都相同，因此会使嵌套的集合中只有一条数据。所以在配置id列时，查询语句中必须包含改列。
 
+
+
+注意，如果有多个嵌套嵌套映射，比如上面的例子，其别名需要前缀需要叠加，因为每一层嵌套映射都是在上一层的基础上进行比较映射的，而不是在根嵌套上进行映射的。
+
+比如上面的例子，第一层前缀是`district_`，第二层就是`district_circle_`，即是说在第二层嵌套映射的时候，已经在第一次将前缀为``district_`的别名前缀都去掉了。如果有第三层，第四层等等，依次类推。
+
+它不仅可以被嵌套的配置引用，其本身也可以使用。一个复杂的映射就是由这样一个基本的映射配置组成的。通常情况下，如果要配置一个相当复杂的映射，一定要从基础映射开始配置，每增加一些配置就进行对应的测试，在循序渐进的过程中更容易发现和解决问题。
+
+虽然`collection`和`association`标签是分开介绍的，但是这两者可以组合使用或者相互嵌套使用，也可以使用符合自己需要的任何数据结构，不需要局限于数据库表之间的关联关系。
+
+##### 6.1.2.2、collection集合的嵌套查询
+
+`collection`集合的嵌套查询的配置方式跟`association`是一样的，例子如下：
+
+```xml
+<resultMap id="CurriculaumResultMap" extends="BaseResultMap" type="com.threes.entity.curriculaum.Curriculaum">
+    <association property="detail" fetchType="lazy" column="{curriculaumUuid=uuid}"
+select="com.threes.curriculaum.mapper.CurriculaumDetailMapper.selectCurriculaumDetailById"/>
+    <collection property="images" fetchType="lazy" column="{curriculaumUuid=uuid}"
+  select="com.threes.curriculaum.mapper.CurriculaumImagesMapper.selectCurriculaumImagesById"/>
+</resultMap>
+```
+
+
+
+```xml
+<select id="selectCurriculaums" resultMap="CurriculaumResultMap" parameterType="com.threes.entity.vo.CurriculaumSelectDto">
+    SELECT
+        create_time,
+        update_time,
+        uuid, organization_uuid, serial_number, name, logo_image, original_price,
+        now_price, suit_throng_start_age, suit_throng_end_age,
+        suit_basics, attend_class_number_start,attend_class_number_end,
+        number_browser, number_intention, putaway
+    FROM
+      `curriculaum`
+    <where>
+        `deleted` = 1
+        <if test="cur.organizationUuid!=null">
+            AND organization_uuid = #{cur.organizationUuid}
+        </if>
+    </where>
+    ORDER BY `create_time` DESC,
+      `putaway` DESC
+</select>
+```
+
+
+
+```xml
+<select id="selectCurriculaumDetailById" resultMap="BaseResultMap">
+    SELECT
+    detail_url,
+    detail_html
+    FROM
+    curriculaum_detail
+    WHERE `curriculaum_uuid` = #{curriculaumUuid}
+</select>
+```
+
+
+
+```xml
+<select id="selectCurriculaumImagesById" resultMap="BaseResultMap">
+    SELECT
+    image_url
+    FROM
+    `curriculaum_images`
+    WHERE curriculaum_uuid = #{curriculaumUuid}
+</select>
+```
+
+这里需要注意：
+
+- `collection`的属性`column`配置为`{curriculaumUuid=uuid}`，将当前主查询的`uuid`赋值给`curriculaumUuid`，使用`curriculaumUuid`作为嵌套SQL的参数进行查询。因为所有的嵌套查询都配置为延迟加载（`fetchType="lazy"`），因此不存在N+1的问题。
+- 之所以可以根据需要查询数据，除了和fetchType有关，还和全局的`aggressive-lazy-loading`属性有关，这个属性在介绍`association`时被配置成了false，所以才会起到按需加载的作用。
+
+
+
 #### 鉴别器映射
+
+有时一个单独的数据库查询会返回很多不同的数据类型（希望有些关联）的结果集。``鉴别器标签就是用来处理这种情况的。鉴别器非常容易理解，因为它很想Java语言中的switch语句。简单来说就是根据主SQL查询的结果作为判断条件，而执行不同的嵌套SQL。
 
 `<discriminator>`标签常用的两个属性如下：
 
@@ -131,13 +241,90 @@ Mybatis在处理结果的时候，会判断结果是否相同，如果是相同�
 
 `<case>`标签下面可以包含的标签和`resultMap`一样，用法也一样。
 
-### 使用枚举或其他对象
+### 6.3、使用枚举映射
 
+假设在User表中存在一个名叫enabled的字段，这个字段只有两个可选值，0为禁用，1位启用。但是在映射的实体类中，我们使用的是`private Integer enable`，这种情况下必须手动校验enabled的值是否符合要求，因为用户卡能传来2、3、...等。在只有两个值的情况下，处理起来还比较容易，但是当出现更多的可选值时，对值进行校验就会变得复杂。因此我们可以使用枚举映射来解决这个问题。
 
+myabtis默认使用了`org.apache.ibatis.type.EnumTypeHandler`枚举处理器，这个枚举处理器是以字面值进行映射。
 
-## 自定义类型处理器
+还提供了`org.apache.ibatis.type.EnumOrdinalTypeHandler`枚举处理器，这个枚举处理器是以枚举索引数字进行映射。
 
+#### 6.3.1、使用Mybatis提供的枚举处理器
 
+如果我们只是需要枚举字面值映射，那么不需要做任何配置，如果需要其他方式的映射，可以如下配置：
+
+- mybatis-config.xml配置，指定指定的枚举对应的类型处理器
+
+  ```xml
+  <typeHandlers>
+  	<typeHandler javaType="*.**.Enabled" handler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+  </typeHandlers>
+  ```
+
+- 或者可以在xml文件中指定对应的枚举字段类型处理器：
+
+  ```xml
+  <resultMap id="BaseResultMap" type="...">
+      <id column="id" property="id" />
+      ......
+      <result column="deleted" property="deleted" 		typeHandler="org.apache.ibatis.type.EnumOrdinalTypeHandler"/>
+  </resultMap>
+  ```
+
+- 也可以通过SpringBoot配置指定默认的枚举处理器：
+
+  ```yaml
+  mybatis:
+    configuration:
+      default-enum-type-handler: org.apache.ibatis.type.EnumOrdinalTypeHandler
+  ```
+
+#### 6.3.2、自定义类型处理器
+
+有些时候Mybatis提供的类型处理器并不能满足我们的需求，这个时候就只能自定义类型处理器了。Mybatis提供了`org.apache.ibatis.type.TypeHandler`接口，通过实现此接口就可以编写自己的类型处理器了。
+
+TypeHandler接口源码如下：
+
+```java
+package org.apache.ibatis.type;
+
+import java.sql.CallableStatement;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+/**
+ * @author Clinton Begin
+ */
+public interface TypeHandler<T> {
+  void setParameter(PreparedStatement ps, int i, T parameter, JdbcType jdbcType) throws SQLException;
+  T getResult(ResultSet rs, String columnName) throws SQLException;
+  T getResult(ResultSet rs, int columnIndex) throws SQLException;
+  T getResult(CallableStatement cs, int columnIndex) throws SQLException;
+}
+```
+
+它有四个抽象方法：
+
+- `setParameter(PreparedStatement ps, int i, T parameter, JdbcType jdbcType)`：设置参数的回调的。
+- `getResult(ResultSet rs, String columnName)`：通过字段名从结果集中获取值。
+- `getResult(ResultSet rs, int columnIndex)`：通过字段索引从结果集中获取值。
+- `getResult(CallableStatement cs, int columnIndex)`：通过字段索引从`CallableStatement`获取值。
+
+在TypeHandler接口实现类中，除了默认的无参构造方法，还有一个隐含的带有一个Class参数的构造方法。
+
+```java
+public xxxTypeHandler(Class<?> type) {
+    this();
+}
+```
+
+当针对特定的接口处理类型时，使用这个构造方法可以写出通用的类型处理器，就像Mybatis提供的两个枚举类型处理器一样。
+
+有了自己的类型处理器之后还需要配置，配置方式就跟前面描述的枚举处理器的配置方式一样（所有的类型处理器配置方式都是一样的）。
+
+下面是一个例子：
+
+数据库字段为一个VARCHAR类型，存储的是一个枚举类型字面值以逗号分隔的字符串，实体类型为枚举的List集合类型。现在要将这个字符串映射为对应枚举的List集合。
 
 ```java
 package com.threes.curriculaum.type;
@@ -185,9 +372,9 @@ public class SuitBasicsTypeHandler implements TypeHandler<List<SuitBasics>> {
 
 ```
 
+注意：这个类型映射器是用于从数据库到实体的类型映射转换，而不是从实体到数据库的映射转换。所以在插入数据库的时候，为实体类的List枚举类型字段赋的值不能插入数据库，需要将List枚举转换为字符串。那么Mybatis是如何转换的呢？Mybatis在从实体类型映射到`insert`语句时是通过反射调用了对应实体字段的`get`方法，所以只需要重写`get`方法，在`get`方法中自己实现转换即可。
 
-
-
+mybatis-plus`@TableField`注解提供了`el`属性指定mybatis映射`insert`时调用的方法（就不会调用对应的`get`方法了，好处是仍然可以保留`get`方法取值时的方便），如下`suitBasicsMapping`：
 
 ```java
 @TableField(value = "`suit_basics`",el = "suitBasicsMapping, jdbcType=VARCHAR")
@@ -197,10 +384,6 @@ public String getSuitBasicsMapping() {
     return suitBasics.stream().map(SuitBasics::toString).collect(Collectors.joining(","));
 }
 ```
-
-
-
-
 
 ## MyBatis缓存配置
 
@@ -247,7 +430,7 @@ MyBatis的二级缓存是和命名空间绑定的，即二级缓存需要配置�
 - 缓存会使用Least Recently Used（LRU，最近最少使用的）算法来回收。
 - 根据时间表（如no Flush Interval，没有刷新间隔），缓存不会以任何时间顺序来刷新。
 - 缓存会存储集合或对象（无论查询方法返回什么类型的值）的个引用。
-- 缓存会被视为read/write（可以/可写）的，意味着对象检索不是共享的，而且可以安全地被调用者修改。而不干扰其他调用者或者线程所做的潜在修改。
+- 缓存会被视为read/write（可读/可写）的，意味着对象检索不是共享的，而且可以安全地被调用者修改。而不干扰其他调用者或者线程所做的潜在修改。
 
 所有的这些属性都可以通过缓存元素的属性来修改，如下：
 
@@ -366,7 +549,7 @@ MyBatis中很少会同时使用Mapper接口注解方式和XML映射文件，所�
 
 ​	MyBatis的二级缓存是和命名空间绑定的，所以通常情况下每一个Mapper映射文件都拥有自己的二级缓存，不同Mapper的二级缓存互不影响。
 
-​	由于关系型数据库的设计，使得很多时候需要关联多个表才能获得想要的数据。在关联多表查询时坑爹会将该查询放到某个命名空间下的映射文件中，这样一个多表的查询就会缓存在该命名空间的二级缓存中。涉及这些表的增、删、改、操作通常不在一个映射文件中，它们的命名空间不同，因此当有数据变化时，多表查询的缓存未必会被清空，这种情况下就会产生脏数据库。
+​	由于关系型数据库的设计，使得很多时候需要关联多个表才能获得想要的数据。在关联多表查询时会将该查询放到某个命名空间下的映射文件中，这样一个多表的查询就会缓存在该命名空间的二级缓存中。涉及这些表的增、删、改、操作通常不在一个映射文件中，它们的命名空间不同，因此当有数据变化时，多表查询的缓存未必会被清空，这种情况下就会产生脏数据库。
 
 ​	使用参照缓存，可以避免脏数据问题。当某几个表可以作为一个业务整体时，通常是让几个会关联的ER表同时使用同一个二级缓存，这样就能解决脏数据问题。
 

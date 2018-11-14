@@ -2,7 +2,7 @@
 
 
 
-
+## redis安装
 
 ```shell
 
@@ -25,10 +25,6 @@ daemonize yes
 ```shell
 yum install -y gcc
 ```
-
-
-
-
 
 
 
@@ -67,7 +63,6 @@ centOS6.3 安装redis make报错 zmalloc.h:50:31: 错误：jemalloc/jemalloc.h�
 llocator
 ---------
 
-
 Selecting a non-default memory allocator when building Redis is done by setting
 the `MALLOC` environment variable. Redis is compiled and linked against libc
 malloc by default, with the exception of jemalloc being the default on Linux
@@ -98,6 +93,29 @@ Verbose build
 
 解决办法
 make MALLOC=libc
+
+
+
+为了方便操作，配置redis的环境变量
+
+```shell
+vim /etc/profile
+
+#redis
+export REDIS_SRC=/usr/redis/redis-4.0.11/src
+PATH=$PATH:${REDIS_SRC}
+
+source /etc/profile
+
+[root@localhost redis-4.0.11]# redis-cli
+Could not connect to Redis at 127.0.0.1:6379: Connection refused
+Could not connect to Redis at 127.0.0.1:6379: Connection refused
+not connected>
+```
+
+
+
+
 
 
 
@@ -446,4 +464,197 @@ cluster_stats_messages_ping_received:678
 cluster_stats_messages_pong_received:690
 cluster_stats_messages_received:1368
 ```
+
+
+
+### 原生命令安装
+
+这种方式只是在于学习理解时使用，不建议在实际应用环境中使用。
+
+#### 准备节点 配置开启节点
+
+```shell
+################################## NETWORK #####################################
+port 6379
+################################# GENERAL #####################################
+daemonize yes
+logfile "6379.log"
+################################ SNAPSHOTTING  ################################
+dbfilename "dump-6379.rdb"
+dir "/usr/redis/data"
+################################ REDIS CLUSTER  ###############################
+cluster-enabled yes
+cluster-node-timeout 15000
+cluster-config-file nodes-6379.conf
+cluster-require-full-coverage no
+```
+
+
+
+```shell
+sed 's/6379/6380/g' redis-6379.config > redis-6380.config
+```
+
+
+
+```shell
+redis-server redis-6379.config
+redis-server redis-6380.config
+```
+
+
+
+```shell
+[root@localhost config]# ps aux | grep redis-server
+root      4884  0.0  0.4 145308  7592 ?        Ssl  00:39   0:00 redis-server *:6379 [cluster]
+root      4894  0.0  0.4 145308  7588 ?        Rsl  00:40   0:00 redis-server *:6380 [cluster]
+root      4899  0.0  0.0 112720   988 pts/0    R+   00:40   0:00 grep --color=auto redis-server
+```
+
+
+
+```shell
+[root@localhost config]# redis-cli -p 6379
+127.0.0.1:6379> set hello world
+(error) CLUSTERDOWN Hash slot not served
+```
+
+
+
+```shell
+[root@localhost data]# ll
+总用量 16
+-rw-r--r--. 1 root root 1458 11月 15 00:39 6379.log
+-rw-r--r--. 1 root root 1458 11月 15 00:40 6380.log
+-rw-r--r--. 1 root root  114 11月 15 00:39 nodes-6379.conf
+-rw-r--r--. 1 root root  114 11月 15 00:40 nodes-6380.conf
+```
+
+
+
+
+
+```shell
+[root@localhost data]# cat nodes-6379.conf
+8c38f016abedcc1da124334222082b49a30afead :0@0 myself,master - 0 0 0 connected
+vars currentEpoch 0 lastVoteEpoch 0
+[root@localhost data]# redis-cli -p 6379 cluster nodes
+8c38f016abedcc1da124334222082b49a30afead :6379@16379 myself,master - 0 0 0 connected
+[root@localhost data]# redis-cli -p 6379 cluster info
+cluster_state:fail
+cluster_slots_assigned:0
+cluster_slots_ok:0
+cluster_slots_pfail:0
+cluster_slots_fail:0
+cluster_known_nodes:1
+cluster_size:0
+cluster_current_epoch:0
+cluster_my_epoch:0
+cluster_stats_messages_sent:0
+cluster_stats_messages_received:0
+```
+
+
+
+
+
+
+
+```shell
+port 6379
+################################# GENERAL #####################################
+# By default Redis does not run as a daemon. Use 'yes' if you need it.
+# Note that Redis will write a pid file in /var/run/redis.pid when daemonized.
+daemonize no
+
+# Specify the log file name. Also the empty string can be used to force
+# Redis to log on the standard output. Note that if you use standard
+# output for logging but daemonize, logs will be sent to /dev/null
+logfile ""
+################################ SNAPSHOTTING  ################################
+# The filename where to dump the DB
+dbfilename dump.rdb
+
+# The working directory.
+#
+# The DB will be written inside this directory, with the filename specified
+# above using the 'dbfilename' configuration directive.
+#
+# The Append Only File will also be created inside this directory.
+#
+# Note that you must specify a directory here, not a file name.
+dir ./
+cluster-enabled yes
+cluster-node-timeout 15000
+cluster-config-file nodes-6379.conf
+cluster-require-full-coverage yes
+```
+
+
+
+
+
+#### 节点握手 meet
+
+
+
+```shell
+redis-cli -p 6349 cluster meet 192.168.56.101 6380
+```
+
+
+
+#### 分配槽 指派槽
+
+```shell
+touch addslots.sh
+vim addslots.sh
+```
+
+
+
+
+
+```shell
+start=$1
+end=$2
+port=$3
+for slot in `seq ${start} ${end}`
+do
+	echo "slot:${slot}"
+	redis-cli -p ${port} cluster addslots ${slot}
+done
+```
+
+
+
+16384/3		0~5461 7000		5462~10922 7001	10923~16383 7002
+
+
+
+#### 主从
+
+
+
+```shell
+redis-cli -p 6379 cluster replicate [node_id]
+```
+
+
+
+```shell
+redis-cli -p 6379 cluster slots
+```
+
+
+
+```shell
+redis-cli -c -p 6379
+```
+
+
+
+### 官方工具安装
+
+
 

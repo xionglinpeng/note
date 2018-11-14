@@ -552,20 +552,20 @@ keytool -gencert [OPTION]...
 
 ### properties
 
-- `-rfc`：
-- `-infile <filename>`：
-- `-outfile <filename>`：
-- `-alias <alias>`：
-- `-sigalg`：
-- `-dname`：
-- `-startdate`：
-- `-ext`：
-- `-validity`：
-- `-keypass`：
-- `-keystore`：
-- `-storepass`：
-- `-storetype`：
-- `-v`：
+- `-rfc`：以 RFC 样式输出
+- `-infile`：输入文件名，即`certificate request`数据文件。
+- `-outfile`：输出文件名，即通过`certificate request`数据生成的cer证书文件。
+- `-alias`：认证证书所在条目的别名，即通过此别名的证书对`certificate request`数据进行认证。
+- `-sigalg`：生成证书的有效期签名算法，例如`sha256WithRSA`。
+- `-dname`：认证证书的证书拥有者信息。
+- `-startdate`：生成证书的有效期开始日期/时间
+- `-ext`：X.509 扩展
+- `-validity`：生成证书的有效期。
+- `-keypass`：认证证书秘钥的口令。
+- `-keystore`：认证证书所在存储库。
+- `-storepass`：认证证书所在存储库的口令。
+- `-storetype`：认证证书所在存储库的类型。
+- `-v`：详细输出。
 
 ### example
 
@@ -600,7 +600,9 @@ keytool -gencert [OPTION]...
 
 ## -printcert（打印证书内容）
 
+`-list`指令可以查看秘钥库的信息，如果是一个单独的证书文件（`*.cer`），怎么查看内容呢？
 
+`-printcert`可以打印证书内容。
 
 ```shell
 C:\Users\HP\Desktop>keytool -printcert -help
@@ -619,47 +621,79 @@ keytool -printcert [OPTION]...
 使用 "keytool -help" 获取所有可用命令
 ```
 
+### properties
 
+- `-rfc`：以 RFC 样式输出。
+- `-file`：要进行打印内容的证书文件。
+- `-sslserver`：SSL 服务器主机和端口。
+- `-jarfile`： 已签名的 jar 文件。
+- `-v`：详细输出。
 
-example：
+### example：
 
 ```shell
-C:\Users\xlp>keytool -printcert -v -file config-server.cer
-所有者: CN=localhost, OU=xlp, O=xlp, L=china, ST=china, C=china
-发布者: CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown
-序列号: 4a7c797
-生效时间: Wed Oct 24 21:42:04 GMT+08:00 2018, 失效时间: Tue Jan 22 21:42:04 GMT+08:00 2019
+[root@localhost ~]# keytool -printcert -file test.cer -rfc -v
+-----BEGIN CERTIFICATE-----
+MIIDjjCCAnagAwIBAgIEIn8jejANBgkqhkiG9w0BAQsFADBhMQswCQYDVQQGEwJ6
+aDEPMA0GA1UECBMGZGF6aG91MQ8wDQYDVQQHEwZxdXhpYW4xDTALBgNVBAoTBGph
+dmExDTALBgNVBAsTBGphdmExEjAQBgNVBAMTCWxvY2FsaG9zdDAeFw0xODEwMjYy
+MzEyMThaFw0xOTAxMjQyMzEyMThaMG0xCzAJBgNVBAYTAnpoMRAwDgYDVQQIEwdj
+aGVuZ2R1MRAwDgYDVQQHEwdjaGVuZ2R1MRIwEAYDVQQKEwlsb2NhbGhvc3QxEjAQ
+BgNVBAsTCWxvY2FsaG9zdDESMBAGA1UEAxMJbG9jYWxob3N0MIIBIjANBgkqhkiG
+9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjVNAkxbj0YilpKDZz8reCnW+x//gdYvNKBFb
+wkiYMnD496MjeZFPZO55i0O/kNMN6BiCa7eMVMPsi7SUApIHrKyXCaEn3HRENEou
+kZP0Z6IjuXXt7aHLn0dXdnVD+T2Lr2aop/i6TPs56kHksbff5zqF2nznEPtuiSYk
+1RaB5qWgTKndUByZU/ZWFvspFZskFtqZtY8XIFKJqABJDkQye9G/hpdptrjeMog2
+nt6OXopb5fV6miNZPWgI830jRQPlU+aeIBBUVlVTFrGFGnUhTlW1gPvzagINrN78
+sifbKH52maZ3f6A7Z48r80wMMkU7EwQBQUzFwxXxRjMxkZCY3QIDAQABo0IwQDAf
+BgNVHSMEGDAWgBRC3eTvdzWVjgBa0L5IVZqcUv3GpDAdBgNVHQ4EFgQU6wGHAz3N
+REKevwWqKNXYUNlXzPcwDQYJKoZIhvcNAQELBQADggEBABeIUcROTy8zC3sjSP8Z
+2A300v21Ow8MNYM1UuOYszdJbzOMe69t+DiA+1D7tn0Cqo7SU7k6UzhuaJ/5Hocz
+FUerxbkiH8UxKfbqL5/CrQUPHOU9XC8iS/D/rmigbBZ3bWlnRjL1oJj+FRQ4ATWK
+py4e8rTKDPTTi/Us94WCIjjVFjam11nHnp0LZE1Dq/FuiDaWh59L4I4P/N8/X1kd
+NOB7bvixgjmOUD/Z7zHnfJ23B23wSJ/Fx6WFhQ4Ca711Q/4DBTAZCLTGFElb6k72
+Wi95BkGgxwjCxc3vD/0sDgvfCIKPir5Uqo+VVaq5yH8iZitHKZyYdvlQpoAK2043
+lYA=
+-----END CERTIFICATE-----
+
+
+[root@localhost ~]# keytool -printcert -file test.cer -v
+所有者: CN=localhost, OU=localhost, O=localhost, L=chengdu, ST=chengdu, C=zh
+发布者: CN=localhost, OU=java, O=java, L=quxian, ST=dazhou, C=zh
+序列号: 227f237a
+有效期为 Sat Oct 27 07:12:18 CST 2018 至 Fri Jan 25 07:12:18 CST 2019
 证书指纹:
-         SHA1: 05:96:36:E4:EC:31:75:A2:CB:B2:C8:2B:32:E0:F8:AA:5A:B4:68:E8
-         SHA256: B4:BC:C5:DB:CB:AC:74:21:61:85:AC:74:22:DD:BF:92:B5:B4:F0:30:21:C6:AD:0F:05:01:9A:B9:D4:80:C1:FB
-签名算法名称: SHA256withDSA
+	 MD5:  8C:03:68:3C:DE:0F:33:52:09:05:9F:CE:EA:72:6F:5B
+	 SHA1: AA:DD:52:18:AF:FB:FD:B4:C0:A7:D4:7E:C3:49:72:C6:AC:DC:AB:A0
+	 SHA256: 4C:2C:77:F6:C8:59:8B:BA:DC:01:EF:42:17:79:8B:DB:A9:70:9B:22:46:C3:9D:AE:63:0E:4D:9A:24:06:0B:B4
+签名算法名称: SHA256withRSA
 主体公共密钥算法: 2048 位 RSA 密钥
 版本: 3
 
-扩展:
+扩展: 
 
 #1: ObjectId: 2.5.29.35 Criticality=false
 AuthorityKeyIdentifier [
 KeyIdentifier [
-0000: 99 B2 4F D8 0C CD 91 EA   7D 63 01 E4 D5 0C C1 1C  ..O......c......
-0010: 8F 86 2E E4                                        ....
+0000: 42 DD E4 EF 77 35 95 8E   00 5A D0 BE 48 55 9A 9C  B...w5...Z..HU..
+0010: 52 FD C6 A4                                        R...
 ]
 ]
 
 #2: ObjectId: 2.5.29.14 Criticality=false
 SubjectKeyIdentifier [
 KeyIdentifier [
-0000: 22 8B A9 1C 75 95 F7 67   DB A4 A7 65 A2 4A B2 16  "...u..g...e.J..
-0010: 5C 45 D8 76                                        \E.v
+0000: EB 01 87 03 3D CD 44 42   9E BF 05 AA 28 D5 D8 50  ....=.DB....(..P
+0010: D9 57 CC F7                                        .W..
 ]
 ]
 ```
 
-可以看到所有者和发布者不一样了。
 
-## 打印证书请求的内容
 
-## -printcertreq
+## -printcertreq（打印证书请求的内容）
+
+既然可以答应证书文件的内容，那么也可以打印`certificate request`数据文件。
 
 ```shell
 C:\Users\xlp>keytool -printcertreq -help
@@ -673,12 +707,17 @@ keytool -printcertreq [OPTION]...
  -v            详细输出
 ```
 
-example:
+### properties
+
+- `-file`：要进行内容打印的`certificate request`数据文件。
+- `-v`：详细输出。
+
+### example
 
 ```shell
-C:\Users\xlp>keytool -printcertreq -v -file config-server.certreq
+[root@localhost ~]# keytool -printcertreq -file test.certreq -v
 PKCS #10 证书请求 (版本 1.0)
-主体: CN=localhost, OU=xlp, O=xlp, L=china, ST=china, C=china
+主体: CN=localhost, OU=localhost, O=localhost, L=chengdu, ST=chengdu, C=zh
 格式: X.509
 公共密钥: 2048 位 RSA 密钥
 签名算法: SHA256withRSA
@@ -688,15 +727,15 @@ PKCS #10 证书请求 (版本 1.0)
 #1: ObjectId: 2.5.29.14 Criticality=false
 SubjectKeyIdentifier [
 KeyIdentifier [
-0000: 22 8B A9 1C 75 95 F7 67   DB A4 A7 65 A2 4A B2 16  "...u..g...e.J..
-0010: 5C 45 D8 76                                        \E.v
+0000: EB 01 87 03 3D CD 44 42   9E BF 05 AA 28 D5 D8 50  ....=.DB....(..P
+0010: D9 57 CC F7                                        .W..
 ]
 ]
 ```
 
-## 打印 CRL 文件的内容
 
-## -printcrl
+
+## -printcrl（打印 CRL 文件的内容）
 
 ```shell
 C:\Users\xlp>keytool -printcrl -help
@@ -710,9 +749,120 @@ keytool -printcrl [OPTION]...
  -v            详细输出
 ```
 
+### properties
+
+- `-file`：要进行内容打印的`certificate request`数据文件。
+- `-v`：详细输出。
+
+### example
+
+- [x] 暂时未知CRL文件是什么？
 
 
-## -importpass         导入口令
+
+## -importpass（导入口令）
+
+
+
+```shell
+[root@localhost ~]# keytool -importpass -help
+keytool -importpass [OPTION]...
+
+导入口令
+
+选项:
+
+ -alias <alias>                  要处理的条目的别名
+ -keypass <arg>                  密钥口令
+ -keyalg <keyalg>                密钥算法名称
+ -keysize <keysize>              密钥位大小
+ -keystore <keystore>            密钥库名称
+ -storepass <arg>                密钥库口令
+ -storetype <storetype>          密钥库类型
+ -providername <providername>    提供方名称
+ -providerclass <providerclass>  提供方类名
+ -providerarg <arg>              提供方参数
+ -providerpath <pathlist>        提供方类路径
+ -v                              详细输出
+ -protected                      通过受保护的机制的口令
+```
+
+### properties
+
+- `-alias`：导入口令为一个新的条目，这个条目的别名。
+- `-keypass`：秘钥口令。
+- `-keyalg`：秘钥算法，PBE。
+- `-keysize`：秘钥位大小。
+- `-keystore`：导入口令的秘钥库。
+- `-storepass`：导入口令的秘钥库的口令。
+- `-storetype`：导入口令的秘钥库的类型。
+- `-v`：
+
+### example
+
+```shell
+[root@localhost ~]# keytool -importpass -keystore test.p12 -storetype PKCS12 -storepass 123456 -keypass 123456 -keyalg PBE -keysize 1024 -alias test1 -v
+输入要存储的口令:  
+再次输入口令: 
+已生成PBE密钥
+[正在存储test.p12]
+[root@localhost ~]# keytool -list -keystore test.p12 -storepass 123456
+密钥库类型: jks
+密钥库提供方: SUN
+
+您的密钥库包含 3 个条目
+
+test, 2018-10-30, PrivateKeyEntry, 
+证书指纹 (SHA1): AA:DD:52:18:AF:FB:FD:B4:C0:A7:D4:7E:C3:49:72:C6:AC:DC:AB:A0
+test1, 2018-10-30, SecretKeyEntry, 
+test2, 2018-10-30, SecretKeyEntry, 
+[root@localhost ~]# keytool -list -keystore test.p12 -storepass 123456 -v
+密钥库类型: jks
+密钥库提供方: SUN
+
+您的密钥库包含 3 个条目
+
+别名: test
+创建日期: 2018-10-30
+条目类型: PrivateKeyEntry
+证书链长度: 2
+证书:
+所有者: CN=localhost, OU=localhost, O=localhost, L=chengdu, ST=chengdu, C=zh
+发布者: CN=localhost, OU=java, O=java, L=quxian, ST=dazhou, C=zh
+序列号: 227f237a
+有效期为 Sat Oct 27 07:12:18 CST 2018 至 Fri Jan 25 07:12:18 CST 2019
+证书指纹:
+	 MD5:  8C:03:68:3C:DE:0F:33:52:09:05:9F:CE:EA:72:6F:5B
+	 SHA1: AA:DD:52:18:AF:FB:FD:B4:C0:A7:D4:7E:C3:49:72:C6:AC:DC:AB:A0
+	 SHA256: 4C:2C:77:F6:C8:59:8B:BA:DC:01:EF:42:17:79:8B:DB:A9:70:9B:22:46:C3:9D:AE:63:0E:4D:9A:24:06:0B:B4
+签名算法名称: SHA256withRSA
+主体公共密钥算法: 2048 位 RSA 密钥
+版本: 3
+
+扩展: 
+......
+
+
+*******************************************
+*******************************************
+
+
+别名: test1
+创建日期: 2018-10-30
+条目类型: SecretKeyEntry
+
+
+*******************************************
+*******************************************
+```
+
+注意，导入的口令条目类型为`SecretKeyEntry`。
+
+PBE解密算法：
+
+> ​	PBE算法（Password Based Encryption，基于口令加密）是一种基于口令的加密算法，其特点是使用口令代替了密钥，而口令由用户自己掌管，采用随机数杂凑多重加密等方法保证数据的安全性。
+>
+> ​	PBE算法在加密过程中并不是直接使用口令来加密，而是加密的密钥由口令生成，这个功能由PBE算法中的KDF函数完成。KDF函数的实现过程为：将用户输入的口令首先通过“盐”（salt）的扰乱产生准密钥，再将准密钥经过散列函数多次迭代后生成最终加密密钥，密钥生成后，PBE算法再选用对称加密算法对数据进行加密，可以选择DES、3DES、RC5等对称加密算法
 
 ##  -importkeystore（从其他密钥库导入一个或所有条目）
 
@@ -750,27 +900,31 @@ keytool -importkeystore
 
 ### properties
 
-- ``：
-- ``：
-- ``：
-- ``：
-- ``：
-- ``：
-- ``：
-- ``：
-- ``：
-- ``：
-- ``：
-- ``：
-- ``：
-- ``：
-- ``：
+- `-srckeystore`：源密钥库名称。
+- `-srcstoretype`：源密钥库类型。
+- `-srcstorepass`：源密钥库口令。
+- `-srcalias`：源别名。
+- `-srckeypass`：源密钥口令。
+- `-destkeystore`：目标密钥库名称
+- `-deststoretype`：目标密钥库类型，这个类型可以跟源秘钥库的类型不一致。
+- `-deststorepass`：目标密钥库口令
+- `-destalias`：目标别名
+- `-destkeypass`：目标密钥口令
+- `-srcprotected`：
+- `-srcprovidername`：
+- `-destprovidername`:
+- `-noprompt`：不提示
+- `-v`：详细输出
 
 ### example
 
+```shell
+[root@localhost ~]# keytool -importkeystore -srckeystore test.jks -srcstoretype JKS -srcstorepass 123456 -srcalias test -srckeypass 123456 -destkeystore test.p12 -deststoretype PKCS12 -deststorepass 456789 -destalias test -destkeypass 456789 -noprompt -v
+正在将密钥库 test.jks 导入到 test.p12...
+[正在存储test.p12]
+```
 
-
-
+秘钥库可以是不同类型之间相互导入，秘钥库的类型只跟秘钥库相关，无论什么类型，其中存储的内容都是一样的。
 
 ## -importcert（导入证书或证书链）
 
@@ -984,9 +1138,9 @@ keytool -delete [OPTION]...
 [正在存储test.p12]
 ```
 
-## 更改条目的密钥口令
 
-##  -keypasswd          
+
+##  -keypasswd（更改条目的密钥口令）  
 
 ```shell
 C:\Users\xlp>keytool -keypasswd -help
@@ -1011,9 +1165,33 @@ keytool -keypasswd [OPTION]...
  -v                      详细输出
 ```
 
-## 更改密钥库的存储口令
+### properties
 
-## -storepasswd        
+- `-alias`：要进行秘钥口令修改的条目别名。
+- `-keypass`：要进行秘钥口令修改的条目的原秘钥口令。
+- `-new`：新的秘钥口令。
+- `-keystore`：要进行秘钥口令修改的秘钥库。
+- `-storepass`：要进行秘钥口令修改的秘钥库的口令。
+- `-storetype`：要进行秘钥口令修改的秘钥库的类型。
+- `-v`：详细输出
+
+### example
+
+```shell
+[root@localhost ~]# keytool -keypasswd -keystore test.p12 -storepass 123456 -storetype PKCS12 -alias test -keypass 123456 -new 456789 -v
+keytool 错误: java.lang.UnsupportedOperationException: 如果 -storetype 为 PKCS12, 则不支持 -keypasswd 命令
+java.lang.UnsupportedOperationException: 如果 -storetype 为 PKCS12, 则不支持 -keypasswd 命令
+	at sun.security.tools.keytool.Main.doCommands(Main.java:832)
+	at sun.security.tools.keytool.Main.run(Main.java:366)
+	at sun.security.tools.keytool.Main.main(Main.java:359)
+	
+[root@localhost ~]# keytool -keypasswd -keystore test.p12 -storepass 123456 -storetype jks -alias test -keypass 123456 -new 456789 -v
+[正在存储test.p12]
+```
+
+注意：如果秘钥库的类型是秘钥库口令和秘钥口令一致的类型，则不支持`-keypasswd`命令，例如上面报出的错误。
+
+## -storepasswd（更改密钥库的存储口令）
 
 ```shell
 C:\Users\xlp>keytool -storepasswd -help
@@ -1037,9 +1215,24 @@ keytool -storepasswd [OPTION]...
  -v                      详细输出
 ```
 
-## 更改条目的别名
+### properties
 
-## -changealias        
+- `-new`：秘钥库的新口令。
+- `-keystore`：要进行秘钥库口令修改的秘钥库。
+- `-cacerts`：访问 cacerts 密钥库
+- `-storepass`：要进行秘钥库口令修改的秘钥库的原秘口令。
+- `-storetype`：要进行秘钥库口令修改的秘钥库的类型。
+- `-v`：详细输出
+
+### example
+
+```shell
+[root@localhost ~]# keytool -storepasswd -keystore test.p12 -storetype jks -alias test -storepass 123456 -new 456789
+```
+
+
+
+## -changealias（更改条目的别名）
 
 ```shell
 C:\Users\xlp>keytool -changealias -help
@@ -1066,19 +1259,23 @@ keytool -changealias [OPTION]...
  -protected              通过受保护的机制的口令
 ```
 
+### properties
 
+- `-alias`：要进行别名修改的原别名。
+- `-destalias`：修改后的别名。
+- `-keypass`：要进行别名修改的条目秘钥口令。
+- `-keystore`：要进行别名修改的秘钥库。
+- `-cacerts`：访问 cacerts 密钥库
+- `-storepass`：要进行别名修改的秘钥库口令。
+- `-storetype`：要进行别名修改的秘钥库的类型。
+- `-v`：详细输出
 
+### example
 
-
-
-
-
-
-
-
-
-
-
+```shell
+[root@localhost ~]# keytool -changealias -keystore test.p12 -storetype jks -storepass 456789 -keypass 456789 -alias test -destalias root -v
+[正在存储test.p12]
+```
 
 
 ## -genseckey（生成密钥）
@@ -1134,3 +1331,4 @@ keytool -genseckey [OPTION]...
 - 如果秘钥库类型不是`JCEKS`，报错：`keytool 错误: java.security.KeyStoreException: Key protection  algorithm not found: java.security.NoSuchAlgorithmException: unrecognized algorithm name: DES`。
 
 java默认的密钥库类型为`JKS`（java9之后为`PKCS12`）， 除这种类型外，还有`PKCS12`、`JCEKS`两种类型，要存储secret key要使用`JCEKS`类型，另外两种不支持。
+

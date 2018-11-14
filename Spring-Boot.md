@@ -2,25 +2,39 @@
 
 ## 配置SSL
 
+首先我们需要一个秘钥证书库，可以使用JDK的keytool工具生成，如下：
+
 ```shell
-C:\Users\xlp>keytool -genkeypair -alias root -keypass 597646251 -storepass 597646251 -storetype PKCS12 -validity 3600 -keystore "root.keystore" -dname "CN=LINPENG.XIONG, OU=存在信号, O=存在信号, L=成都市, ST=四川省, C=zh_CN"
+C:\Users\xlp>keytool -genkeypair -alias root -keypass 597646251 -storepass 597646251 -storetype PKCS12 -keyalg RSA -validity 3600 -keystore "root.p12" -dname "CN=LINPENG.XIONG, OU=存在信号, O=存在信号, L=成都市, ST=四川省, C=zh_CN"
 ```
 
-将证书`root.keystore`添加到classpath下，添加如下配置：
+执行之后会产生一个名为`root.p12`秘钥库文件，将此文件导入到项目目录下，可以导入到项目根目录下，也可以导入到项目classpath目录下。
+
+然后添加相应的配置开启SSL，如下：
 
 ```properties
 spring.application.name=spring-ssl
 
 server.port=8443
+# 开启SSL
 server.ssl.enabled=true
-server.ssl.key-store=classpath:root.keystore
+# 指定秘钥库位置
+server.ssl.key-store=classpath:root.p12
+# 指定秘钥库中其中一个条目的别名
 server.ssl.key-alias=root
+# 秘钥库的口令
 server.ssl.key-store-password=597646251
+# 秘钥口令
 server.ssl.key-store-type=PKCS12
+# 秘钥库提供者，使用keytool工具生成的一般是SUN
 server.ssl.key-store-provider=SUN
 ```
 
-再写一个接口
+注意：
+
+> 秘钥库如果是放在classpath路径，那么需要指定秘钥库为`classpath:root.p12`。如果秘钥库是放在项目根目录下，那么直接指定相对位置`server.ssl.key-store=root.p12`即可，默认为从根目录开始查找。
+
+配置完成之后我们需要编写一个接口进行测试，如下：
 
 ```java
 @GetMapping("/hello")
@@ -51,11 +65,15 @@ This combination of host and port requires TLS.
 localhost 使用了不受支持的协议。
 ```
 
+这是因为我们在生成秘钥库的时候没有指定秘钥的算法，即`-keyalg`，这里需要指定为`-keyalg RSA`，如果不知道，默认为`DSA`。
 
 
 
-
-
+> 关于SSL证书以及秘钥库的相关信息这里不做描述。
+>
+> 在做测试的时候，将根证书导入可信任的，不知道为什么，仍然不能使我们自签名的证书可信任。
+>
+> 如果以后解决了，可以在此记录笔记。
 
 ## 端点管理
 

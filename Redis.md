@@ -476,11 +476,20 @@ cluster_stats_messages_received:1368
 首先创建一个目录config，用于放置redis配置文件，创建一个data目录，用于放置redis集群数据日志及配置文件。
 
 ```shell
-mkdir config
-mkdir data
+[root@localhost ~]# cd /usr/redis/
+[root@localhost redis]# mkdir redis-cluster
+[root@localhost redis]# cd redis-cluster/
+[root@localhost redis-cluster]# mkdir config
+[root@localhost redis-cluster]# mkdir data
 ```
 
 创建redis配置文件
+
+```shell
+[root@localhost redis-cluster]# vim redis-6379.config
+```
+
+配置文件的内容如下：
 
 ```shell
 ################################## NETWORK #####################################
@@ -498,28 +507,24 @@ cluster-config-file nodes-6379.conf
 cluster-require-full-coverage no
 ```
 
-
+为了方便，使用sed命令创建其他配置文件
 
 ```shell
-sed 's/6379/6380/g' redis-6379.config > redis-6380.config
+[root@localhost redis-cluster]# sed 's/6379/6380/g' redis-6379.config > redis-6380.config
 ```
 
-启动节点
+启动节点，使用`ps`命令查看节点启动状况
 
 ```shell
-redis-server redis-6379.config
-redis-server redis-6380.config
-......
-```
-
-使用`ps`命令查看节点启动状况：
-
-```shell
+[root@localhost config]# redis-server redis-6379.config
+[root@localhost config]# redis-server redis-6380.config
 [root@localhost config]# ps aux | grep redis-server
 root      ......     Ssl  00:39   0:00 redis-server *:6379 [cluster]
 root      ......     Rsl  00:40   0:00 redis-server *:6380 [cluster]
 root      ......     R+   00:40   0:00 grep --color=auto redis-server
 ```
+
+
 
 使用`redis-cli`命令进入redis命令行界面，添加一个数据进行测试，如下，可以发现，提示错误` CLUSTERDOWN Hash slot not served(没有提供散列槽)`。
 
@@ -562,7 +567,7 @@ cluster_stats_messages_sent:0
 cluster_stats_messages_received:0
 ```
 
-
+说明：
 
 `cluster_state:fail`：集群状态：失败
 
@@ -585,10 +590,6 @@ cluster_stats_messages_received:0
 `cluster_stats_messages_sent:0`：
 
 `cluster_stats_messages_received:0`：
-
-
-
-
 
 
 
@@ -622,8 +623,6 @@ cluster-require-full-coverage yes
 
 
 
-
-
 #### 节点握手
 
 节点握手命令：
@@ -637,6 +636,84 @@ redis-cli -p [port] cluster meet [ip] [port]
 ```shell
 redis-cli -p 6349 cluster meet 192.168.56.101 6380
 ```
+
+将192.168.56.2的6379和6380端口的redis服务实例进行握手：
+
+```shell
+[root@localhost config]# redis-cli -p 6379 cluster meet 192.168.56.2 6380
+OK
+```
+
+再使用cluster nodes命令查看集群节点信息，信息如下：
+
+```shell
+
+[root@localhost config]# redis-cli -p 6379 cluster nodes
+21e657a0a0b199d9d77ce7048a95314582129bc8 192.168.56.2:6380@16380 master - 0 1542231503754 1 connected
+8c38f016abedcc1da124334222082b49a30afead 192.168.56.2:6379@16379 myself,master - 0 0 0 connected
+[root@localhost config]# redis-cli -p 6380 cluster nodes
+8c38f016abedcc1da124334222082b49a30afead 192.168.56.2:6379@16379 master - 0 1542231409600 0 connected
+21e657a0a0b199d9d77ce7048a95314582129bc8 192.168.56.2:6380@16380 myself,master - 0 0 1 connected
+```
+
+在之前准备节点的时候我们也进行了集群节点信息的查看，可以发现明显的差异。这里重新显示一下：
+
+```shell
+[root@localhost data]# redis-cli -p 6379 cluster nodes
+8c38f016abedcc1da124334222082b49a30afead :6379@16379 myself,master - 0 0 0 connected
+```
+
+可以看到，在没有握手之前，集群的每个节点都是孤岛状态，握手之后，它们相互之间都知道对方的存在了。
+
+依次类推，将其它节点都进行握手：
+
+```shell
+[root@localhost config]# redis-cli -p 6379 cluster meet 192.168.56.4 6380
+OK
+[root@localhost config]# redis-cli -p 6379 cluster meet 192.168.56.4 6379
+OK
+[root@localhost config]# redis-cli -p 6379 cluster meet 192.168.56.5 6379
+OK
+[root@localhost config]# redis-cli -p 6379 cluster meet 192.168.56.5 6380
+OK
+```
+
+再次查看集群节点信息，六个节点都进行握手了：
+
+```shell
+[root@localhost config]# redis-cli -p 6379 cluster nodes
+d3b3bfd3070a371072b1060944c18f80382e61cc 192.168.56.5:6380@16380 master - 0 1542231867692 0 connected
+21e657a0a0b199d9d77ce7048a95314582129bc8 192.168.56.2:6380@16380 master - 0 1542231866000 1 connected
+775901c1fd24a14bf0f4c4ced15899e4e0183320 192.168.56.4:6380@16380 master - 0 1542231865000 2 connected
+c21d8bd0a64076dad3341bfd53f7b3fead8aa4c7 192.168.56.4:6379@16379 master - 0 1542231866000 5 connected
+9c109e6c9144ee7ffa5832bd06e5dc1aa2a76b54 192.168.56.5:6379@16379 master - 0 1542231866688 4 connected
+8c38f016abedcc1da124334222082b49a30afead 192.168.56.2:6379@16379 myself,master - 0 1542231867000 3 connected
+```
+
+
+
+```shell
+[root@localhost redis-cluster]# redis-cli -p 6379 cluster info
+cluster_state:fail
+cluster_slots_assigned:0
+cluster_slots_ok:0
+cluster_slots_pfail:0
+cluster_slots_fail:0
+cluster_known_nodes:6
+cluster_size:0
+cluster_current_epoch:5
+cluster_my_epoch:4
+cluster_stats_messages_ping_sent:192
+cluster_stats_messages_pong_sent:203
+cluster_stats_messages_meet_sent:3
+cluster_stats_messages_sent:398
+cluster_stats_messages_ping_received:201
+cluster_stats_messages_pong_received:195
+cluster_stats_messages_meet_received:2
+cluster_stats_messages_received:398
+```
+
+
 
 
 
@@ -678,33 +755,195 @@ do
 done
 ```
 
+脚本创建好之后就开始进行槽的分配，6台redis实例，三个master，总共16384个槽，所以平均分配如下：
 
+16384/3
 
-16384/3		0~5461 7000		5462~10922 7001	10923~16383 7002
+- `192.168.56.2:6379` -> 0~5461
 
+- `192.168.56.4:6379` -> 5462~10922
 
+- `192.168.56.5:6379` -> 10923~16383 
+
+首先分配`192.168.56.2:6379`:
+
+```shell
+[root@localhost config]# sh addslots.sh 0 5461 6379
+slot:0
+OK
+......
+slot:5461
+OK
+```
+
+分配完成之后查看集群节点的信息，可以发现`192.168.56.2:6379`节点已经分配了槽`0-5461`：
+
+```shell
+[root@localhost config]# redis-cli -p 6379 cluster nodes
+d3b3bfd3070a371072b1060944c18f80382e61cc 192.168.56.5:6380@16380 master - 0 1542232731276 0 connected
+21e657a0a0b199d9d77ce7048a95314582129bc8 192.168.56.2:6380@16380 master - 0 1542232732000 1 connected
+775901c1fd24a14bf0f4c4ced15899e4e0183320 192.168.56.4:6380@16380 master - 0 1542232731000 2 connected
+c21d8bd0a64076dad3341bfd53f7b3fead8aa4c7 192.168.56.4:6379@16379 master - 0 1542232729000 5 connected
+9c109e6c9144ee7ffa5832bd06e5dc1aa2a76b54 192.168.56.5:6379@16379 master - 0 1542232732280 4 connected
+8c38f016abedcc1da124334222082b49a30afead 192.168.56.2:6379@16379 myself,master - 0 1542232730000 3 connected 0-5461
+```
+
+依次类推，再次分配另外两个master节点的槽，如下：
+
+```shell
+[root@localhost config]# sh addslots.sh 5462 10922 6379
+slot:5462
+OK
+slot:10922
+OK
+
+[root@localhost config]# sh addslots.sh 10923 16383 6379
+slot:10923
+OK
+slot:16383
+OK
+```
+
+查看集群节点的info信息：
+
+```shell
+[root@localhost config]# redis-cli -p 6379 cluster info
+cluster_state:ok
+cluster_slots_assigned:16384
+cluster_slots_ok:16384
+cluster_slots_pfail:0
+cluster_slots_fail:0
+cluster_known_nodes:6
+cluster_size:3
+cluster_current_epoch:5
+cluster_my_epoch:3
+cluster_stats_messages_ping_sent:1482
+cluster_stats_messages_pong_sent:1501
+cluster_stats_messages_meet_sent:5
+cluster_stats_messages_sent:2988
+cluster_stats_messages_ping_received:1501
+cluster_stats_messages_pong_received:1487
+cluster_stats_messages_received:2988
+```
+
+`cluster_state:ok`	集群状态是ok的
+
+`cluster_slots_assigned:16384`	已分配了16384 个槽
+
+`cluster_slots_ok:16384` 	分配成功16384 个槽
+
+`cluster_known_nodes:6` 		集群节点总共6个
+
+`cluster_size:3` 	分配槽的结点3个
 
 #### 主从
 
-
+分配主从的命令如下，注意`redis-cli -p [port]`为slave节点，`[node_id]`为master节点。
 
 ```shell
-redis-cli -p 6379 cluster replicate [node_id]
+redis-cli -p [port] cluster replicate [node_id]
+```
+
+在分配主从之前，我们先查看一下集群节点的信息：
+
+```shell
+[root@localhost config]# redis-cli -p 6379 cluster nodes
+d3b3bfd3070a371072b1060944c18f80382e61cc 192.168.56.5:6380@16380 master - 0 1542233851279 0 connected
+21e657a0a0b199d9d77ce7048a95314582129bc8 192.168.56.2:6380@16380 master - 0 1542233851000 1 connected
+775901c1fd24a14bf0f4c4ced15899e4e0183320 192.168.56.4:6380@16380 master - 0 1542233850273 2 connected
+c21d8bd0a64076dad3341bfd53f7b3fead8aa4c7 192.168.56.4:6379@16379 master - 0 1542233849268 5 connected 5462-10922
+9c109e6c9144ee7ffa5832bd06e5dc1aa2a76b54 192.168.56.5:6379@16379 master - 0 1542233849000 4 connected 10923-16383
+8c38f016abedcc1da124334222082b49a30afead 192.168.56.2:6379@16379 myself,master - 0 1542233850000 3 connected 0-5461
+```
+
+然后进行分配，三台机器，结构为错位分配，如下：
+
+```
+192.168.56.2:6379 —— 192.168.56.4:6380
+
+192.168.56.4:6379 —— 192.168.56.5:6380
+
+192.168.56.5:6379 —— 192.168.56.2:6380
+```
+
+开始分配
+
+```shell
+[root@localhost config]# redis-cli -p 6380 cluster replicate 9c109e6c9144ee7ffa5832bd06e5dc1aa2a76b54
+OK
+[root@localhost config]# redis-cli -p 6380 cluster replicate 8c38f016abedcc1da124334222082b49a30afead
+OK
+[root@localhost config]# redis-cli -p 6380 cluster replicate c21d8bd0a64076dad3341bfd53f7b3fead8aa4c7
+OK
+```
+
+查看集群节点信息，有对应slave节点的信息：
+
+```shell
+[root@localhost config]# redis-cli -p 6379 cluster nodes
+d3b3bfd3070a371072b1060944c18f80382e61cc 192.168.56.5:6380@16380 slave c21d8bd0a64076dad3341bfd53f7b3fead8aa4c7 0 1542234369068 5 connected
+21e657a0a0b199d9d77ce7048a95314582129bc8 192.168.56.2:6380@16380 slave 9c109e6c9144ee7ffa5832bd06e5dc1aa2a76b54 0 1542234369000 4 connected
+775901c1fd24a14bf0f4c4ced15899e4e0183320 192.168.56.4:6380@16380 slave 8c38f016abedcc1da124334222082b49a30afead 0 1542234369000 3 connected
+c21d8bd0a64076dad3341bfd53f7b3fead8aa4c7 192.168.56.4:6379@16379 master - 0 1542234369000 5 connected 5462-10922
+9c109e6c9144ee7ffa5832bd06e5dc1aa2a76b54 192.168.56.5:6379@16379 master - 0 1542234370072 4 connected 10923-16383
+8c38f016abedcc1da124334222082b49a30afead 192.168.56.2:6379@16379 myself,master - 0 1542234368000 3 connected 0-5461
+```
+
+查看集群slots的信息：
+
+```shell
+[root@localhost config]# redis-cli -p 6379 cluster slots
+1) 1) (integer) 5462
+   2) (integer) 10922
+   3) 1) "192.168.56.4"
+      2) (integer) 6379
+      3) "c21d8bd0a64076dad3341bfd53f7b3fead8aa4c7"
+   4) 1) "192.168.56.5"
+      2) (integer) 6380
+      3) "d3b3bfd3070a371072b1060944c18f80382e61cc"
+2) 1) (integer) 10923
+   2) (integer) 16383
+   3) 1) "192.168.56.5"
+      2) (integer) 6379
+      3) "9c109e6c9144ee7ffa5832bd06e5dc1aa2a76b54"
+   4) 1) "192.168.56.2"
+      2) (integer) 6380
+      3) "21e657a0a0b199d9d77ce7048a95314582129bc8"
+3) 1) (integer) 0
+   2) (integer) 5461
+   3) 1) "192.168.56.2"
+      2) (integer) 6379
+      3) "8c38f016abedcc1da124334222082b49a30afead"
+   4) 1) "192.168.56.4"
+      2) (integer) 6380
+      3) "775901c1fd24a14bf0f4c4ced15899e4e0183320"
+```
+
+集群配置完成，测试：
+
+```shell
+[root@localhost config]# redis-cli -c -p 6379
+127.0.0.1:6379> set hello world
+OK
+127.0.0.1:6379> set myHello world
+-> Redirected to slot [8120] located at 192.168.56.4:6379
+(error) DENIED Redis is running in protected mode because protected mode is enabled, no bind address was specified, no authentication password is requested to clients. In this mode connections are only accepted from the loopback interface. If you want to connect from external computers to Redis you may adopt one of the following solutions: 1) Just disable protected mode sending the command 'CONFIG SET protected-mode no' from the loopback interface by connecting to Redis from the same host the server is running, however MAKE SURE Redis is not publicly accessible from internet if you do so. Use CONFIG REWRITE to make this change permanent. 2) Alternatively you can just disable the protected mode by editing the Redis configuration file, and setting the protected mode option to 'no', and then restarting the server. 3) If you started the server manually just for testing, restart it with the '--protected-mode no' option. 4) Setup a bind address or an authentication password. NOTE: You only need to do one of the above things in order for the server to start accepting connections from the outside.
 ```
 
 
 
-```shell
-redis-cli -p 6379 cluster slots
-```
+由于启用了保护模式，没有指定绑定地址，也没有向客户机请求身份验证密码，所以Redis在受保护模式下运行。在这种模式下，连接只能从环回接口接受。如果你想从外部计算机连接到复述,你可能采取的解决方案:
+
+1. 只是禁用保护模式发送命令的配置设置保护模式没有从loopback接口连接到复述同一主机服务器正在运行,然而确保复述,不是公开从互联网访问如果你这样做。使用CONFIG重写使此更改永久性。
+2. 或者，您可以通过编辑Redis配置文件来禁用受保护模式，并将受保护模式选项设置为“no”，然后重新启动服务器。
+3. 如果您只是为了测试而手动启动服务器，请使用`'--protected-mode no'`选项重新启动服务器。
+4. 设置绑定地址或身份验证密码。
+
+注意:为了让服务器开始从外部接受连接，您只需要执行上述操作之一。
 
 
 
-```shell
-redis-cli -c -p 6379
-```
-
-
+如此，使用原生命令安装的方式到此就算安装完成了。到了这里，就应该能够发现，如此配置方式即繁琐，又容易出错，所以推荐使用官方工具安装。但是用于理解redis集群是非常好的方式。
 
 ### 官方工具安装
 

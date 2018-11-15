@@ -471,7 +471,16 @@ cluster_stats_messages_received:1368
 
 这种方式只是在于学习理解时使用，不建议在实际应用环境中使用。
 
-#### 准备节点 配置开启节点
+#### 准备节点
+
+首先创建一个目录config，用于放置redis配置文件，创建一个data目录，用于放置redis集群数据日志及配置文件。
+
+```shell
+mkdir config
+mkdir data
+```
+
+创建redis配置文件
 
 ```shell
 ################################## NETWORK #####################################
@@ -495,23 +504,24 @@ cluster-require-full-coverage no
 sed 's/6379/6380/g' redis-6379.config > redis-6380.config
 ```
 
-
+启动节点
 
 ```shell
 redis-server redis-6379.config
 redis-server redis-6380.config
+......
 ```
 
-
+使用`ps`命令查看节点启动状况：
 
 ```shell
 [root@localhost config]# ps aux | grep redis-server
-root      4884  0.0  0.4 145308  7592 ?        Ssl  00:39   0:00 redis-server *:6379 [cluster]
-root      4894  0.0  0.4 145308  7588 ?        Rsl  00:40   0:00 redis-server *:6380 [cluster]
-root      4899  0.0  0.0 112720   988 pts/0    R+   00:40   0:00 grep --color=auto redis-server
+root      ......     Ssl  00:39   0:00 redis-server *:6379 [cluster]
+root      ......     Rsl  00:40   0:00 redis-server *:6380 [cluster]
+root      ......     R+   00:40   0:00 grep --color=auto redis-server
 ```
 
-
+使用`redis-cli`命令进入redis命令行界面，添加一个数据进行测试，如下，可以发现，提示错误` CLUSTERDOWN Hash slot not served(没有提供散列槽)`。
 
 ```shell
 [root@localhost config]# redis-cli -p 6379
@@ -519,7 +529,7 @@ root      4899  0.0  0.0 112720   988 pts/0    R+   00:40   0:00 grep --color=au
 (error) CLUSTERDOWN Hash slot not served
 ```
 
-
+进入data数据目录，生成了日志文件以及节点配置文件
 
 ```shell
 [root@localhost data]# ll
@@ -530,9 +540,7 @@ root      4899  0.0  0.0 112720   988 pts/0    R+   00:40   0:00 grep --color=au
 -rw-r--r--. 1 root root  114 11月 15 00:40 nodes-6380.conf
 ```
 
-
-
-
+查看节点信息：
 
 ```shell
 [root@localhost data]# cat nodes-6379.conf
@@ -556,34 +564,56 @@ cluster_stats_messages_received:0
 
 
 
+`cluster_state:fail`：集群状态：失败
+
+`cluster_slots_assigned:0`：集群已分配槽：0
+
+`cluster_slots_ok:0`：集群已分配成功槽：0
+
+`cluster_slots_pfail:0`：
+
+`cluster_slots_fail:0`：
+
+`cluster_known_nodes:1`：
+
+`cluster_size:0`：
+
+`cluster_current_epoch:0`：
+
+`cluster_my_epoch:0`：
+
+`cluster_stats_messages_sent:0`：
+
+`cluster_stats_messages_received:0`：
 
 
 
+
+
+
+
+配置说明：
 
 ```shell
+################################## NETWORK #####################################
 port 6379
 ################################# GENERAL #####################################
-# By default Redis does not run as a daemon. Use 'yes' if you need it.
-# Note that Redis will write a pid file in /var/run/redis.pid when daemonized.
+# 默认情况下，Redis不作为守护进程运行。如果你需要的话，用yes。
+# 注意，Redis将在/var/run/ redisdis中编写一个pid文件。当监控pid。
 daemonize no
 
-# Specify the log file name. Also the empty string can be used to force
-# Redis to log on the standard output. Note that if you use standard
-# output for logging but daemonize, logs will be sent to /dev/null
+# 指定日志文件名。空字符串还可以用来强制Redis登录标准输出。 
+# 请注意，如果您使用标准输出进行日志记录，但是使用守护进程，日志将被发送到/dev/null。
 logfile ""
 ################################ SNAPSHOTTING  ################################
-# The filename where to dump the DB
+# 要转储数据库的文件名。
 dbfilename dump.rdb
-
-# The working directory.
-#
-# The DB will be written inside this directory, with the filename specified
-# above using the 'dbfilename' configuration directive.
-#
-# The Append Only File will also be created inside this directory.
-#
-# Note that you must specify a directory here, not a file name.
+# 工作目录。
+# DB将被写入到这个目录中，上面使用dbfilename配置指令指定文件名。
+# 仅追加的文件也将在此目录中创建。
+# 注意，这里必须指定一个目录，而不是文件名。
 dir ./
+################################ REDIS CLUSTER  ###############################
 cluster-enabled yes
 cluster-node-timeout 15000
 cluster-config-file nodes-6379.conf
@@ -594,9 +624,15 @@ cluster-require-full-coverage yes
 
 
 
-#### 节点握手 meet
+#### 节点握手
 
+节点握手命令：
 
+```shell
+redis-cli -p [port] cluster meet [ip] [port]
+```
+
+例如：
 
 ```shell
 redis-cli -p 6349 cluster meet 192.168.56.101 6380
@@ -604,16 +640,32 @@ redis-cli -p 6349 cluster meet 192.168.56.101 6380
 
 
 
-#### 分配槽 指派槽
+#### 分配槽
+
+分配槽使用如下命令：
 
 ```shell
-touch addslots.sh
-vim addslots.sh
+redis-cli -p [port] cluster addslots [slot]
 ```
 
+例如：
 
+```shell
+redis-cli -p 6379 cluster addslots 0
+```
 
+每次只能分配一个槽，但是我们有16383个操作，所以编写一个脚本进行设置：
 
+```shell
+# 创建名为addslots.sh的脚本
+touch addslots.sh
+# 编辑
+vim addslots.sh
+# 设置执行权限
+chmod 744 addslots.sh
+```
+
+脚本内容如下：
 
 ```shell
 start=$1

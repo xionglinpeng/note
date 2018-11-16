@@ -836,7 +836,7 @@ cluster_stats_messages_received:2988
 
 `cluster_size:3` 	分配槽的结点3个
 
-#### 主从
+#### 分配主从
 
 分配主从的命令如下，注意`redis-cli -p [port]`为slave节点，`[node_id]`为master节点。
 
@@ -921,6 +921,8 @@ c21d8bd0a64076dad3341bfd53f7b3fead8aa4c7 192.168.56.4:6379@16379 master - 0 1542
 
 集群配置完成，测试：
 
+报出了错误信息，错误信息是因为集群节点的实例是受保护模式的，并且绑定的地址是127.0.0.1，导致外部不能访问。按照给出的错误信息的解决方式解决即可。
+
 ```shell
 [root@localhost config]# redis-cli -c -p 6379
 127.0.0.1:6379> set hello world
@@ -930,12 +932,12 @@ OK
 (error) DENIED Redis is running in protected mode because protected mode is enabled, no bind address was specified, no authentication password is requested to clients. In this mode connections are only accepted from the loopback interface. If you want to connect from external computers to Redis you may adopt one of the following solutions: 1) Just disable protected mode sending the command 'CONFIG SET protected-mode no' from the loopback interface by connecting to Redis from the same host the server is running, however MAKE SURE Redis is not publicly accessible from internet if you do so. Use CONFIG REWRITE to make this change permanent. 2) Alternatively you can just disable the protected mode by editing the Redis configuration file, and setting the protected mode option to 'no', and then restarting the server. 3) If you started the server manually just for testing, restart it with the '--protected-mode no' option. 4) Setup a bind address or an authentication password. NOTE: You only need to do one of the above things in order for the server to start accepting connections from the outside.
 ```
 
+翻译如下：
 
+Redis是在保护模式下运行的因为保护模式是启用的，没有指定绑定地址，也没有向客户机请求身份验证密码。在这种模式下，连接只能从环回接口接受。如果您想从外部计算机连接到Redis，您可以采用以下一种解决方案:
 
-由于启用了保护模式，没有指定绑定地址，也没有向客户机请求身份验证密码，所以Redis在受保护模式下运行。在这种模式下，连接只能从环回接口接受。如果你想从外部计算机连接到复述,你可能采取的解决方案:
-
-1. 只是禁用保护模式发送命令的配置设置保护模式没有从loopback接口连接到复述同一主机服务器正在运行,然而确保复述,不是公开从互联网访问如果你这样做。使用CONFIG重写使此更改永久性。
-2. 或者，您可以通过编辑Redis配置文件来禁用受保护模式，并将受保护模式选项设置为“no”，然后重新启动服务器。
+1. 只是禁用保护模式，发送命令`'CONFIG SET protected-mode no'`从环回接口连接到Redis，从同一主机服务器上运行，然而，如果你这样做，请确保Redis不能从互联网上公开访问。使用CONFIG重写使此更改永久性。
+2. 或者，您可以通过编辑Redis配置文件来禁用受保护模式，并将受保护模式选项设置为“`no`”，然后重新启动服务器。
 3. 如果您只是为了测试而手动启动服务器，请使用`'--protected-mode no'`选项重新启动服务器。
 4. 设置绑定地址或身份验证密码。
 

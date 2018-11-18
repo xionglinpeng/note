@@ -222,251 +222,6 @@ appendonly yes
 
 
 
-
-```shell
-/usr/bin/env: ruby: 没有那个文件或目录
-```
-
-
-
-
-
-安装ruby
-
-```shell
-[root@localhost ruby]# wget https://cache.ruby-lang.org/pub/ruby/2.5/ruby-2.5.1.tar.gz
-[root@localhost ruby]# tar -zxvf ruby-2.5.1.tar.gz
-[root@localhost ruby]# cd ruby-2.5.1
-[root@localhost ruby]# ./configure
-[root@localhost ruby]# make
-[root@localhost ruby]# make install
-[root@localhost ruby]# ruby -v
-ruby 2.5.1p57 (2018-03-29 revision 63029) [x86_64-linux]
-```
-
-安装RubyGems
-
-```shell
-yum install -y rubygems
-```
-
-
-
-```shell
-wget https://rubygems.org/rubygems/rubygems-2.7.7.tgz
-tar -zxvf rubygems-2.7.7.tgz
-cd rubygems-2.7.7
-
-
-cannot load such file -- zlib (LoadError)
-
-
-yum install -y zlib-devel
-
-cd ruby/ruby-2.5.1/ext/zlib
-
-ruby ./extconf.rb
-
-[root@localhost zlib]# make
-make: *** 没有规则可以创建“zlib.o”需要的目标“/include/ruby.h”。 停止。
-
-zlib.o: $(top_srcdir)/include/ruby.h
-
-zlib.o: ../../include/ruby.h
-
-[root@localhost zlib]# make
-compiling zlib.c
-linking shared-object zlib.so
-[root@localhost zlib]# make install
-/usr/bin/install -c -m 0755 zlib.so /usr/local/lib/ruby/site_ruby/2.5.0/x86_64-linux
-
-
-[root@localhost rubygems-2.7.7]# gem install redis
-ERROR:  While executing gem ... (Gem::Exception)
-    Unable to require openssl, install OpenSSL and rebuild Ruby (preferred) or use non-HTTPS sources
-    
-yum install openssl-devel
-cd ruby/ruby-2.5.1/ext/openssl
- ruby extconf.rb 
-[root@localhost openssl]# make
-compiling openssl_missing.c
-make: *** 没有规则可以创建“ossl.o”需要的目标“/include/ruby.h”。 停止。
-
-make && make install
-```
-
-
-
-
-
-```shell
-[root@localhost openssl]# gem install redis
-Fetching: redis-4.0.2.gem (100%)
-Successfully installed redis-4.0.2
-Parsing documentation for redis-4.0.2
-Installing ri documentation for redis-4.0.2
-Done installing documentation for redis after 1 seconds
-1 gem installed
-```
-
-
-
-
-
-```shell
-[ERR] Sorry, can't connect to node 192.168.56.2:6380
-```
-
-bind
-
-protected
-
-requirepass
-
-
-
-# [redis创建集群——[ERR\] Sorry, can't connect to node 192.168.X.X](https://www.cnblogs.com/lmy2018/p/8514787.html)
-
-
-
-**redis默认只允许本地访问，要使redis可以远程访问可以修改redis.conf**
-
- 
-
-**解决办法：注释掉bind 127.0.0.1可以使所有的ip访问redis**
-
- 
-
-若是想指定多个ip访问，但并不是全部的ip访问，可以bind
-
- 
-
- 
-
-在redis3.2之后，redis增加了protected-mode，在这个模式下，即使注释掉了bind 127.0.0.1，再访问redisd时候还是报错
-
-**修改办法：protected-mode no**
-
-
-
-
-
-https://www.cnblogs.com/lmy2018/p/8514787.html
-
-https://blog.csdn.net/xiaobo060/article/details/80616718
-
-https://blog.csdn.net/feinifi/article/details/78251486
-
-https://blog.csdn.net/zhengwei125/article/details/80019887
-
-https://blog.csdn.net/weijifeng_/article/details/80115093
-
-
-
-执行成功之后
-
-```shell
-[root@localhost src]# ./redis-trib.rb create --replicas 1 192.168.56.2:6379 192.168.56.2:6380 192.168.56.4:6379 192.168.56.4:6380 192.168.56.5:6379 192.168.56.5:6380
->>> Creating cluster
->>> Performing hash slots allocation on 6 nodes...
-Using 3 masters:
-192.168.56.2:6379
-192.168.56.4:6379
-192.168.56.5:6379
-Adding replica 192.168.56.4:6380 to 192.168.56.2:6379
-Adding replica 192.168.56.5:6380 to 192.168.56.4:6379
-Adding replica 192.168.56.2:6380 to 192.168.56.5:6379
-M: 73abb17d55a3087a036f2833f25ac09ce66db55d 192.168.56.2:6379
-   slots:0-5460 (5461 slots) master
-S: 42f5ec2af130650c0ef08680c3c95b01d420fb76 192.168.56.2:6380
-   replicates 6330d9a4e55823149636a318d0588d5fc04be67c
-M: d5b7a3d14e26ffd6f5deed9f769d26ba5c1bd335 192.168.56.4:6379
-   slots:5461-10922 (5462 slots) master
-S: ef7e3d917b0cd450efec5b43265b78adacacc37b 192.168.56.4:6380
-   replicates 73abb17d55a3087a036f2833f25ac09ce66db55d
-M: 6330d9a4e55823149636a318d0588d5fc04be67c 192.168.56.5:6379
-   slots:10923-16383 (5461 slots) master
-S: 9287acc5d6a96c9b1762a53f50fd0ead09ded1c9 192.168.56.5:6380
-   replicates d5b7a3d14e26ffd6f5deed9f769d26ba5c1bd335
-Can I set the above configuration? (type 'yes' to accept): yes
->>> Nodes configuration updated
->>> Assign a different config epoch to each node
->>> Sending CLUSTER MEET messages to join the cluster
-Waiting for the cluster to join.......
->>> Performing Cluster Check (using node 192.168.56.2:6379)
-M: 73abb17d55a3087a036f2833f25ac09ce66db55d 192.168.56.2:6379
-   slots:0-5460 (5461 slots) master
-   1 additional replica(s)
-S: 9287acc5d6a96c9b1762a53f50fd0ead09ded1c9 192.168.56.5:6380
-   slots: (0 slots) slave
-   replicates d5b7a3d14e26ffd6f5deed9f769d26ba5c1bd335
-S: 42f5ec2af130650c0ef08680c3c95b01d420fb76 192.168.56.2:6380
-   slots: (0 slots) slave
-   replicates 6330d9a4e55823149636a318d0588d5fc04be67c
-M: d5b7a3d14e26ffd6f5deed9f769d26ba5c1bd335 192.168.56.4:6379
-   slots:5461-10922 (5462 slots) master
-   1 additional replica(s)
-M: 6330d9a4e55823149636a318d0588d5fc04be67c 192.168.56.5:6379
-   slots:10923-16383 (5461 slots) master
-   1 additional replica(s)
-S: ef7e3d917b0cd450efec5b43265b78adacacc37b 192.168.56.4:6380
-   slots: (0 slots) slave
-   replicates 73abb17d55a3087a036f2833f25ac09ce66db55d
-[OK] All nodes agree about slots configuration.
->>> Check for open slots...
->>> Check slots coverage...
-[OK] All 16384 slots covered.
-```
-
-
-
-使用`redis-cli`登入Redis客户端，会有如下错误提示
-
-```shell
-[root@localhost src]# ./redis-cli
-127.0.0.1:6379> setex name 10 redis
-(error) MOVED 5798 192.168.56.4:6379
-```
-
-
-
-设置一个值，它会告诉你“重定向到位置为192.168.56.4:6379的槽[5798]”
-
-```shell
-[root@localhost src]# ./redis-cli -c
-127.0.0.1:6379> setex name 10 redis
--> Redirected to slot [5798] located at 192.168.56.4:6379
-OK
-```
-
-
-
-查看集群信息
-
-查看集群信息使用命令`cluster info`:
-
-```shell
-192.168.56.4:6379> cluster info
-cluster_state:ok
-cluster_slots_assigned:16384
-cluster_slots_ok:16384
-cluster_slots_pfail:0
-cluster_slots_fail:0
-cluster_known_nodes:6
-cluster_size:3
-cluster_current_epoch:6
-cluster_my_epoch:3
-cluster_stats_messages_ping_sent:685
-cluster_stats_messages_pong_sent:678
-cluster_stats_messages_meet_sent:5
-cluster_stats_messages_sent:1368
-cluster_stats_messages_ping_received:678
-cluster_stats_messages_pong_received:690
-cluster_stats_messages_received:1368
-```
-
-
-
 ### 原生命令安装
 
 这种方式只是在于学习理解时使用，不建议在实际应用环境中使用。
@@ -948,6 +703,329 @@ Redis是在保护模式下运行的因为保护模式是启用的，没有指定
 如此，使用原生命令安装的方式到此就算安装完成了。到了这里，就应该能够发现，如此配置方式即繁琐，又容易出错，所以推荐使用官方工具安装。但是用于理解redis集群是非常好的方式。
 
 ### 官方工具安装
+Redis提供了一个集群命令工具`redis-trib.rb`，使用此工具可以安装集群。
+
+命令如下：
+
+```shell
+redis-trib.rb create --replicas <arg> host1:port1 ... hostN:portN
+```
+
+其中`host:port`指的是集群的结点，`--replicas <arg>`指定的是集群每个主节点从节点的数量。
+
+创建集群：
+
+```shell
+redis-trib.rb create --replicas 1 192.168.56.2:6379 192.168.56.2:6380 192.168.56.4:6379 192.168.56.4:6380 192.168.56.5:6379 192.168.56.5:6380
+```
+
+会提示如下错误：
+
+```shell
+/usr/bin/env: ruby: 没有那个文件或目录
+```
+
+这是因为`redis-trib.rb`是一个Ruby程序，依赖Ruby环境，所以需要安装Ruby环境。
+
+#### 安装Ruby
+
+安装ruby：(make && make install的过程有点长)
+
+```shell
+[root@localhost ruby]# wget https://cache.ruby-lang.org/pub/ruby/2.5/ruby-2.5.1.tar.gz
+[root@localhost ruby]# tar -zxvf ruby-2.5.1.tar.gz
+[root@localhost ruby]# cd ruby-2.5.1
+[root@localhost ruby-2.5.1]# ./configure
+[root@localhost ruby-2.5.1]# make && make install
+[root@localhost ruby]# ruby -v
+ruby 2.5.1p57 (2018-03-29 revision 63029) [x86_64-linux]
+```
+
+然后执行`ruby -v`命令查看Ruby是否安装成功：
+
+```shell
+[root@localhost ruby]# ruby -v
+ruby 2.5.1p57 (2018-03-29 revision 63029) [x86_64-linux]
+```
+
+再次创建集群：
+
+```shell
+[root@localhost ruby]# redis-trib.rb create --replicas 1 192.168.56.2:6379 192.168.56.2:6380 192.168.56.4:6379 192.168.56.4:6380 192.168.56.5:6379 192.168.56.5:6380
+Traceback (most recent call last):
+	2: from /usr/redis/redis-4.0.11/src/redis-trib.rb:25:in `<main>'
+	1: from /usr/local/lib/ruby/2.5.0/rubygems/core_ext/kernel_require.rb:59:in `require'
+/usr/local/lib/ruby/2.5.0/rubygems/core_ext/kernel_require.rb:59:in `require': cannot load such file -- redis (LoadError)
+```
+
+可以看到还是不能创建集群，提示错误信息：“`无法加载此类文件--redis`”。这因为`redis-trib.rb`还依赖Ruby的Redis模块。
+
+#### 安装Gem-Redis
+
+安装Ruby的Redis模块：
+
+```shell
+[root@localhost ruby]# gem install redis
+```
+
+但是出现了如下错误：
+
+```shell
+[root@localhost ruby]# gem install redis
+ERROR:  Loading command: install (LoadError)
+	cannot load such file -- zlib
+ERROR:  While executing gem ... (NoMethodError)
+    undefined method `invoke_with_build_args' for nil:NilClass
+```
+
+##### 补救：安装zlib库
+
+提示错误：“`无法加载此类文件—zlib`”，这是因为缺少zlib依赖，需要安装zlib库
+
+```shell
+[root@localhost ruby]# yum install -y zlib-devel
+```
+
+再次执行`gem install redis`，还是提示错误：“`无法加载此类文件—zlib`”，这是因为虽然我们安装了zlib库，但是没有集成到ruby。
+
+集成`zlib`库到ruby：
+
+```shell
+[root@localhost ruby]# cd /usr/ruby/ruby-2.5.1/ext/zlib/
+[root@localhost zlib]# ruby extconf.rb
+```
+
+编译安装：
+
+```shell
+[root@localhost zlib]# make && make install
+make: *** 没有规则可以创建“zlib.o”需要的目标“/include/ruby.h”。 停止。
+```
+
+编译安装失败，发现提示错误“创建“`zlib.o”需要的目标“/include/ruby.h`”，这是因为`/usr/ruby/ruby-2.5.1/ext/zlib/`目录下的Makefile文件中的`$(top_srcdir)`变量指定的是空（`“”`），找不到对应的文件`$(top_srcdir)/include/ruby.h`，而ruby.h文件在`/usr/ruby/ruby-2.5.1/include/ruby.h`目录下。解决这个问题有三种方式：
+
+1. 将`ruby.h`文件拷贝至`/include/ruby.h`。
+
+   ```shell
+   $ cd /
+   $ mkdir include
+   $ cp /usr/ruby/ruby-2.5.1/include/ruby.h /include
+   ```
+
+2. 根据目录结构，修改为相对路径，`$(top_srcdir)`修改为`../..`。
+
+   ```shell
+   zlib.o: $(top_srcdir)/include/ruby.h
+   修改为
+   zlib.o: ../../include/ruby.h
+   ```
+
+3. 在Makefile文件顶部声明变量`top_srcdir`指明其路径。
+
+   ```shell
+   top_srcdir=/usr/ruby/ruby-2.5.1
+   ```
+
+上述三种方式任选一种（推荐第一种），再次编译：成功
+
+```shell
+[root@localhost zlib]# make && make install
+/usr/bin/install -c -m 0755 zlib.so /usr/local/lib/ruby/site_ruby/2.5.0/x86_64-linux
+```
+
+再次执行`gem install redis`，发现缺少`openssl`库：
+
+```shell
+[root@localhost ruby-2.5.1]# gem install redis
+ERROR:  While executing gem ... (Gem::Exception)
+    Unable to require openssl, install OpenSSL and rebuild Ruby (preferred) or use non-HTTPS sources
+```
+
+与之前`zlib`库一样，需要安装并集成，并且也具有与`zlib`一样的问题。
+
+##### 补救：安装openssl库
+
+安装`openssl`库：
+
+```shell
+[root@localhost ruby]# yum install openssl-devel
+```
+
+集成并编译
+
+```shell
+[root@localhost openssl]# cd /usr/ruby/ruby-2.5.1/ext/openssl
+[root@localhost openssl]# ruby extconf.rb
+[root@localhost openssl]# make && make install
+......
+/usr/bin/install -c -m 0755 openssl.so /usr/local/lib/ruby/site_ruby/2.5.0/x86_64-linux
+installing default openssl libraries
+```
+
+再次执行`gem install redis`，成功了。
+
+```shell
+[root@localhost openssl]# gem install redis
+Fetching: redis-4.0.3.gem (100%)
+Successfully installed redis-4.0.3
+Parsing documentation for redis-4.0.3
+Installing ri documentation for redis-4.0.3
+Done installing documentation for redis after 1 seconds
+1 gem installed
+```
+
+> 注意，上面之所推荐使用第一种方式，是因为虽然在集成zlib的时候如果使用相对路径，只需要修改一处即可，但是在集成`openssl`的时候需要修改十几处。即使使用声明变量的方式也需要在zlib和openssl的Makefile文件都声明，而使用第一种拷贝`ruby.h`文件到根`/include`目录，则都可以使用。
+
+#### 构建集群
+
+redis-trib.rb脚本相关的环境依赖安装成功之后就可以使用redis-trib.rb脚本创建集群了，但是要注意，使用redis-trib.rb脚本创建集群还是跟前面的原生命令安装一样，先要准备好节点。有一点需要注意，如果所有的结点都在同一台机器上，就可以直接使用redis-trib.rb脚本创建集群了，但是如果有节点在不同的机器上，就需要注意节点使用有密码，使用是受保护的模式，使用绑定的地址为127.0.0.1，否则就不能连接，如下：
+
+```shell
+[root@localhost openssl]# redis-trib.rb create --replicas 1 192.168.56.2:6379 192.168.56.2:6380 192.168.56.4:6379 192.168.56.4:6380 192.168.56.5:6379 192.168.56.5:6380
+>>> Creating cluster
+[ERR] Sorry, can't connect to node 192.168.56.2:6379
+```
+
+> redis默认只允许本地访问，要使redis可以远程访问可以修改redis.conf，
+>
+> 解决办法：注释掉`bind 127.0.0.1`可以使所有的ip访问redis。
+>
+> 若是想指定多个ip访问，但并不是全部的ip访问，可以bind。
+>
+> 在redis3.2之后，redis增加了`protected-mode`，在这个模式下，即使注释掉了`bind 127.0.0.1`，再访问redisd时候还是报错
+> 修改办法：`protected-mode no`
+
+执行成功之后
+
+```shell
+[root@localhost src]# redis-trib.rb create --replicas 1 192.168.56.2:6379 192.168.56.2:6380 192.168.56.4:6379 192.168.56.4:6380 192.168.56.5:6379 192.168.56.5:6380
+>>> Creating cluster
+>>> Performing hash slots allocation on 6 nodes...
+Using 3 masters:
+192.168.56.2:6379
+192.168.56.4:6379
+192.168.56.5:6379
+Adding replica 192.168.56.4:6380 to 192.168.56.2:6379
+Adding replica 192.168.56.5:6380 to 192.168.56.4:6379
+Adding replica 192.168.56.2:6380 to 192.168.56.5:6379
+M: 73abb17d55a3087a036f2833f25ac09ce66db55d 192.168.56.2:6379
+   slots:0-5460 (5461 slots) master
+S: 42f5ec2af130650c0ef08680c3c95b01d420fb76 192.168.56.2:6380
+   replicates 6330d9a4e55823149636a318d0588d5fc04be67c
+M: d5b7a3d14e26ffd6f5deed9f769d26ba5c1bd335 192.168.56.4:6379
+   slots:5461-10922 (5462 slots) master
+S: ef7e3d917b0cd450efec5b43265b78adacacc37b 192.168.56.4:6380
+   replicates 73abb17d55a3087a036f2833f25ac09ce66db55d
+M: 6330d9a4e55823149636a318d0588d5fc04be67c 192.168.56.5:6379
+   slots:10923-16383 (5461 slots) master
+S: 9287acc5d6a96c9b1762a53f50fd0ead09ded1c9 192.168.56.5:6380
+   replicates d5b7a3d14e26ffd6f5deed9f769d26ba5c1bd335
+Can I set the above configuration? (type 'yes' to accept): yes
+>>> Nodes configuration updated
+>>> Assign a different config epoch to each node
+>>> Sending CLUSTER MEET messages to join the cluster
+Waiting for the cluster to join.......
+>>> Performing Cluster Check (using node 192.168.56.2:6379)
+M: 73abb17d55a3087a036f2833f25ac09ce66db55d 192.168.56.2:6379
+   slots:0-5460 (5461 slots) master
+   1 additional replica(s)
+S: 9287acc5d6a96c9b1762a53f50fd0ead09ded1c9 192.168.56.5:6380
+   slots: (0 slots) slave
+   replicates d5b7a3d14e26ffd6f5deed9f769d26ba5c1bd335
+S: 42f5ec2af130650c0ef08680c3c95b01d420fb76 192.168.56.2:6380
+   slots: (0 slots) slave
+   replicates 6330d9a4e55823149636a318d0588d5fc04be67c
+M: d5b7a3d14e26ffd6f5deed9f769d26ba5c1bd335 192.168.56.4:6379
+   slots:5461-10922 (5462 slots) master
+   1 additional replica(s)
+M: 6330d9a4e55823149636a318d0588d5fc04be67c 192.168.56.5:6379
+   slots:10923-16383 (5461 slots) master
+   1 additional replica(s)
+S: ef7e3d917b0cd450efec5b43265b78adacacc37b 192.168.56.4:6380
+   slots: (0 slots) slave
+   replicates 73abb17d55a3087a036f2833f25ac09ce66db55d
+[OK] All nodes agree about slots configuration.
+>>> Check for open slots...
+>>> Check slots coverage...
+[OK] All 16384 slots covered.
+```
+
+#### 测试
+
+使用`redis-cli`登入Redis客户端，会有如下错误提示
+
+```shell
+[root@localhost src]# ./redis-cli
+127.0.0.1:6379> setex name 10 redis
+(error) MOVED 5798 192.168.56.4:6379
+```
+
+集群模式下登入redis-cli客户端，需要使用`-c`参数指定为集群模式，如下：
+
+设置一个值，它会告诉你“重定向到位置为192.168.56.4:6379的槽[5798]”
+
+```shell
+[root@localhost src]# ./redis-cli -c
+127.0.0.1:6379> setex name 10 redis
+-> Redirected to slot [5798] located at 192.168.56.4:6379
+OK
+```
+
+查看集群信息
+
+查看集群信息使用命令`cluster info`:
+
+```shell
+192.168.56.4:6379> cluster info
+cluster_state:ok
+cluster_slots_assigned:16384
+cluster_slots_ok:16384
+cluster_slots_pfail:0
+cluster_slots_fail:0
+cluster_known_nodes:6
+cluster_size:3
+cluster_current_epoch:6
+cluster_my_epoch:3
+cluster_stats_messages_ping_sent:685
+cluster_stats_messages_pong_sent:678
+cluster_stats_messages_meet_sent:5
+cluster_stats_messages_sent:1368
+cluster_stats_messages_ping_received:678
+cluster_stats_messages_pong_received:690
+cluster_stats_messages_received:1368
+```
+
+#### 总结
+
+最后总结一下
+
+```shell
+# 先确认环境是否已经安装zlib和openssl库，如果没有安装，则安装
+$ yum install -y zlib-devel
+$ yum install -y openssl-devel
+# 下载ruby压缩安装包
+$ wget https://cache.ruby-lang.org/pub/ruby/2.5/ruby-2.5.1.tar.gz
+# 解压
+$ tar -zxvf ruby-2.5.1.tar.gz
+# 配置
+$ cd ruby-2.5.1
+$ ./configure
+# 编译即安装
+$ make && make install
+# 测试
+$ ruby -v
+# 安装gem-redis
+$ gem install redis
+# 如此redis-trib.rb脚本依赖的环境就算安装完成了，注意：这里没有集成“zlib”以及“openssl”到Ruby，
+# 是因为在安装ruby之前已经安装了“zlib”和“openssl”库，编译时这些工作都做了。
+# 上述的集成操作更多的是对安装编译Ruby之前没有安装“zlib”和“openssl”库的补救措施。
+# 构建Redis集群
+$ redis-trib.rb create --replicas <slave-number> [ip]:[port] [ip]:[port] [ip]:[port]...
+```
+
+
+
+
 
 
 

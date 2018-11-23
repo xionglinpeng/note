@@ -26,10 +26,6 @@ https://blog.csdn.net/z28126308/article/details/71126677
 
  
 
-- keytool gui(可视化keytool工具) v1.6 正式版   
-
-https://www.jb51.net/softs/542444.html#downintro2
-
 [TOC]
 
 ## @Api

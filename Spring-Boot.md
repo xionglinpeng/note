@@ -1,5 +1,151 @@
 # Spring Boot
 
+## [IV. Spring Boot features](https://docs.spring.io/spring-boot/docs/2.1.0.RELEASE/reference/htmlsingle/#boot-features)
+
+### [23. SpringApplication](https://docs.spring.io/spring-boot/docs/2.1.0.RELEASE/reference/htmlsingle/#boot-features-spring-application)
+
+#### [23.1. Startup Failure](https://docs.spring.io/spring-boot/docs/2.1.0.RELEASE/reference/htmlsingle/#boot-features-startup-failure)
+
+如果应用程序无法启动，注册的FailureAnalyzers就有机会提供专门的错误消息和修复问题的具体操作。例如，如果您在端口8080上启动web应用程序，并且该端口已经在使用，您应该会看到类似于以下消息的内容:
+
+```
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Embedded servlet container failed to start. Port 8080 was already in use.
+
+Action:
+
+Identify and stop the process that's listening on port 8080 or configure this application to listen on another port.
+```
+
+![](https://docs.spring.io/spring-boot/docs/2.1.0.RELEASE/reference/htmlsingle/images/note.png) Spring Boot提供了许多FailureAnalyzer实现，您可以添加自己的。
+
+如果没有故障分析程序能够处理异常，您仍然可以显示完整的条件报告，以便更好地理解出了什么问题。为此，你需要启用DEBUG属性或者DEBUG日志：`org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener`。
+
+例如，如果您使用java -jar运行您的应用程序，那么您可以启用debug属性如下:
+
+```shell
+$ java -jar myproject-0.0.1-SNAPSHOT.jar --debug
+```
+
+
+
+#### [23.2. Customizing the Banner](https://docs.spring.io/spring-boot/docs/2.1.0.RELEASE/reference/htmlsingle/#boot-features-banner)
+
+可以通过向类路径添加`banner.txt`文件或将`spring.banner.location`属性设置为此类文件的位置来更改在启动时打印的banner。
+
+| Variable                           | Description                                                  |
+| ---------------------------------- | ------------------------------------------------------------ |
+| `${application.version}`           | 您的应用程序的版本号，如MANIFEST.MF中声明的那样。例如，实现版本:1.0被打印为1.0。 |
+| `${application.formatted-version}` |                                                              |
+| `${spring-boot.version}`           |                                                              |
+| `${spring-boot.formatted-version}` |                                                              |
+|                                    |                                                              |
+| `${application.title}`             |                                                              |
+
+document sources: 
+
+https://www.cnblogs.com/cc11001100/p/7456145.html
+
+https://www.breakyizhan.com/springboot/3249.html
+
+https://www.degraeve.com/img2txt.php
+
+                       .::::.
+                     .::::::::.
+                    :::::::::::
+                 ..:::::::::::'
+              '::::::::::::'
+                .::::::::::
+           '::::::::::::::..
+                ..::::::::::::.
+              ``::::::::::::::::
+               ::::``:::::::::'        .:::.
+              ::::'   ':::::'       .::::::::.
+            .::::'      ::::     .:::::::'::::.
+           .:::'       :::::  .:::::::::' ':::::.
+          .::'        :::::.:::::::::'      ':::::.
+         .::'         ::::::::::::::'         ``::::.
+     ...:::           ::::::::::::'              ``::.
+    ```` ':.          ':::::::::'                  ::::..
+                       '.:::::'                    ':'````..
+**佛祖**
+
+                            _ooOoo_
+                           o8888888o
+                           88" . "88
+                           (| -_- |)
+                           O\  =  /O
+                        ____/`---'\____
+                      .'  \\|     |  `.
+                     /  \\|||  :  |||  \
+                    /  _||||| -:- |||||-  \
+                    |   | \\\  -  / |   |
+                    | \_|  ''\---/''  |   |
+                    \  .-\__  `-`  ___/-. /
+                  ___`. .'  /--.--\  `. . __
+               ."" '<  `.___\_<|>_/___.'  >'"".
+              | | :  `- \`.;`\ _ /`;.`/ - ` : | |
+              \  \ `-.   \_ __\ /__ _/   .-` /  /
+         ======`-.____`-.___\_____/___.-`____.-'======
+                            `=---='
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                      佛祖保佑, 永无BUG !
+**神兽**
+
+```
+          ┏┛ ┻━━━━━┛ ┻┓
+          ┃　　　　　　 ┃
+          ┃　　　━　　　┃
+          ┃　┳┛　  ┗┳　┃
+          ┃　　　　　　 ┃
+          ┃　　　┻　　　┃
+          ┃　　　　　　 ┃
+          ┗━┓　　　┏━━━┛
+            ┃　　　┃   神兽保佑
+            ┃　　　┃   代码无BUG！
+            ┃　　　┗━━━━━━━━━┓
+            ┃　　　　　　　    ┣┓
+            ┃　　　　         ┏┛
+            ┗━┓ ┓ ┏━━━┳ ┓ ┏━┛
+              ┃ ┫ ┫   ┃ ┫ ┫
+              ┗━┻━┛   ┗━┻━┛
+          
+　　　　　　　 ┏┓       ┏┓+ +
+　　　　　　　┏┛┻━━━━━━━┛┻┓ + +
+　　　　　　　┃　　　　　　 ┃
+　　　　　　　┃　　　━　　　┃ ++ + + +
+　　　　　　 █████━█████  ┃+
+　　　　　　　┃　　　　　　 ┃ +
+　　　　　　　┃　　　┻　　　┃
+　　　　　　　┃　　　　　　 ┃ + +
+　　　　　　　┗━━┓　　　 ┏━┛
+               ┃　　  ┃
+　　　　　　　　　┃　　  ┃ + + + +
+　　　　　　　　　┃　　　┃　Code is far away from     bug with the animal protecting
+　　　　　　　　　┃　　　┃ + 　　　　         神兽保佑,代码无bug
+　　　　　　　　　┃　　　┃
+　　　　　　　　　┃　　　┃　　+
+　　　　　　　　　┃　 　 ┗━━━┓ + +
+　　　　　　　　　┃ 　　　　　┣┓
+　　　　　　　　　┃ 　　　　　┏┛
+　　　　　　　　　┗┓┓┏━━━┳┓┏┛ + + + +
+　　　　　　　　　 ┃┫┫　 ┃┫┫
+　　　　　　　　　 ┗┻┛　 ┗┻┛+ + + +
+```
+
+
+
+
+
+
+
+
+
 ## 配置SSL
 
 首先我们需要一个秘钥证书库，可以使用JDK的keytool工具生成，如下：

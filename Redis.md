@@ -20,13 +20,15 @@ requirepass 597646251
 
 daemonize yes
 
-
+make[3]: gcc：命令未找到
 
 ```shell
 yum install -y gcc
 ```
 
+zmalloc.h:50:31: 致命错误：jemalloc/jemalloc.h：没有那个文件或目录
 
+make MALLOC=libc
 
 ```
 -rw-rw-r--.  1 root root 164219 8月   4 06:44 00-RELEASENOTES
@@ -278,8 +280,6 @@ root      ......     Ssl  00:39   0:00 redis-server *:6379 [cluster]
 root      ......     Rsl  00:40   0:00 redis-server *:6380 [cluster]
 root      ......     R+   00:40   0:00 grep --color=auto redis-server
 ```
-
-
 
 使用`redis-cli`命令进入redis命令行界面，添加一个数据进行测试，如下，可以发现，提示错误` CLUSTERDOWN Hash slot not served(没有提供散列槽)`。
 
@@ -1027,5 +1027,97 @@ $ redis-trib.rb create --replicas <slave-number> [ip]:[port] [ip]:[port] [ip]:[p
 
 
 
+```shell
+[root@localhost redis]# redis-trib.rb create --replicas 1 127.0.0.1:6381 127.0.0.1:6382 127.0.0.1:6383 127.0.0.1:6384 127.0.0.1:6385 127.0.0.1:6386
+WARNING: redis-trib.rb is not longer available!
+You should use redis-cli instead.
+
+All commands and features belonging to redis-trib.rb have been moved
+to redis-cli.
+In order to use them you should call redis-cli with the --cluster
+option followed by the subcommand name, arguments and options.
+
+Use the following syntax:
+redis-cli --cluster SUBCOMMAND [ARGUMENTS] [OPTIONS]
+
+Example:
+redis-cli --cluster create 127.0.0.1:6381 127.0.0.1:6382 127.0.0.1:6383 127.0.0.1:6384 127.0.0.1:6385 127.0.0.1:6386 --cluster-replicas 1
+
+To get help about all subcommands, type:
+redis-cli --cluster help
+
+[root@localhost redis]# redis-cli --cluster create 127.0.0.1:6381 127.0.0.1:6382 127.0.0.1:6383 127.0.0.1:6384 127.0.0.1:6385 127.0.0.1:6386 --cluster-replicas 1
+[ERR] Node 127.0.0.1:6381 NOAUTH Authentication required.
+[root@localhost redis]# redis-cli --cluster create 127.0.0.1:6381 -a 55a41794b45c4e9b9e87c5091df3be90 127.0.0.1:6382 127.0.0.1:6383 127.0.0.1:6384 127.0.0.1:6385 127.0.0.1:6386 --cluster-replicas 1
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
+[ERR] Wrong number of arguments for specified --cluster sub command
+[root@localhost redis]# redis-cli -a 55a41794b45c4e9b9e87c5091df3be90 --cluster create 127.0.0.1:6381 127.0.0.1:6382 127.0.0.1:6383 127.0.0.1:6384 127.0.0.1:6385 127.0.0.1:6386 --cluster-replicas 1
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
+>>> Performing hash slots allocation on 6 nodes...
+Master[0] -> Slots 0 - 5460
+Master[1] -> Slots 5461 - 10922
+Master[2] -> Slots 10923 - 16383
+Adding replica 127.0.0.1:6384 to 127.0.0.1:6381
+Adding replica 127.0.0.1:6385 to 127.0.0.1:6382
+Adding replica 127.0.0.1:6386 to 127.0.0.1:6383
+>>> Trying to optimize slaves allocation for anti-affinity
+[WARNING] Some slaves are in the same host as their master
+M: 0aa770cb94c2e48c02f3caaff0b4c782699c6ee2 127.0.0.1:6381
+   slots:[0-5460] (5461 slots) master
+M: ddbf87e6674a8a4f7e5cb4fc430fb2e056b2f39e 127.0.0.1:6382
+   slots:[5461-10922] (5462 slots) master
+M: 20ef4b540a3f5eab832b8a899cb0633db825ead2 127.0.0.1:6383
+   slots:[10923-16383] (5461 slots) master
+S: 3fb8b0349cfdd8042e3b65431d66d6f5ceef1388 127.0.0.1:6384
+   replicates ddbf87e6674a8a4f7e5cb4fc430fb2e056b2f39e
+S: 77443eb0067c9016daf5c6f586cda04829c038f9 127.0.0.1:6385
+   replicates 20ef4b540a3f5eab832b8a899cb0633db825ead2
+S: e227c18a5ceba412aa5e071a7cebeeea947ac100 127.0.0.1:6386
+   replicates 0aa770cb94c2e48c02f3caaff0b4c782699c6ee2
+Can I set the above configuration? (type 'yes' to accept): yes
+>>> Nodes configuration updated
+>>> Assign a different config epoch to each node
+>>> Sending CLUSTER MEET messages to join the cluster
+Waiting for the cluster to join
+......
+>>> Performing Cluster Check (using node 127.0.0.1:6381)
+M: 0aa770cb94c2e48c02f3caaff0b4c782699c6ee2 127.0.0.1:6381
+   slots:[0-5460] (5461 slots) master
+   1 additional replica(s)
+S: 77443eb0067c9016daf5c6f586cda04829c038f9 127.0.0.1:6385
+   slots: (0 slots) slave
+   replicates 20ef4b540a3f5eab832b8a899cb0633db825ead2
+S: e227c18a5ceba412aa5e071a7cebeeea947ac100 127.0.0.1:6386
+   slots: (0 slots) slave
+   replicates 0aa770cb94c2e48c02f3caaff0b4c782699c6ee2
+S: 3fb8b0349cfdd8042e3b65431d66d6f5ceef1388 127.0.0.1:6384
+   slots: (0 slots) slave
+   replicates ddbf87e6674a8a4f7e5cb4fc430fb2e056b2f39e
+M: ddbf87e6674a8a4f7e5cb4fc430fb2e056b2f39e 127.0.0.1:6382
+   slots:[5461-10922] (5462 slots) master
+   1 additional replica(s)
+M: 20ef4b540a3f5eab832b8a899cb0633db825ead2 127.0.0.1:6383
+   slots:[10923-16383] (5461 slots) master
+   1 additional replica(s)
+[OK] All nodes agree about slots configuration.
+>>> Check for open slots...
+>>> Check slots coverage...
+[OK] All 16384 slots covered.
+```
 
 
+
+redis安装
+make[3]: gcc：命令未找到
+
+Linux系统初始工具安装
+yum install -y wget
+yum install -y gcc
+yum install -y vim
+yum install -y zlib-devel
+yum install -y openssl-devel
+软连接
+
+实体vo dto
+
+sql分组

@@ -1,3 +1,7 @@
+## 引用
+
+http://c.biancheng.net/cpp/shell/
+
 ## 第一个shell脚本
 
 打开文本编辑器，新建一个文件，扩展名为sh（sh代表shell），扩展名并不影响脚本执行，见名知意就好，如果你用php些shell脚本，扩展名就就用php好了。
@@ -259,7 +263,7 @@ shell变量是由shell程序设置的特殊变量。shell变量中有一部分�
 | 变量 | 含义                                                         |
 | ---- | ------------------------------------------------------------ |
 | $0   | 当前脚本的文件名。                                           |
-| $n   | 传递给脚背或函数的参数。n是一个数字，表示第几个参数。例如，第一个参数是$1，第二个参数是\$2。 |
+| $n   | 传递给脚背或函数的参数。n是一个数字，表示第几个参数。例如，第一个参数是$1，第二个参数是2。 |
 | $#   | 传递给脚本或函数的参数个数。                                 |
 | $*   | 传递给脚本或函数的所有参数。                                 |
 | $@   | 传递给脚本或函数的所有参数。被双引号（`“ ”`）包括时，与`$*`稍有不同，下面将会将到。 |
@@ -272,7 +276,27 @@ shell变量是由shell程序设置的特殊变量。shell变量中有一部分�
 
 请看下面的脚本：
 
+```shell
+#!/bin/bash
+echo "File Name: $0"
+echo "First Paramter: $1"
+echo "First Paramter: $2"
+echo "Quoted Values: $@"
+echo "Quoted Values: $*"
+echo "Total Number of Paramter: $#"
+```
 
+运行结果：
+
+```shell
+[root@izbp12mpi6ej8nhsdjjk4jz test]# ./test.sh 张三 李四
+File Name: ./test.sh
+First Paramter: 张三
+First Paramter: 李四
+Quoted Values: 张三 李四
+Quoted Values: 张三 李四
+Total Number of Paramter: 2
+```
 
 ### `$*`和`$@`的区别
 
@@ -342,13 +366,71 @@ c
 d
 ```
 
+### 退出状态
 
+`$?`可以获取上一个命令的退出状态。所谓退出状态，就是上一个命令执行的返回结果。
 
+退出状态是一个数字，一般情况下，大部分命令执行成功会返回0，失败返回1。
 
+不过，也有一些命令返回其他值，表示不同类型的错误。
 
+下面的例子中，命令成功执行：
 
+```shell
+[root@izbp12mpi6ej8nhsdjjk4jz test]# ./test.sh 张三 李四
+File Name: ./test.sh
+First Paramter: 张三
+First Paramter: 李四
+Quoted Values: 张三 李四
+Quoted Values: 张三 李四
+Total Number of Paramter: 2
+[root@izbp12mpi6ej8nhsdjjk4jz test]# echo $?
+0
+```
 
+失败的情况
 
+```shell
+[root@izbp12mpi6ej8nhsdjjk4jz test]# date "%y"
+date: invalid date ‘%y’
+[root@izbp12mpi6ej8nhsdjjk4jz test]# echo $?
+1
+```
+
+所以`$?`可以用作判断条件，判断上一个命令执行成功的情况下才执行后续的操作。
+
+## Shell替换
+
+如果表达式中包含特殊字符，Shell将会进行替换，例如，在双引号中使用变量就是一种替换，转移字符也是一种替换。
+
+举个例子：
+
+```shell
+#!/bin/bash
+a=10
+echo -e "Value of a is $a \n"
+```
+
+运行结果：
+
+```shell
+Value of a is 10
+```
+
+这里`-e`表示对转义字符进行替换，如果不适用`-e`选项，将会原样输出：
+
+下面的转移字符都可以用在echo中：
+
+| 转义字符 | 含义       |
+| -------- | ---------- |
+| `\\`     | 反斜杠     |
+| \a       | 警报，响铃 |
+| \b       |            |
+| \f       |            |
+| \n       |            |
+| \r       |            |
+| \t       |            |
+| \v       |            |
 
 
 

@@ -139,6 +139,18 @@ redis-cell是用Rust编写的，它使用该语言的FFI模块与Redis自己的�
 
 https://github.com/brandur/redis-cell
 
+Lua脚本调用
+
+```shell
+eval "return redis.call('CL.THROTTLE',KEYS[1],ARGV[1],ARGV[2],ARGV[3],ARGV[4])" 1 user123 15 30 60 1
+```
+
+
+
+
+
+
+
 
 
 127.0.0.1:6379> CL.THROTTLE

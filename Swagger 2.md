@@ -26,13 +26,21 @@ https://blog.csdn.net/z28126308/article/details/71126677
 
  
 
+
+
+# Springfox
+
+官方网站：https://springfox.github.io/springfox/
+
+## API
+
 [TOC]
 
-## @Api
+### @Api
 
 用在请求类上，标识对类的说明。
 
-### *properties*
+#### *properties*
 
 - `value`：描述类的作用
 - `tags`：说明该类的作用，非空时将覆盖value的值
@@ -45,7 +53,7 @@ https://blog.csdn.net/z28126308/article/details/71126677
 - `authorizations`：获取授权列表（安全声明），如果未设置，则返回一个空的授权值。
 - `hidden`：默认为false，设置为true，将在文档中隐藏。
 
-### *sound code*
+#### *sound code*
 
 ```java
 package io.swagger.annotations;
@@ -169,11 +177,11 @@ public @interface Api {
 
 
 
-## @ApiOperation
+### @ApiOperation
 
 用在请求的方法上，说明方法的用途、作用。
 
-### *properties*
+#### *properties*
 
 - `value`：说明方法的用途，作用
 - `notes`：方法的备注说明
@@ -193,7 +201,7 @@ public @interface Api {
 - `code`：响应的HTTP状态码，默认为200。
 - `extensions`：扩展属性列表数组。
 
-### *sound code*
+#### *sound code*
 
 ```java
 package io.swagger.annotations;
@@ -354,13 +362,13 @@ public @interface ApiOperation {
 
 ```
 
-### *example*
+#### *example*
 
 
 
 
 
-## @ApiImplicitParams
+### @ApiImplicitParams
 
 一个包装器，以允许多个`@ApiImplicitParam`对象的列表。
 
@@ -380,11 +388,11 @@ public @interface ApiOperation {
 })
 ```
 
-## @ApiImplicitParam
+### @ApiImplicitParam
 
 
 
-### `paramType`
+#### `paramType`
 参数的参数类型。可以取值 : 
 - `path`
 - `query`
@@ -395,7 +403,7 @@ public @interface ApiOperation {
 String paramType() default "";
 ```
 >example : `paramType = "query"`
-### `dataType`
+#### `dataType`
 参数的数据类型。这可以是类名或原语。
 
 ```
@@ -403,7 +411,7 @@ String dataType() default "";
 ```
 >example : `dataType = "int"`
 
-## @ApiIgnore
+### @ApiIgnore
 
 使标注的接口不显示在swagger文档中不显示。
 
@@ -414,13 +422,13 @@ String dataType() default "";
 String value() default "";
 ```
 
-## @ApiModel
+### @ApiModel
 
-## @ApiModelProperty
+### @ApiModelProperty
 
-## @ApiResponses
+### @ApiResponses
 
-## @ApiResponse
+### @ApiResponse
 
 
 

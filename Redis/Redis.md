@@ -4,122 +4,138 @@
 
 ## redis安装
 
-```shell
+### 下载—解压—编译
 
-$ wget http://download.redis.io/releases/redis-4.0.11.tar.gz
-$ tar xzf redis-4.0.11.tar.gz
-$ cd redis-4.0.11
-$ make
-```
+首先是下载—解压—编译
 
 ```shell
-make MALLOC=libc
+
+[root@localhost ~]# wget http://download.redis.io/releases/redis-4.0.11.tar.gz
+[root@localhost ~]# tar xzf redis-4.0.11.tar.gz
+[root@localhost ~]# cd redis-4.0.11
+[root@localhost ~]# make MALLOC=jemalloc
 ```
 
-requirepass 597646251
+### 启动
 
-daemonize yes
-
-make[3]: gcc：命令未找到
+二进制文件是编译完成后在`src`目录下. 运行如下:
 
 ```shell
-yum install -y gcc
+[root@localhost ~]# src/redis-server
 ```
 
-zmalloc.h:50:31: 致命错误：jemalloc/jemalloc.h：没有那个文件或目录
+### 测试
 
-make MALLOC=libc
-
-```
--rw-rw-r--.  1 root root 164219 8月   4 06:44 00-RELEASENOTES
--rw-rw-r--.  1 root root     53 8月   4 06:44 BUGS
--rw-rw-r--.  1 root root   1815 8月   4 06:44 CONTRIBUTING
--rw-rw-r--.  1 root root   1487 8月   4 06:44 COPYING
-drwxrwxr-x.  6 root root    192 9月  29 16:17 deps
--rw-rw-r--.  1 root root     11 8月   4 06:44 INSTALL
--rw-rw-r--.  1 root root    151 8月   4 06:44 Makefile
--rw-rw-r--.  1 root root   4223 8月   4 06:44 MANIFESTO
--rw-rw-r--.  1 root root  20543 8月   4 06:44 README.md
--rw-rw-r--.  1 root root  58766 8月   4 06:44 redis.conf
--rwxrwxr-x.  1 root root    271 8月   4 06:44 runtest
--rwxrwxr-x.  1 root root    280 8月   4 06:44 runtest-cluster
--rwxrwxr-x.  1 root root    281 8月   4 06:44 runtest-sentinel
--rw-rw-r--.  1 root root   7921 8月   4 06:44 sentinel.conf
-drwxrwxr-x.  3 root root   4096 9月  29 16:17 src
-drwxrwxr-x. 10 root root    167 8月   4 06:44 tests
-drwxrwxr-x.  8 root root   4096 8月   4 06:44 utils
+```shell
+[root@localhost ~]# src/redis-cli
+127.0.0.1:6379> set foo bar
+127.0.0.1:6379> get foo
+"bar"
 ```
 
+### 错误解决（5.0.x版本不需要）
 
+编译提示提示错误：
 
+- make[3]: gcc：命令未找到
 
+  是因为`gcc`没有安装，安装gcc：
 
+  ```shell
+  yum install -y gcc
+  ```
 
+- zmalloc.h:50:31: 致命错误：jemalloc/jemalloc.h：没有那个文件或目录
 
-centOS6.3 安装redis make报错 zmalloc.h:50:31: 错误：jemalloc/jemalloc.h：没有那个文件或目录
-​	https://blog.csdn.net/maozherong/article/details/54236644
-原因分析:
+  解决方案是使用命令`make MALLOC=libc`进行编译。原因分析：在redis的源码包下有个`README.md`文件，打开这个文件，有这么一段说明：
 
-在redis的解压包下有个README文件，打开这个文件 有这个一段话。
+  ```
+  Allocator
+  ---------
+  
+  Selecting a non-default memory allocator when building Redis is done by setting
+  the `MALLOC` environment variable. Redis is compiled and linked against libc
+  malloc by default, with the exception of jemalloc being the default on Linux
+  systems. This default was picked because jemalloc has proven to have fewer
+  fragmentation problems than libc malloc.
+  
+  To force compiling against libc malloc, use:
+  
+      % make MALLOC=libc
+  
+  To compile against jemalloc on Mac OS X systems, use:
+  
+      % make MALLOC=jemalloc
+  ```
 
-llocator
----------
+  翻译
 
-Selecting a non-default memory allocator when building Redis is done by setting
-the `MALLOC` environment variable. Redis is compiled and linked against libc
-malloc by default, with the exception of jemalloc being the default on Linux
-systems. This default was picked because jemalloc has proven to have fewer
-fragmentation problems than libc malloc.
+  ```
+  分配器
+  ---------
+  
+  在构建Redis时，通过设置“MALLOC”环境变量选择非默认内存分配器。默认情况下，Redis是针对libc malloc编译和链接的，但是jemalloc是Linux系统上的缺省值。之所以选择这个默认值，是因为jemalloc已经被证明比libc malloc有更少的碎片问题。
+  
+  要强制对libc malloc进行编译，请使用:
+  
+      % make MALLOC=libc
+  要在Mac OS X系统上针对jemalloc进行编译，请使用:
+  
+      % make MALLOC=jemalloc
+  ```
 
+  在理想情况下，应该使用`jemalloc`，但是如果你又没有`jemalloc`而只有`libc`当然 make 出错。 所以加这么一个参数，或者安装一个`jemalloc`。
 
-To force compiling against libc malloc, use:
-
-
-    % make MALLOC=libc
-
-
-To compile against jemalloc on Mac OS X systems, use:
-
-
-    % make MALLOC=jemalloc
-
-
-Verbose build
--------------
-
-说的是关于分配器allocator， 如果有MALLOC  这个 环境变量， 会有用这个环境变量的 去建立Redis。
-
-而且libc 并不是默认的 分配器， 默认的是 jemalloc, 因为 jemalloc 被证明 有更少的 fragmentation problems 比libc。
-
-但是如果你又没有jemalloc 而只有 libc 当然 make 出错。 所以加这么一个参数。
-
-解决办法
-make MALLOC=libc
-
-
+### 配置环境变量
 
 为了方便操作，配置redis的环境变量
 
 ```shell
-vim /etc/profile
-
+$ vim /etc/profile
 #redis
 export REDIS_SRC=/usr/redis/redis-4.0.11/src
 PATH=$PATH:${REDIS_SRC}
 
-source /etc/profile
-
+$ source /etc/profile
+# test
 [root@localhost redis-4.0.11]# redis-cli
 Could not connect to Redis at 127.0.0.1:6379: Connection refused
 Could not connect to Redis at 127.0.0.1:6379: Connection refused
 not connected>
 ```
 
+## 数据类型
+
+## string
 
 
 
+## hash
 
 
+
+## list
+
+1. lpush + lpop = Stack
+2. lpush + rpop = Queue
+3. lpush + ltrim = Capped Collection
+4. lpush + brpop = Message Queue
+
+## set
+
+标签相关
+
+sadd = tagging
+
+随机相关
+
+spop/srandmeneber = Random item
+
+社交相关
+
+sadd + sinter = Socia Graph
+
+## zset
 
 
 
@@ -253,18 +269,24 @@ appendonly yes
 配置文件的内容如下：
 
 ```shell
+################################## MODULES #####################################
+loadmodule /opt/redis/modules/libredis_cell.so
 ################################## NETWORK #####################################
+bind 0.0.0.0
+protected-mode no
 port 6379
 ################################# GENERAL #####################################
 daemonize yes
-logfile "6379.log"
+logfile "redis-cluster-6379.log"
 ################################ SNAPSHOTTING  ################################
-dbfilename "dump-6379.rdb"
-dir "/usr/redis/data"
+dbfilename "redis-cluster-dump-6379.rdb"
+dir "/opt/redis/cluster/data"
+################################## SECURITY ###################################
+requirepass 94a841dc599542cba142799aa762eee8
 ################################ REDIS CLUSTER  ###############################
 cluster-enabled yes
 cluster-node-timeout 15000
-cluster-config-file nodes-6379.conf
+cluster-config-file "redis-cluster-nodes-6379.config"
 cluster-require-full-coverage no
 ```
 
@@ -1041,7 +1063,9 @@ $ redis-trib.rb create --replicas <slave-number> [ip]:[port] [ip]:[port] [ip]:[p
 >
 > 再次启动集群节点时会找到这个集群配置文件，加载相应的信息。
 
+### redis 5.x版本
 
+在redis 5.x版本不在使用`redis-trib.rb`命令工具创建集群了，如果仍然使用，将会有如下提示：
 
 ```shell
 [root@localhost redis]# redis-trib.rb create --replicas 1 127.0.0.1:6381 127.0.0.1:6382 127.0.0.1:6383 127.0.0.1:6384 127.0.0.1:6385 127.0.0.1:6386
@@ -1061,9 +1085,39 @@ redis-cli --cluster create 127.0.0.1:6381 127.0.0.1:6382 127.0.0.1:6383 127.0.0.
 
 To get help about all subcommands, type:
 redis-cli --cluster help
+```
 
+它告诉我们：
+
+```shell
+警告：redis-trib.rb已不可用！
+您应该使用redis-cli。
+
+所有属于redis-trib.rb的命令和特性已被移动到redis-cli。
+为了使用它们，应该使用--cluster选项调用redis-cli，后面跟着子命令名、参数和选项。
+
+使用以下语法:
+redis-cli --cluster SUBCOMMAND [ARGUMENTS] [OPTIONS]
+
+Example:
+redis-cli -a 94a841dc599542cba142799aa762eee8 --cluster create 192.168.56.3:6379 192.168.56.3:6380 192.168.56.4:6379 192.168.56.4:6380 192.168.56.5:6379 192.168.56.5:6380 --cluster-replicas 1
+
+要获得关于所有子命令的帮助，输入:
+redis-cli --cluster help
+```
+
+#### 使用redis-cli创建集群
+
+我们的集群配置了密码
+
+```shell
 [root@localhost redis]# redis-cli --cluster create 127.0.0.1:6381 127.0.0.1:6382 127.0.0.1:6383 127.0.0.1:6384 127.0.0.1:6385 127.0.0.1:6386 --cluster-replicas 1
 [ERR] Node 127.0.0.1:6381 NOAUTH Authentication required.
+```
+
+添加`-a`参数指定密码
+
+```shell
 [root@localhost redis]# redis-cli --cluster create 127.0.0.1:6381 -a 55a41794b45c4e9b9e87c5091df3be90 127.0.0.1:6382 127.0.0.1:6383 127.0.0.1:6384 127.0.0.1:6385 127.0.0.1:6386 --cluster-replicas 1
 Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
 [ERR] Wrong number of arguments for specified --cluster sub command
@@ -1121,19 +1175,54 @@ M: 20ef4b540a3f5eab832b8a899cb0633db825ead2 127.0.0.1:6383
 [OK] All 16384 slots covered.
 ```
 
+#### cluster help
+
+```shell
+[root@localhost ~]# redis-cli -c -a 94a841dc599542cba142799aa762eee8--cluster help
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
+redis-cli 5.0.2
+To get help about Redis commands type:
+      "help @<group>" to get a list of commands in <group>
+      "help <command>" for help on <command>
+      "help <tab>" to get a list of possible help topics
+      "quit" to exit
+
+To set redis-cli preferences:
+      ":set hints" enable online hints
+      ":set nohints" disable online hints
+Set your preferences in ~/.redisclirc
+```
+
+||
+
+```shell
+[root@localhost ~]# redis-cli -c -a 94a841dc599542cba142799aa762eee8 --cluster help
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
+redis-cli 5.0.2
+要获得关于Redis命令的帮助，请输入:
+      "help @<group>" 获取<group>中的命令列表
+      "help <command>" 获取<command>上的帮助
+      "help <tab>" 获取可能的帮助主题列表
+      "quit" 退出
+
+要设置redis-cli首选项:
+      ":set hints" 使在线提示
+      ":set nohints" 禁用网络提示
+在~/.redisclirc中设置您的首选项
+```
+
+例如：
+
+```shell
+$ redis-cli -c -a 94a841dc599542cba142799aa762eee8 --cluster help slots
+$ redis-cli -c -a 94a841dc599542cba142799aa762eee8 --cluster help create
+```
 
 
-redis安装
-make[3]: gcc：命令未找到
 
-Linux系统初始工具安装
-yum install -y wget
-yum install -y gcc
-yum install -y vim
-yum install -y zlib-devel
-yum install -y openssl-devel
-软连接
+## 
 
-实体vo dto
 
-sql分组
+
+
+

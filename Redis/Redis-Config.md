@@ -23,7 +23,7 @@
 
 
 
-## includes
+## 一、includes（包含）
 
 ```shell
 ################################## INCLUDES ###################################
@@ -45,20 +45,19 @@
 # include /path/to/other.conf
 ```
 
-## modules
+## 二、modules（模块）
 
 ```shell
 
 ################################## MODULES #####################################
 
-# Load modules at startup. If the server is not able to load modules
-# it will abort. It is possible to use multiple loadmodule directives.
+# 启动时加载模块。如果服务器不能加载模块，它将中止。可以使用多个loadmodule指令。
 #
 # loadmodule /path/to/my_module.so
 # loadmodule /path/to/other_module.so
 ```
 
-## network
+## 三、network（网络）
 
 ```shell
 
@@ -87,23 +86,17 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bind 127.0.0.1
 
-# Protected mode is a layer of security protection, in order to avoid that
-# Redis instances left open on the internet are accessed and exploited.
+# 受保护模式是一种安全保护层，为了避免在internet上打开的Redis实例被访问和利用。
 #
-# When protected mode is on and if:
+# 保护模式开启时，如果:
 #
-# 1) The server is not binding explicitly to a set of addresses using the
-#    "bind" directive.
-# 2) No password is configured.
+# 1) 服务器没有使用"bind"指令显式地绑定到一组地址。
+# 2) 没有配置密码。
 #
-# The server only accepts connections from clients connecting from the
-# IPv4 and IPv6 loopback addresses 127.0.0.1 and ::1, and from Unix domain
-# sockets.
+# 服务器只接受从IPv4和IPv6环回地址127.0.0.1和::1以及从Unix域套接字连接的客户机的连接。
 #
-# By default protected mode is enabled. You should disable it only if
-# you are sure you want clients from other hosts to connect to Redis
-# even if no authentication is configured, nor a specific set of interfaces
-# are explicitly listed using the "bind" directive.
+# 默认情况下启用保护模式。 只有当您确信希望来自其他主机的客户机连接到Redis时(即使没有
+# 配置身份验证，也没有使用"bind"指令显式列出特定的接口集)，才应该禁用它。
 protected-mode yes
 
 # Accept connections on the specified port, default is 6379 (IANA #815344).
@@ -149,14 +142,9 @@ timeout 0
 tcp-keepalive 300
 ```
 
-
+## 四、general（综合）
 
 ```shell
-
-
-
-
-
 ################################# GENERAL #####################################
 
 # By default Redis does not run as a daemon. Use 'yes' if you need it.
@@ -220,7 +208,11 @@ databases 16
 # However it is possible to force the pre-4.0 behavior and always show a
 # ASCII art logo in startup logs by setting the following option to yes.
 always-show-logo yes
+```
 
+## 五、snapshotting（快照）
+
+```shell
 ################################ SNAPSHOTTING  ################################
 #
 # Save the DB on disk:
@@ -289,7 +281,11 @@ dbfilename dump.rdb
 #
 # Note that you must specify a directory here, not a file name.
 dir ./
+```
 
+## 六、replication（复制）
+
+```shell
 ################################# REPLICATION #################################
 
 # Master-Replica replication. Use replicaof to make a Redis instance a copy of
@@ -518,7 +514,11 @@ replica-priority 100
 #
 # replica-announce-ip 5.5.5.5
 # replica-announce-port 1234
+```
 
+## 七、security（安全）
+
+```shell
 ################################## SECURITY ###################################
 
 # Require clients to issue AUTH <PASSWORD> before processing any other
@@ -552,7 +552,11 @@ replica-priority 100
 #
 # Please note that changing the name of commands that are logged into the
 # AOF file or transmitted to replicas may cause problems.
+```
 
+## 八、clients（客户端）
+
+```shell
 ################################### CLIENTS ####################################
 
 # Set the max number of connected clients at the same time. By default
@@ -565,7 +569,11 @@ replica-priority 100
 # an error 'max number of clients reached'.
 #
 # maxclients 10000
+```
 
+## 九、memory management（内存管理）
+
+```shell
 ############################## MEMORY MANAGEMENT ################################
 
 # Set a memory usage limit to the specified amount of bytes.
@@ -654,7 +662,11 @@ replica-priority 100
 # the configured maxmemory setting.
 #
 # replica-ignore-maxmemory yes
+```
 
+## 十、lazy freeing（延迟释放）
+
+```shell
 ############################# LAZY FREEING ####################################
 
 # Redis has two primitives to delete keys. One is called DEL and is a blocking
@@ -703,7 +715,11 @@ lazyfree-lazy-eviction no
 lazyfree-lazy-expire no
 lazyfree-lazy-server-del no
 replica-lazy-flush no
+```
 
+## 十一、append only mode（只追加模式）
+
+```shell
 ############################## APPEND ONLY MODE ###############################
 
 # By default Redis asynchronously dumps the dataset on disk. This mode is
@@ -833,6 +849,11 @@ aof-load-truncated yes
 # tail.
 aof-use-rdb-preamble yes
 
+```
+
+## 十二、lua scripting（lua脚本）
+
+```shell
 ################################ LUA SCRIPTING  ###############################
 
 # Max execution time of a Lua script in milliseconds.
@@ -850,7 +871,11 @@ aof-use-rdb-preamble yes
 #
 # Set it to 0 or a negative value for unlimited execution without warnings.
 lua-time-limit 5000
+```
 
+## 十三、redis cluster（redis集群）
+
+```shell
 ################################ REDIS CLUSTER  ###############################
 #
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -968,7 +993,11 @@ lua-time-limit 5000
 
 # In order to setup your cluster make sure to read the documentation
 # available at http://redis.io web site.
+```
 
+## 十四、cluster docker/nat support（集群docker/nat支持）
+
+```shell
 ########################## CLUSTER DOCKER/NAT support  ########################
 
 # In certain deployments, Redis Cluster nodes address discovery fails, because
@@ -1001,7 +1030,11 @@ lua-time-limit 5000
 # cluster-announce-ip 10.1.1.5
 # cluster-announce-port 6379
 # cluster-announce-bus-port 6380
+```
 
+## 十五、show log（显示日志）
+
+```shell
 ################################## SLOW LOG ###################################
 
 # The Redis Slow Log is a system to log queries that exceeded a specified
@@ -1025,7 +1058,11 @@ slowlog-log-slower-than 10000
 # There is no limit to this length. Just be aware that it will consume memory.
 # You can reclaim memory used by the slow log with SLOWLOG RESET.
 slowlog-max-len 128
+```
 
+## 十六、latency monitor（延迟监控）
+
+```shell
 ################################ LATENCY MONITOR ##############################
 
 # The Redis latency monitoring subsystem samples different operations
@@ -1046,7 +1083,11 @@ slowlog-max-len 128
 # monitoring can easily be enabled at runtime using the command
 # "CONFIG SET latency-monitor-threshold <milliseconds>" if needed.
 latency-monitor-threshold 0
+```
 
+## 十七、event notification（事件通知）
+
+```shell
 ############################# EVENT NOTIFICATION ##############################
 
 # Redis can notify Pub/Sub clients about events happening in the key space.
@@ -1092,7 +1133,11 @@ latency-monitor-threshold 0
 #  this feature and the feature has some overhead. Note that if you don't
 #  specify at least one of K or E, no events will be delivered.
 notify-keyspace-events ""
+```
 
+## 十八、advanced config
+
+```shell
 ############################### ADVANCED CONFIG ###############################
 
 # Hashes are encoded using a memory efficient data structure when they have a
@@ -1337,7 +1382,11 @@ rdb-save-incremental-fsync yes
 #
 # lfu-log-factor 10
 # lfu-decay-time 1
+```
 
+## 十九、active defragmentation
+
+```shell
 ########################### ACTIVE DEFRAGMENTATION #######################
 #
 # WARNING THIS FEATURE IS EXPERIMENTAL. However it was stress tested

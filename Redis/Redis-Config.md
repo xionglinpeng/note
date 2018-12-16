@@ -215,14 +215,14 @@ always-show-logo yes
 ```shell
 ################################ SNAPSHOTTING  ################################
 #
-# Save the DB on disk:
+# 将数据库保存在磁盘上:
 #
 #   save <seconds> <changes>
 #
-#   Will save the DB if both the given number of seconds and the given
-#   number of write operations against the DB occurred.
+#   如果同时发生给定的秒数和给定的对数据库的写操作，则会保存数据库。
 #
 #   In the example below the behaviour will be to save:
+#   在下面的例子中，行为将是保存:
 #   after 900 sec (15 min) if at least 1 key changed
 #   after 300 sec (5 min) if at least 10 keys changed
 #   after 60 sec if at least 10000 keys changed

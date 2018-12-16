@@ -356,6 +356,27 @@ public class RedisScriptAutoConfiguration {
 }
 ```
 
+内部类方式：
 
+```java
+List execute = redisTemplate.execute(new RedisScript<List>() {
+    @Override
+    @NonNull
+    public String getSha1() {
+        return "90483b568570cfb5f52d8d278e2bc1c1e11f9c64";
+    }
 
+    @Override
+    public Class<List> getResultType() {
+        return List.class;
+    }
+
+    @Override
+    @NonNull
+    public String getScriptAsString() {
+        return "return redis.call('CL.THROTTLE',KEYS[1],ARGV[1],ARGV[2],ARGV[3],ARGV[4])";
+    }
+}, Collections.singletonList("user123"), "15", "30", "60", "1");
+System.out.println(execute);//[0, 16, 15, -1, 2]
+```
 

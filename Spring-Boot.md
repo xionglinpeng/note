@@ -235,7 +235,7 @@ new SpringApplicationBuilder()
 
 #### [23.6. Web Environment](https://docs.spring.io/spring-boot/docs/2.1.0.RELEASE/reference/htmlsingle/#boot-features-web-environment)
 
-`SpringApplication`尝试以`ApplicationContext`的名义创建正确的类型。用于确定a的算法`WebEnvironmentType`非常简单：
+`SpringApplication`尝试以`ApplicationContext`的名义创建正确的类型。用于确定它的算法`WebEnvironmentType`非常简单：
 
 - 如果存在Spring MVC，使用`AnnotationConfigServletWebServerApplicationContext`。
 - 如果Spring MVC不存在并且Spring WebFlux存在，使用`AnnotationConfigReactiveWebServerApplicationContext`。
@@ -285,9 +285,9 @@ public class MyBean implements CommandLineRunner {
 
 如果某些定义的`CommandLineRunner`或`ApplicationRunner`beans需要以特定的顺序调用，你可以实现`org.springframework.core.Ordered`接口或使用`org.springframework.core.annotation.Order`注解。
 
-#### [23.9. Application Exit](https://docs.spring.io/spring-boot/docs/2.1.0.RELEASE/reference/htmlsingle/#boot-features-application-exit)？？？
+#### [23.9. Application Exit](https://docs.spring.io/spring-boot/docs/2.1.0.RELEASE/reference/htmlsingle/#boot-features-application-exit)
 
-每个`SpringApplication`向JVM注册一个关闭挂钩以确保`ApplicationContext`退出时正常关闭。所有标准的Spring生命周期回调（例如`DisposableBean`接口或`@PreDestroy`注解）都可以使用。另外，如果bean`org.springframework.boot.ExitCodeGenerator`在`SpringApplication.exit()`调用时希望返回特定的退出代码，它们可以实现该接口欧。然后可以将此退出代码传递给`System.exit()`状态代码，如下例所示：
+每个`SpringApplication`向JVM注册一个关闭钩子，以确保`ApplicationContext`在退出时优雅地关闭。可以使用所有标准的Spring生命周期回调(例如`DisposableBean`接口或`@PreDestroy`注释)。另外，如果希望在调用`SpringApplication.exit()`时返回特定的退出代码，则可以实现`org.springframework.boot.ExitCodeGenerator`接口。然后可以将这个退出代码传递给`System.exit()`，将其作为状态代码返回，如下面的示例所示:
 
 ```java
 @SpringBootApplication
@@ -306,13 +306,13 @@ public class ExitCodeApplication {
 }
 ```
 
-而且，`ExitCodeGenerator`界面可以通过例外来实现。遇到这样的异常时，Spring Boot将返回由实现`getExitCode()`方法提供的退出代码。
+此外，`ExitCodeGenerator`接口可以由异常实现。当遇到这种异常时，Spring Boot将返回实现的`getExitCode()`方法提供的退出代码。
 
 #### [23.10. Admin Features](https://docs.spring.io/spring-boot/docs/2.1.0.RELEASE/reference/htmlsingle/#boot-features-application-admin)
 
-通过指定`spring.application.admin.enabled`属性可以为应用程序启用与管理相关的功能。这暴露了`SpringApplicationAdminMXBean`平台上的`MBeanServer`。您可以使用此公告远程管理您的Spring Boot应用程序。此功能对于任何服务包装器实现也可能有用。
+通过指定`spring.application.admin.enabled`属性可以为应用程序启用与管理相关的功能。这暴露了`SpringApplicationAdminMXBean`平台上的`MBeanServer`。您可以使用此功能远程管理您的Spring Boot应用程序。此功能对于任何服务包装器实现也可能有用。
 
-> ![](https://docs.spring.io/spring-boot/docs/2.1.1.RELEASE/reference/htmlsingle/images/tip.png) 如果您想知道应用程序在那个HTTP端口上运行，请实现键来回去属性`local.server.port`。
+> ![](https://docs.spring.io/spring-boot/docs/2.1.1.RELEASE/reference/htmlsingle/images/tip.png) 如果您想知道应用程序在那个HTTP端口上运行，请使用键来获取属性`local.server.port`。
 
 > ![](https://docs.spring.io/spring-boot/docs/2.1.1.RELEASE/reference/htmlsingle/images/caution.png) 启用此功能时要小心，因为MBean公开了关闭应用程序的方法。
 

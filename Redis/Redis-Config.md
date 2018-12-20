@@ -241,35 +241,45 @@ save 60 10000
 
 # By default Redis will stop accepting writes if RDB snapshots are enabled
 # (at least one save point) and the latest background save failed.
+# 默认情况下，如果启用了RDB快照(至少一个保存点)，并且最新的后台保存失败，Redis将停止接受写操作。
 # This will make the user aware (in a hard way) that data is not persisting
 # on disk properly, otherwise chances are that no one will notice and some
 # disaster will happen.
-#
+#这将使用户(以一种困难的方式)意识到数据没有正确地保存在磁盘上，否则很可能没有人会注意到，并且会发生一些灾难。
+
 # If the background saving process will start working again Redis will
 # automatically allow writes again.
-#
+#如果后台保存进程将再次启动，Redis将自动允许再次写入。
 # However if you have setup your proper monitoring of the Redis server
 # and persistence, you may want to disable this feature so that Redis will
 # continue to work as usual even if there are problems with disk,
 # permissions, and so forth.
+# 但是，如果您已经设置了对Redis服务器和持久性的适当监视，那么您可能希望禁用该特性，以便即使在磁盘、权限等方面存在问题，Redis也能继续正常工作。
 stop-writes-on-bgsave-error yes
 
 # Compress string objects using LZF when dump .rdb databases?
+当转储.rdb数据库时，使用LZF压缩字符串对象?
 # For default that's set to 'yes' as it's almost always a win.
+对于默认设置为“是”，因为它几乎总是一个胜利。
 # If you want to save some CPU in the saving child set it to 'no' but
 # the dataset will likely be bigger if you have compressible values or keys.
+如果您想在save子进程中节省一些CPU，请将它设置为“no”，但是如果您具有可压缩的值或键，那么数据集可能会更大。
 rdbcompression yes
 
 # Since version 5 of RDB a CRC64 checksum is placed at the end of the file.
+由于RDB版本5,CRC64校验和被放在文件的末尾。
 # This makes the format more resistant to corruption but there is a performance
 # hit to pay (around 10%) when saving and loading RDB files, so you can disable it
 # for maximum performances.
+这使得格式更能抵抗损坏，但是在保存和加载RDB文件时，性能会受到影响(大约10%)，因此可以禁用它以获得最大性能。
 #
 # RDB files created with checksum disabled have a checksum of zero that will
 # tell the loading code to skip the check.
+禁用校验和创建的RDB文件的校验和为零，它将告诉加载代码跳过校验。
 rdbchecksum yes
 
 # The filename where to dump the DB
+要转储数据库的文件名
 dbfilename dump.rdb
 
 # The working directory.
@@ -726,6 +736,7 @@ replica-lazy-flush no
 # good enough in many applications, but an issue with the Redis process or
 # a power outage may result into a few minutes of writes lost (depending on
 # the configured save points).
+默认情况下，Redis异步地将数据集转储到磁盘上。这种模式在许多应用程序中已经足够好了，但是Redis进程的问题或断电可能导致几分钟的写丢失(取决于配置的保存点)。
 #
 # The Append Only File is an alternative persistence mode that provides
 # much better durability. For instance using the default data fsync policy

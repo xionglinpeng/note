@@ -77,7 +77,7 @@ Spring提供了四个注解来声明缓存规则：
 | ------------- | ------------------------------------------------------------ |
 | `@Cacheable`  | 表明Spring在调用方法之前，首先应该在缓存中查找方法的返回值。如果这个值能够找到，就会返回缓存的值。否则，这个方法就被被调用，返回值会放到缓存之中。 |
 | `@CachePut`   | 表明Spring应该将方法的返回值放到缓存中。在方法的调用前并不会检查缓存，方法始终都会被调用。 |
-| `@CacheEvict` | 表明Spring应该在缓存中清楚一个或多个条目。                   |
+| `@CacheEvict` | 表明Spring应该在缓存中清除一个或多个条目。                   |
 | `@Caching`    | 这时一个分组的注解，能够同时应用多个其他的缓存注解。         |
 
 ### 2.1、填充缓存
@@ -354,13 +354,176 @@ Spring的cache命名空间提供了使用XML声明缓存规则的方法，可以
 
 
 
+## 源码分析
+
+```java
+@Nullable
+	protected Object execute(CacheOperationInvoker invoker, Object target, Method method, Object[] args) {
+		// Check whether aspect is enabled (to cope with cases where the AJ is pulled in automatically)
+		if (this.initialized) {
+			Class<?> targetClass = getTargetClass(target);
+            //获取缓存操作源
+			CacheOperationSource cacheOperationSource = getCacheOperationSource();
+			if (cacheOperationSource != null) {
+                //从缓存操作源中获取当前方法的缓存操作（缓存操作源中已经封装了有哪些缓存操作）
+				Collection<CacheOperation> operations = cacheOperationSource.getCacheOperations(method, targetClass);
+				if (!CollectionUtils.isEmpty(operations)) {
+                    //将当前方法的缓存操作包装为CacheOperationContexts，并执行缓存操作
+					return execute(invoker, method,
+							new CacheOperationContexts(operations, method, args, target, targetClass));
+				}
+			}
+		}
+
+		return invoker.invoke();
+	}
+```
 
 
 
 
 
+```java
+@Nullable
+private Object execute(final CacheOperationInvoker invoker, Method method, CacheOperationContexts contexts) {
+   // 同步调用的特殊处理
+   if (contexts.isSynchronized()) {
+      CacheOperationContext context = contexts.get(CacheableOperation.class).iterator().next();
+      if (isConditionPassing(context, CacheOperationExpressionEvaluator.NO_RESULT)) {
+         Object key = generateKey(context, CacheOperationExpressionEvaluator.NO_RESULT);
+         Cache cache = context.getCaches().iterator().next();
+         try {
+            return wrapCacheValue(method, cache.get(key, () -> unwrapReturnValue(invokeOperation(invoker))));
+         }
+         catch (Cache.ValueRetrievalException ex) {
+            // 调用程序将所有可抛出的包装器包装在一个可抛出包装器实例中，
+            // 这样我们就可以确保堆栈中有一个可抛出的包装器。
+            // The invoker wraps any Throwable in a ThrowableWrapper instance so we
+            // can just make sure that one bubbles up the stack.
+            throw (CacheOperationInvoker.ThrowableWrapper) ex.getCause();
+         }
+      }
+      else {
+         // 不需要缓存，只需要调用底层方法
+         return invokeOperation(invoker);
+      }
+   }
+
+   // 处理前期所有的删除操作 
+   // Process any early evictions
+   processCacheEvicts(contexts.get(CacheEvictOperation.class), true,
+         CacheOperationExpressionEvaluator.NO_RESULT);
+
+   // 检查是否有匹配条件的缓存项，如果有缓存项，返回值包装器
+   Cache.ValueWrapper cacheHit = findCachedItem(contexts.get(CacheableOperation.class));
+   // 如果没有找到缓存项，使用缓存操作@Cacheable，将目标方法缓存值添加到缓存中
+   List<CachePutRequest> cachePutRequests = new LinkedList<>();
+   if (cacheHit == null) {
+      collectPutRequests(contexts.get(CacheableOperation.class),
+            CacheOperationExpressionEvaluator.NO_RESULT, cachePutRequests);
+   }
+
+   Object cacheValue;
+   Object returnValue;
+
+   if (cacheHit != null && !hasCachePut(contexts)) {
+      // 如果没有@CachePuts缓存操作，就使用缓存命中
+      cacheValue = cacheHit.get();
+      returnValue = wrapCacheValue(method, cacheValue);
+   }
+   else {
+      // 如果没有命中缓存，则调用目标方法
+      returnValue = invokeOperation(invoker);
+      cacheValue = unwrapReturnValue(returnValue);
+   }
+
+   // 使用缓存操作@CachePuts，将缓存值添加到缓存中
+   collectPutRequests(contexts.get(CachePutOperation.class), cacheValue, cachePutRequests);
+
+   // 处理从@Cacheable和@CachePut处收集的put请求
+   for (CachePutRequest cachePutRequest : cachePutRequests) {
+      cachePutRequest.apply(cacheValue);
+   }
+   // 处理后期所有的删除操作 
+   processCacheEvicts(contexts.get(CacheEvictOperation.class), false, cacheValue);
+
+   return returnValue;
+}
+```
 
 
+
+
+
+```java
+/**
+  * 仅为传递的条件{@link CacheableOperation}查找缓存项。
+  * @param contexts 缓存的操作
+  * @return 保存缓存项的{@link Cache.ValueWrapper}，如果没有找到缓存项，则为{@code null}
+  */
+@Nullable
+private Cache.ValueWrapper findCachedItem(Collection<CacheOperationContext> contexts) {
+    Object result = CacheOperationExpressionEvaluator.NO_RESULT;
+    for (CacheOperationContext context : contexts) {
+        if (isConditionPassing(context, result)) {
+            Object key = generateKey(context, result);
+            Cache.ValueWrapper cached = findInCaches(context, key);
+            if (cached != null) {
+                return cached;
+            }
+            else {
+                if (logger.isTraceEnabled()) {
+                    logger.trace("No cache entry for key '" + key + "' in cache(s) " + context.getCacheNames());
+                }
+            }
+        }
+    }
+    return null;
+}
+```
+
+
+
+```java
+@Nullable
+private Cache.ValueWrapper findInCaches(CacheOperationContext context, Object key) {
+    for (Cache cache : context.getCaches()) {
+        Cache.ValueWrapper wrapper = doGet(cache, key);
+        if (wrapper != null) {
+            if (logger.isTraceEnabled()) {
+                logger.trace("Cache entry for key '" + key + "' found in cache '" + cache.getName() + "'");
+            }
+            return wrapper;
+        }
+    }
+    return null;
+}
+```
+
+
+
+```java
+public interface Cache {
+    
+   ......
+       
+   /**
+    * 表示缓存值的(包装器)对象。
+    */
+    @FunctionalInterface
+    interface ValueWrapper {
+        /**
+         * 返回缓存中的实际值。
+         */
+        @Nullable
+        Object get();
+    } 
+    
+    ......
+        
+}
+
+```
 
 
 

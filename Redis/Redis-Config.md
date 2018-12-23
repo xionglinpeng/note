@@ -319,11 +319,10 @@ dir ./
 #
 # replicaof <masterip> <masterport>
 
-# If the master is password protected (using the "requirepass" configuration
-# directive below) it is possible to tell the replica to authenticate before
-# starting the replication synchronization process, otherwise the master will
-# refuse the replica request.
-#
+
+# 如果主服务器受密码保护(使用下面的“requirepass”配置指令)，可以在启动复制同步过程之前告诉
+# 副本进行身份验证，否则主服务器将拒绝副本请求。
+# 
 # masterauth <master-password>
 
 # When a replica loses its connection with the master, or when the replication

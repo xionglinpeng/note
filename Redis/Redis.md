@@ -281,8 +281,16 @@ logfile "redis-cluster-6379.log"
 ################################ SNAPSHOTTING  ################################
 dbfilename "redis-cluster-dump-6379.rdb"
 dir "/opt/redis/cluster/data"
+################################# REPLICATION #################################
+masterauth 94a841dc599542cba142799aa762eee8
 ################################## SECURITY ###################################
 requirepass 94a841dc599542cba142799aa762eee8
+############################## APPEND ONLY MODE ###############################
+appendonly yes
+appendfilename "appendonly-6379.aof"
+appendfsync everysec
+auto-aof-rewrite-percentage 100
+auto-aof-rewrite-min-size 64mb
 ################################ REDIS CLUSTER  ###############################
 cluster-enabled yes
 cluster-node-timeout 15000

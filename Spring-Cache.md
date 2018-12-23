@@ -356,6 +356,75 @@ Spring的cache命名空间提供了使用XML声明缓存规则的方法，可以
 
 ## 源码分析
 
+在开始源码分析之前，首先先说明一下Spring Cache源码的关键接口与类，以及它们之间的结构和关联关系。
+
+核心类和接口如下：
+
+- `org.springframework.cache.interceptor.BeanFactoryCacheOperationSourceAdvisor`
+- `org.springframework.cache.interceptor.CacheInterceptor`
+
+- `org.springframework.cache.interceptor.CacheOperationSource`
+  - `org.springframework.cache.annotation.AnnotationCacheOperationSource`
+  - `org.springframework.cache.interceptor.NameMatchCacheOperationSource`
+  - `org.springframework.cache.interceptor.CompositeCacheOperationSource`
+- `org.springframework.cache.interceptor.BasicOperation`
+  - `org.springframework.cache.interceptor.CacheOperation`
+    - `org.springframework.cache.interceptor.CacheEvictOperation`
+    - `org.springframework.cache.interceptor.CachePutOperation`
+    - `org.springframework.cache.interceptor.CacheableOperation`
+- `org.springframework.cache.annotation.CacheAnnotationParser`
+  - `org.springframework.cache.annotation.SpringCacheAnnotationParser`
+  - `org.springframework.cache.transaction.TransactionAwareCacheDecorator`
+- `org.springframework.cache.interceptor.CacheResolver`
+  - `org.springframework.cache.interceptor.SimpleCacheResolver`
+  - `org.springframework.cache.interceptor.NamedCacheResolver`
+  - `org.springframework.cache.jcache.interceptor.SimpleExceptionCacheResolver`
+  - `org.springframework.cache.jcache.interceptor.CacheResolverAdapter`
+- `org.springframework.cache.CacheManager`
+  - `org.springframework.cache.support.SimpleCacheManager`
+  - `org.springframework.data.redis.cache.RedisCacheManager`
+  - `org.springframework.cache.concurrent.ConcurrentMapCacheManager`
+  - `org.springframework.cache.ehcache.EhCacheCacheManager`
+  - `org.springframework.cache.jcache.JCacheCacheManager`
+  - `org.springframework.cache.support.CompositeCacheManager`
+
+- `org.springframework.cache.Cache`
+  - `org.springframework.cache.concurrent.ConcurrentMapCache`
+  - `org.springframework.cache.ehcache.EhCacheCache`
+  - `org.springframework.data.redis.cache.RedisCache`
+  - `org.springframework.cache.jcache.JCacheCache`
+  - `org.springframework.cache.support.NoOpCache`
+  - `org.springframework.cache.caffeine.CaffeineCache`
+
+- `org.springframework.cache.interceptor.KeyGenerator`
+  - `org.springframework.cache.interceptor.DefaultKeyGenerator`
+  - `org.springframework.cache.jcache.interceptor.KeyGeneratorAdapter`
+  - `org.springframework.cache.interceptor.SimpleKeyGenerator`
+
+Spring Cache是基于AOP实现的，类`BeanFactoryCacheOperationSourceAdvisor`和`CacheInterceptor`就是Spring Cache AOP的切面和增强。
+
+`CacheOperationSource`：缓存操作源，它封装了具有哪些缓存操作。
+
+`CacheOperation`：缓存操作对象，对应具体的缓存操作，例如`@Cacheable`、`@CachePut`、`@CacheEvict`。
+
+`CacheAnnotationParser`：缓存注解解析器，用于将具体的缓存操作注解解析为`CacheOperation`对象。
+
+`CacheResolver`：缓存解析器，管理缓存管理器。
+
+`CacheManager`：缓存管理器，管理具体的缓存，例如`RedisCache`、`EhCacheCache`、`JCacheCache`等。
+
+`Cache`：缓存，实际操作缓存数据的对象，将数据写入缓存，或者从缓存删除，就是此对象完成这些具体工作。
+
+`KeyGenerator`：键生成器，故名思义，就是缓存键的生成对象。
+
+`BeanFactoryCacheOperationSourceAdvisor`在拦截方法的时候首先去缓存操作源（`CacheOperationSource`）中找到是否有对应的缓存操作`CacheOperation`，如果找到了就进行拦截。简单的说，就是被拦截的方法是否有标注缓存操作注解（`@Cacheable`、`@CachePut`、`@CacheEvict`），如果有标注，则进行拦截。而在缓存操作源中，就是通过缓存注解解析器（`CacheAnnotationParser`），将缓存操作注解转换为对应的缓存操作对象，然后返回。
+
+一旦确认被拦截，就开始执行增强代码块，
+
+我们从注解入口开始分析
+
+org.springframework.cache.interceptor.CacheAspectSupport.CacheOperationContext
+
 ```java
 @Nullable
 	protected Object execute(CacheOperationInvoker invoker, Object target, Method method, Object[] args) {
@@ -528,4 +597,51 @@ public interface Cache {
 
 
 
+
+
+
+```java
+/**
+ * Return the {@link CacheOperationMetadata} for the specified operation.
+ * 返回指定操作的{@link CacheOperationMetadata}。
+ * <p>Resolve the {@link CacheResolver} and the {@link KeyGenerator} to be
+ * used for the operation.
+ * <p>解析要用于操作的{@link CacheResolver}和{@link KeyGenerator}。
+ * @param operation 操作
+ * @param method 调用操作的方法
+ * @param targetClass 目标类型
+ * @return 已解析的操作元数据
+ */
+protected CacheOperationMetadata getCacheOperationMetadata(
+      CacheOperation operation, Method method, Class<?> targetClass) {
+
+   CacheOperationCacheKey cacheKey = new CacheOperationCacheKey(operation, method, targetClass);
+   CacheOperationMetadata metadata = this.metadataCache.get(cacheKey);
+   if (metadata == null) {
+      KeyGenerator operationKeyGenerator;
+      if (StringUtils.hasText(operation.getKeyGenerator())) {
+         operationKeyGenerator = getBean(operation.getKeyGenerator(), KeyGenerator.class);
+      }
+      else {
+         operationKeyGenerator = getKeyGenerator();
+      }
+      CacheResolver operationCacheResolver;
+      if (StringUtils.hasText(operation.getCacheResolver())) {
+         operationCacheResolver = getBean(operation.getCacheResolver(), CacheResolver.class);
+      }
+      else if (StringUtils.hasText(operation.getCacheManager())) {
+         CacheManager cacheManager = getBean(operation.getCacheManager(), CacheManager.class);
+         operationCacheResolver = new SimpleCacheResolver(cacheManager);
+      }
+      else {
+         operationCacheResolver = getCacheResolver();
+         Assert.state(operationCacheResolver != null, "No CacheResolver/CacheManager set");
+      }
+      metadata = new CacheOperationMetadata(operation, method, targetClass,
+            operationKeyGenerator, operationCacheResolver);
+      this.metadataCache.put(cacheKey, metadata);
+   }
+   return metadata;
+}
+```
 

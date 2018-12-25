@@ -219,19 +219,17 @@ always-show-logo yes
 #
 #   save <seconds> <changes>
 #
-#   如果同时发生给定的秒数和给定的对数据库的写操作，则会保存数据库。
+#   如果在指定的时间段内（秒）发生指定数量的写操作，则会进行一次快照保存。
 #
-#   In the example below the behaviour will be to save:
-#   在下面的例子中，行为将是保存:
-#   after 900 sec (15 min) if at least 1 key changed
-#   after 300 sec (5 min) if at least 10 keys changed
-#   after 60 sec if at least 10000 keys changed
+#   在下面的例子中，这些情况将会触发快照:
+#   
+# 	在900秒(15分钟)内，如果至少有一个键改变
+# 	300秒(5分钟)内，如果至少有10个键改变
+# 	60秒后内如果至少有10000个键改变
 #
-#   Note: you can disable saving completely by commenting out all "save" lines.
+#   注意:您可以通过注释掉所有“save”行来完全禁用save。
 #
-#   It is also possible to remove all the previously configured save
-#   points by adding a save directive with a single empty string argument
-#   like in the following example:
+#   也可以通过添加一个带有一个空字符串参数的save指令来删除前面配置的所有保存点，如下面的示例所示:
 #
 #   save ""
 
@@ -239,57 +237,42 @@ save 900 1
 save 300 10
 save 60 10000
 
-# By default Redis will stop accepting writes if RDB snapshots are enabled
-# (at least one save point) and the latest background save failed.
-# 默认情况下，如果启用了RDB快照(至少一个保存点)，并且最新的后台保存失败，Redis将停止接受写操作。
-# This will make the user aware (in a hard way) that data is not persisting
-# on disk properly, otherwise chances are that no one will notice and some
-# disaster will happen.
-#这将使用户(以一种困难的方式)意识到数据没有正确地保存在磁盘上，否则很可能没有人会注意到，并且会发生一些灾难。
-
-# If the background saving process will start working again Redis will
-# automatically allow writes again.
-#如果后台保存进程将再次启动，Redis将自动允许再次写入。
-# However if you have setup your proper monitoring of the Redis server
-# and persistence, you may want to disable this feature so that Redis will
-# continue to work as usual even if there are problems with disk,
-# permissions, and so forth.
-# 但是，如果您已经设置了对Redis服务器和持久性的适当监视，那么您可能希望禁用该特性，以便即使在磁盘、权限等方面存在问题，Redis也能继续正常工作。
+# 默认情况下，在发生RDB快照会BGSAVE执行失败的那一刻，Redis将停止接收写操作。
+# 
+# 这会使用户察觉（通常比较困难）到数据没有正确的持久化到磁盘。否则有有可能出现不被察觉的灾难性后果。
+# 
+# 当后台BGSAVE子进程可以再次开始工作时，Redis会再次自动允许写入。
+# 
+# 但是，如果您已经设置了对Redis服务器和持久性的适当监视，那么您可能希望禁用该特性，以便即使在磁盘、
+# 权限等方面存在问题，Redis也能继续正常工作。
 stop-writes-on-bgsave-error yes
 
-# Compress string objects using LZF when dump .rdb databases?
-当转储.rdb数据库时，使用LZF压缩字符串对象?
-# For default that's set to 'yes' as it's almost always a win.
-对于默认设置为“是”，因为它几乎总是一个胜利。
-# If you want to save some CPU in the saving child set it to 'no' but
-# the dataset will likely be bigger if you have compressible values or keys.
-如果您想在save子进程中节省一些CPU，请将它设置为“no”，但是如果您具有可压缩的值或键，那么数据集可能会更大。
+# dump.rdb数据库使用LZF压缩字符串对象?
+# 
+# 默认设置为“yes”，因为总是有可压缩的数据。
+# 
+# 如果您想在save子进程中节省一些CPU，请将它设置为“no”，但是如果您具有可压缩的值或键，
+# 那么数据集可能会更大。
 rdbcompression yes
 
-# Since version 5 of RDB a CRC64 checksum is placed at the end of the file.
-由于RDB版本5,CRC64校验和被放在文件的末尾。
-# This makes the format more resistant to corruption but there is a performance
-# hit to pay (around 10%) when saving and loading RDB files, so you can disable it
-# for maximum performances.
-这使得格式更能抵抗损坏，但是在保存和加载RDB文件时，性能会受到影响(大约10%)，因此可以禁用它以获得最大性能。
+# 从RDB的第5版开始，CRC64校验和位于文件末尾。
+# 
+# 这使得格式更能抵抗损坏，但是在保存和加载RDB文件时，会损失(大约10%)性能，
+# 因此，您可以禁用它以获得最大性能。
 #
-# RDB files created with checksum disabled have a checksum of zero that will
-# tell the loading code to skip the check.
-禁用校验和创建的RDB文件的校验和为零，它将告诉加载代码跳过校验。
+# 禁用校验，创建的RDB文件的校验和为零，它将告诉加载代码跳过检查。
 rdbchecksum yes
 
-# The filename where to dump the DB
-要转储数据库的文件名
+# 快照文件名，默认dump.rdb。
 dbfilename dump.rdb
 
-# The working directory.
-#
-# The DB will be written inside this directory, with the filename specified
-# above using the 'dbfilename' configuration directive.
-#
-# The Append Only File will also be created inside this directory.
-#
-# Note that you must specify a directory here, not a file name.
+# 工作目录。
+# 
+# 快照将写在这个目录中，上面使用“dbfilename”配置指令指定了文件名。
+# 
+# AOF日志文件也将在这个目录中创建。
+# 
+# 注意，这里必须指定一个目录，而不是文件名。
 dir ./
 ```
 

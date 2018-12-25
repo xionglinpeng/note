@@ -42,6 +42,10 @@ private void setbit(){
 
 ## bitcount
 
+```shell
+$ bitcount key [start end]
+```
+
 
 
 ## bitpos
@@ -52,7 +56,42 @@ private void setbit(){
 
 ## bitfiled
 
+> 其实版本：2.6.0
+>
+> 时间复杂度：O(N)
 
+统计字符串被设置为1的bit数。
+
+一般情况下，给定的整个字符串都会被进行计数，通过指定额外的start或end参数，可以让计数只在特定的位上进行。
+
+start和end参数的设置和`getrange`命令类似，都可以使用负数值；比如-1表示最后一个为，而-2表示倒数第二个为，依次类推。
+
+不存在的key被当成是空字符串类处理，因此对一个不存在的key进行`bitcount`操作，结果为0。
+
+**返回值**
+
+被设置为1的位的数量。
+
+**例子**
+
+
+
+模式：使用bitmap实现用户上线次数统计
+
+bitmap对于一些特点类型的计算非常有效。
+
+假设现在我们希望记录自己网站上的用户的上线评论，比如说，计算用户A上线了多少天，诸如此类，以此作为数据。从而决定让那些用户参数beta测试等活动——这个模式可以使用`setbit`和`bitcount`来实现。比如说，每当用户在某一天上线的时候，我们就使用`setbit`，以用户名作为key，将那天所代表的网站的上线日作为`offset`参数，并将这个`offset`上的位设置为1。
+
+举个例子，如果今天是网站上线的第100天，而用户peter在今天阅览过网站，那么执行命令`setbit perter 100 1`；如果明天peter也继续阅览网站，那么执行命令`setbit peter 101 1`，以此类推。当要计算peter总共以来的上线次数时，就是使用`bitcount`命令；执行`bitcount peter`，得出的结果就是peter上线的总天数。
+
+性能
+
+前面的上线次数统计例子，即使运行10年，占用的空间也只是每个用户10*365比特位（bit），也即是每个用户456个字节。对于这种大小的数据来说，`bitcount`的处理速度就像`get`和`incr`这种O(1)复杂度的操作一样快。
+
+如果你的bitmap数据非常大，那么可以考虑使用一下两种方法：
+
+- 将一个大的bitmap分散到不同的key中，作为小的bitmap来处理。使用Lua脚本可以很方便的完成这一工作。
+- 使用`bitcount`的start和end参数，每次只对所需的部分位进行计算，将位的积累工作（accumulating）放到客户端进行。并且对结果进行缓存（caching）。
 
 
 
@@ -131,7 +170,7 @@ opeartion可以是`AND`、`OR`、`XOR`、`NOT`这四种操作中的任意一种�
 
 ### Code Operation
 
-下面是使用`Spring-Data-Redis`API编写的代码实例：
+下面是使用`Spring-Data-Redis`API编写的代码示例：
 
 ```java
 private void bitop(){

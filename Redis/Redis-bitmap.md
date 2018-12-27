@@ -4,11 +4,55 @@
 
 ## setbit
 
+```shell
+SETBIT key offset value
+```
 
+> 起始版本：2.2.0
+>
+> 时间复杂度：O(1)
 
+设置或者清空key的value（字符串）在offset处的bit值。
 
+那个位置的bit要么被设置，要么被清空，这个由value（只能是0或者1）来决定。当key不存在的时候，就创建一个新的字符串value。要确保这个字符串大到在offset处有bit值。参数offset需要大于等于0，并且小于232（限制bitmap大小为512）。当key对应的字符串增大的时候，新增的部分bit值都是设置为0。
 
+警告：当set最后一个bit（offset等于2^{32}-1）并且key还没有一个字符串value或者其value是个比较小的字符串时，Redis需要立即分配所有内存，这有可能会导致服务阻塞一会。
 
+在一台2.10MacBook Pro上：
+
+- offset为2^{32}-1（分配512MB）需要~300ms；
+- offset为2^{30}-1（分配128MB）需要~80ms;
+- offset为2^{28}-1（分配32MB）需要~30ms;
+- offset为2^{26}-1（分配8MB）需要~8ms;
+
+注意：一旦第一次内存分配完，后面对同一个key调用`setbit`就不会预先得到内存分配。
+
+### 返回值
+
+在offset处原来的bit值
+
+### Command Operation
+
+```shell
+127.0.0.1:6379> setbit hello 1 1
+(integer) 0
+127.0.0.1:6379> setbit hello 2 1
+(integer) 0
+127.0.0.1:6379> setbit hello 4 1
+(integer) 0
+127.0.0.1:6379> setbit hello 9 1
+(integer) 0
+127.0.0.1:6379> setbit hello 10 1
+(integer) 0
+127.0.0.1:6379> setbit hello 13 1
+(integer) 0
+127.0.0.1:6379> setbit hello 15 1
+(integer) 0
+127.0.0.1:6379> get hello
+"he"
+```
+
+### Code Operation
 
 ```java
 /**
@@ -18,9 +62,9 @@ private void setbit(){
     ValueOperations<String, String> operations = stringRedisTemplate.opsForValue();
     Random random = new Random();
     for (int i = 0; i < 365; i++) {
-        int b = random.nextInt(0B10);
-        operations.setBit("bitmap",i, b == 1);
-        System.out.print(b);
+        boolean b = random.nextBoolean();
+        operations.setBit("bitmap",i, b);
+        System.out.print(b?1:0);
     }
     System.out.println();
 }
@@ -32,11 +76,38 @@ private void setbit(){
 01010100001100101000010100100111110101001111110110000110001000101111110000110100100101010001111010101001001101111100111110011111101110011101000011101001100010101000111011100010011100001110010010110001011010000100011110100111000101000100101001111101011000111110000001001100000000001000100001100110100100011100001010010100111110100000011101111111011100011100111000001
 ```
 
-
-
-
-
 ## getbit
+
+```shell
+GETBIT key offset
+```
+
+> 起始版本：2.2.0
+>
+> 时间复杂度：O(1)
+
+返回key对应的string在offset处的bit值，当offset超出了字符串长度的时候，这个字符串就被假定为由0比特填充的连续空间。当key不存在的时候，它就认为是一个空字符串。所以offset总是超出范围，然后value也被认为是由0比特填充的连续空间到内存分配。
+
+### 返回值
+
+在offset处的bit值。
+
+### Command Operation
+
+```shell
+127.0.0.1:6379> getbit hello 0
+(integer) 0
+127.0.0.1:6379> getbit hello 1
+(integer) 1
+127.0.0.1:6379> getbit hello 2
+(integer) 1
+127.0.0.1:6379> getbit hello 3
+(integer) 0
+127.0.0.1:6379> getbit hello 4
+(integer) 1
+127.0.0.1:6379> getbit hello 5
+(integer) 0
+```
 
 
 

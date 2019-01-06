@@ -1,7 +1,5 @@
 # bitmap
 
-
-
 ## setbit
 
 ```shell
@@ -109,7 +107,25 @@ GETBIT key offset
 (integer) 0
 ```
 
+### Code Operation
 
+```java
+private void getbit(){
+    ValueOperations<String, String> operations = stringRedisTemplate.opsForValue();
+    for (int i = 0; i < 365; i++) {
+        Boolean bitmap = operations.getBit("bitmap", i);
+        assert bitmap != null;
+        System.out.print(bitmap?1:0);
+    }
+    System.out.println();
+}
+```
+
+输出结果：
+
+```
+00000010110000101110110101111000100000110111101011111001001101000111010001001000000000101000110011001011001111110000001010110110001001101001011110011000101100011000010100001100011100111011011110100010101101100000000001000011110010101110000000010001100000100000011111110110111011011110001000110111011010001100101001000111101010000000000110010001111000000001100101010
+```
 
 ## bitcount
 
@@ -117,7 +133,7 @@ GETBIT key offset
 $ bitcount key [start end]
 ```
 
-> 其实版本：2.6.0
+> 起始版本：2.6.0
 时间复杂度：O(N)
 
 统计字符串被设置为1的bit数。
@@ -145,8 +161,6 @@ $ bitcount key [start end]
 (integer) 0
 ```
 
-
-
 模式：使用bitmap实现用户上线次数统计
 
 bitmap对于一些特点类型的计算非常有效。
@@ -163,6 +177,36 @@ bitmap对于一些特点类型的计算非常有效。
 
 - 将一个大的bitmap分散到不同的key中，作为小的bitmap来处理。使用Lua脚本可以很方便的完成这一工作。
 - 使用`bitcount`的start和end参数，每次只对所需的部分位进行计算，将位的积累工作（accumulating）放到客户端进行。并且对结果进行缓存（caching）。
+
+### Code Operation
+
+```java
+/**
+  * 查询今年全部的签到天数
+  */
+private void bitCount1(){
+    Long days = stringRedisTemplate.execute((RedisCallback<Long>) connection -> connection.bitCount(stringRedisTemplate.getStringSerializer().serialize("bitmap")));
+    System.out.printf("今天年签到天数：%d天。\n", days);
+}
+
+/**
+  * 查询第96天到200天的签到天数。
+  * 注意：start和end是以字节为单位
+  */
+private void bitCount2(){
+    Long execute = stringRedisTemplate.execute((RedisCallback<Long>) connection ->
+ connection.bitCount(
+     stringRedisTemplate.getStringSerializer().serialize("bitmap"),96 / 8, 200 / 8));
+    System.out.printf("今年第96天到200天签到%d天。\n", execute);
+}
+```
+
+输出结果：
+
+```
+今天年签到天数：202天。
+今年第96天到200天签到63天。
+```
 
 ## bitpos
 
@@ -225,13 +269,207 @@ BITPOS key bit [start] [end]
 
 ### Code Operation
 
+```java
+/**
+ * 查询今年签到的第一天
+ */
+private void bitpos1(){
+    Long execute = stringRedisTemplate.execute((RedisCallback<Long>) connection ->
+                                               connection.bitPos(stringRedisTemplate.getStringSerializer().serialize("bitmap"), true)
+                                              );
+    assert Objects.nonNull(execute);
+    System.out.printf("今年签到的第一天是第%d天。\n", ++execute);
+}
+
+/**
+ * 查询第96天之后签到的第一天
+ * 注意：range是以字节为基本单位
+ */
+private void botpos2(){
+    Range<Long> range = Range.from(Range.Bound.inclusive(96/8L)).to(Range.Bound.inclusive(365/8L));
+    Long execute = stringRedisTemplate.execute((RedisCallback<Long>) connection ->
+                                               connection.bitPos(stringRedisTemplate.getStringSerializer().serialize("bitmap"), true, range)
+                                              );
+    System.out.printf("96天之后签到的第一天是第%d天。\n", execute);
+}
+```
+
 
 
 
 
 ## bitfiled
 
+```shell
+$ bitfield [GET type offset][SET type offset value][INCRBY type offset increment][OVERFLOW WRAP|SAT|FAIL]
+```
 
+> 起始版本：3.2.0
+>
+> 时间复杂度：O(1)
+
+本命令会把redis字符串当做位数组，并能对变长位宽和任意未字节对齐的指定整型位域进行寻址。在实践中，可以使用该命令对一个有符号的5位整型数的1234位设置指定值，也可以对一个31位无符号整型数的4567位进行取值。类似地，在对指定的整数进行自增和自减操作，本命令可以提供有保证的，可配置的上溢和下溢处理操作。
+
+`bitfield`命令能操作多字节位域，它会执行一系列操作，并返回一个响应数组，在参数列表中每个响应数组匹配响应的操作。
+
+例如，下面的命令是对一个8位有符号整数偏移100位自增1，并获取4位服务号整数的值。
+
+```shell
+192.168.56.3:6380> bitfield bitmap incrby i5 100 1 get u4 0
+1) (integer) -1
+2) (integer) 10
+```
+
+提示：
+
+1. 用`GET`指令对超出当前字符串长度的位（含key不存在的情况）进行寻址，执行操作的结果会对缺失部分的位（bits）赋值为0。
+2. 用`SET`或`INCRBY`指令对超出当前字符串长度的位（含key不存在的情况）进行寻址，将会扩展字符串并对扩展部分进行补0，扩展方式包括：按需扩展、按最小长度扩展和按最大寻址能力扩展。
+
+**支持子命令和整型**
+
+下面是已支持的命令列表：
+
+- `GET <type> <offset>`—返回指定位域。
+- `SET <type> <offset> <value>`—设置指定位域的值并返回它的原值。
+- `INCRBY <type> <offset> <increment>`—自增或自减（如果increment为负数）指定位域的值并返回它的新值。
+
+还有一个命令通过设置溢出行为来改变调用`INCRBY`指令的后序操作：
+
+- `OVERFLOW [wrap|sat|fail]`
+
+  当需要一个整型时，有符号整型需在位数前加`i`，无符号在位数前加`u`。例如`u8`是一个8位的无符号整型，`i16`是一个16位的有符号整型。
+
+  有符号整型最大支持64位。而无符号整型最大支持63位。对无符号整型的限制，是由于当前Redis协议不能在响应消息中返回64位无符号整数。
+
+**位和位偏移**
+
+`bitfield`命令有两种方式来指定位偏移。如果未定待数字的前缀，将会以字符串的第0位作为起始位。
+
+不过，如果偏移量带有`#`前缀，那么指定的偏移量需要乘以整型的宽度，例如：
+
+```shell
+$ BITFIELD bitmap SET i8 #0 100 i8 #1 200
+```
+
+将会在第1个`i8`整数的偏移0位和第二个证书的偏移8位进行设值。如果想得到一个给定长度的普通整型数组，则不一定要在客户端进行计算。
+
+**移除控制**
+
+使用`OVERFLOW`命令，用户可以通过指定下列其中一种行为来调整自增或自减操作溢出（或下溢）后的行为：
+
+- `WRAP`：回环算法，适用于有符号和无符号整型两种类型。对于无符号整型，回环计数将对整型最大值进行取模操作（C语言的标准行为）。对于有符号整型，上溢从最负的负数开始取数，下溢则从最大的证书开始取数，例如如果`i8`整型的值设为127，自加1后的值变为-128。
+- `SAT`：饱和算法，下溢之后设置最小的整形值，上溢之后设为最大的整数值。例如，`i8`整型的值从120开始加10后，结果是127，继续增加，结果还是保持为127。下溢也是同理，但量结果值将会保持在最负的负数值。
+- `FAIL`：失败算法，这种模式下，在检测到上溢或下溢时，不做任何操作。相应的返回值会设为NULL，并返回给调用者。
+
+注意每种溢出（`OVERFLOW`）控制方法，仅影响紧跟在`INCRBY`命令后的指子命令，直到重新执行溢出（`OVERFLOW`）控制方法。
+
+如果没有指定溢出控制方法，默认情况下，将使用`WRAP`算法。
+
+```shell
+127.0.0.1:6379> bitfield mykey incrby u2 100 1 OVERFLOW SAT incrby u2 102 1 
+1) (integer) 1
+2) (integer) 1
+127.0.0.1:6379> bitfield mykey incrby u2 100 1 OVERFLOW SAT incrby u2 102 1 
+1) (integer) 2
+2) (integer) 2
+127.0.0.1:6379> bitfield mykey incrby u2 100 1 OVERFLOW SAT incrby u2 102 1 
+1) (integer) 3
+2) (integer) 3
+127.0.0.1:6379> bitfield mykey incrby u2 100 1 OVERFLOW SAT incrby u2 102 1 
+1) (integer) 0
+2) (integer) 3
+```
+
+### 返回值
+
+本命令返回一个针对子命令给定位置的处理结果组成的数组。`OVERFLOW`子命令在相应消息中，不会统计结果的条数。
+
+**动机**
+
+本命令的动机是为了能够在单个大位图（large bitmap）中高效地存储多个小整数（或对键分成多个key，避免出现超大键），同时开放Redis提供的新使用案例，尤其是在实时分析领域。这种使用案例可以通过指定的溢出控制方法来支持。
+
+**性能考虑**
+
+通常，`BITFIELD`是一个非常快的命令，但是注意，对短字符串的远地址（fat bits）寻址，将会比在存在的位执行命令更加耗时。
+
+**字节序**
+
+`BITFIELD`命令使用的位图表现形式，可看作是从0位开始的，例如：把一个5位的无符号整数23，对一个所有位事先置0的位图，从第7位开始复制，其结果如下所示：
+
+```
++--------+--------+
+|00000001|01110000|
++--------+--------+
+```
+
+当偏移量和整型大小是字节边界对齐时，此时与大端模式（big endian）相同，但是，当字节边界为对齐时，那么理解字节序将变得非常重要。
+
+### Code Operation
+
+```java
+private void bitfield(){
+    //从第三位开始（从0开始，包含第三位），取8为无符号数
+    BitFieldSubCommands.BitFieldType uint8 = BitFieldSubCommands.BitFieldType.UINT_8;
+    BitFieldSubCommands.Offset offset = BitFieldSubCommands.Offset.offset(3);
+    //从第二十位开始（从0开始，包含第20位），将接下来两位用无符号数5替换
+    BitFieldSubCommands.BitFieldType uint2 = BitFieldSubCommands.BitFieldType.unsigned(2);
+    BitFieldSubCommands.Offset offset20 = BitFieldSubCommands.Offset.offset(20);
+    //从第2位开始（从0开始，包含第2位），对接下来的4为无符号数+1，溢出折返-warp
+    BitFieldSubCommands.BitFieldType uint4 = BitFieldSubCommands.BitFieldType.signed(4);
+    BitFieldSubCommands.Offset offset2 = BitFieldSubCommands.Offset.offset(2);
+    BitFieldSubCommands.BitFieldIncrBy.Overflow wrap = BitFieldSubCommands.BitFieldIncrBy.Overflow.WRAP;
+    BitFieldSubCommands.BitFieldIncrBy.Overflow sat = BitFieldSubCommands.BitFieldIncrBy.Overflow.SAT;
+    BitFieldSubCommands.BitFieldIncrBy.Overflow fail = BitFieldSubCommands.BitFieldIncrBy.Overflow.FAIL;
+
+    BitFieldSubCommands bitFieldSubCommands = BitFieldSubCommands.create()
+        .get(uint8).valueAt(offset)
+        .set(uint2).valueAt(offset20).to(5)
+        .get(uint4).valueAt(offset2)
+        .incr(uint4).valueAt(offset2).overflow(wrap).by(1)
+        .incr(uint4).valueAt(offset2).overflow(sat).by(1)
+        .incr(uint4).valueAt(offset2).overflow(fail).by(1)
+        .incr(uint4).valueAt(offset2).overflow(fail).by(1)
+        .incr(uint4).valueAt(offset2).overflow(fail).by(1)
+        .incr(uint4).valueAt(offset2).overflow(fail).by(1)
+        .incr(uint4).valueAt(offset2).overflow(fail).by(1)
+        .incr(uint4).valueAt(offset2).overflow(fail).by(1)
+        .incr(uint4).valueAt(offset2).overflow(fail).by(1)
+        .incr(uint4).valueAt(offset2).overflow(fail).by(1)
+        .incr(uint4).valueAt(offset2).overflow(wrap).by(1)
+        .get(uint4).valueAt(offset2);
+
+    System.err.println("bitfield bitmap get "+uint8.asString()+" "+offset.getValue());
+    System.err.println("bitfield bitmap set "+uint2.asString()+" "+offset20.getValue()+" "+5);
+    System.err.println("bitfield bitmap overflow wrap incrby "+uint4.asString()+" "+offset2.getValue()+" "+1);
+    List<Long> longs = stringRedisTemplate.opsForValue().bitField(KEY, bitFieldSubCommands);
+    longs.forEach(l->{
+        System.out.println(l+" : "+Integer.toBinaryString(l.intValue()));
+    });
+}
+```
+
+输出结果
+
+```
+bitfield bitmap get u8 3
+bitfield bitmap set u2 20 5
+bitfield bitmap overflow wrap incrby u4 2 1
+8 : 1000
+0 : 0
+0 : 0
+1 : 1
+2 : 10
+3 : 11
+4 : 100
+5 : 101
+6 : 110
+7 : 111
+8 : 1000
+9 : 1001
+10 : 1010
+11 : 1011
+11 : 1011
+```
 
 ## bitop
 

@@ -1,12 +1,60 @@
-
+# Shell实战
 
 
 
 ## 异步执行
 
+shell脚本是同步执行的，但是我们常常需要多个任务同时异步执行。
 
+在执行命令后加`&`操作符，表示将命令放在子shell中异步执行。可以达到多线程的效果，例如：
 
+```shell
+[root@localhost ~]# sleep 1h &
+[1] 8415
+[root@localhost ~]# sleep 10m &
+[2] 8416
+[root@localhost ~]# sleep 100 &
+[3] 8417
+```
 
+但是这里有一个问题，虽然加`&`操作符可以达到异步执行的效果，但是我们需要的是在一个shell脚本中等待多个异步任务都执行完毕之后再退出shell进程。
+
+使用`wait`命令可以完成我们的需求。
+
+例如：
+
+```shell
+#!/bin/bash
+sleep 10 &
+sleep 5 &
+wait #等待10秒后退出
+```
+
+验证`wait`是否等待了所有子任务执行完毕：
+
+```shell
+#!/bin/bash
+func() {
+    echo "my func$1."
+    sleep 10 &
+    wait # 只等待前面的sleep
+    echo "my func$1 execute compilte."
+}
+func 10 &
+func 20 &
+wait # 如果没有这个wait，则整个脚本立即退出，不会等待func函数中的sleep
+echo "execute success."
+```
+
+输出结果
+
+```
+my func10.
+my func20.
+my func10 execute compilte.
+my func20 execute compilte.
+execute success.
+```
 
 ## 退出脚本
 
@@ -60,7 +108,7 @@ hello world2.
   if [ $? != 0 ]
   then
     echo "执行失败"
-    kill -9 $$
+    kill -9 $$ #$$表示当前shell进行的PID
   fi
   echo "hello world2."
   ```
@@ -76,21 +124,30 @@ hello world2.
 
 - `tarp`
 
-  296007576xlp
+  ```shell
+  #!/bin/bash
+  #监听退出信号
+  trap 'exit 1' TERM
+  echo "hello 1."
+  echo "hello 2."
+  echo "hello 3."
+  echoA
+  if [ $? != 0 ]
+  then
+      echo "执行错误，退出。"
+      #向当前shell进程发送退出信号，触发退出操作
+      kill -s TERM $$
+  fi
+  echo "hello 5."
+  ```
 
-  597646251xlp
+  输出结果
 
-https://www.cnblogs.com/lslxdx/p/6566465.html
-
-https://www.cnblogs.com/anyehome/p/9068971.html
-
-https://www.cnblogs.com/zxf330301/p/6534643.html
-
-https://movie.douban.com/review/7631253/
-
-https://baijiahao.baidu.com/s?id=1563035253717548&wfr=spider&for=pc
-
-
-
-
-
+  ```
+  [root@localhost ~]# ./test.sh 
+  hello 1.
+  hello 2.
+  hello 3.
+  ./test.sh:行7: echoA: 未找到命令
+  执行错误，退出。
+  ```

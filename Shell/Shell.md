@@ -438,7 +438,78 @@ Value of a is 10
 
 
 
+## Shell运算符
 
+Basg支持很多运算符，包括算数运算符，关系运算符，布尔运算符，字符串运算符和文件测试运算符。
+
+原生bash不支持简单的数学运算，但是可以通过其他命令来实现，例如awk和expr，expr最常用。
+
+expr是一款表达式计算工具，使用它能完成表达式的求值操作。
+
+例如，两个数相加：
+
+```shell
+#!/bin/bash
+variable=`expr 2 + 2`
+echo 'Total Value : '+$variable
+```
+
+运行脚本输出：
+
+```
+Total Value : 4
+```
+
+**两点注意：**
+
+- 表达式和运算符之间要有空格，例如2+2是不对的，必须写成2 + 2，这与我们熟悉的大多数编程语言不一样。
+- 完成的表达式要被``包含，注意这个字符串不是常有的单引号，在Esc键下边。
+
+### 算数运算符
+
+先来看一个使用算术运算符的例子
+
+```shell
+#!/bin/bash
+a=10
+b=20
+
+var=`expr $a + $b`
+echo a + b = $var
+
+var=`expr $a - $b`
+echo a - b = $var
+
+var=`expr $a \* $b`
+echo a \* b = $var
+
+var=`expr $b / $a`
+echo b / a = $var
+
+var=`expr $b % $a`
+echo b % a = $var
+
+if [ $a == $b ]
+then
+    echo "a is equal to b"
+fi
+
+if [ $a != $b ]
+then
+    echo "a is not equal to b"
+fi
+```
+
+运行结果
+
+```
+a + b = 30
+a - b = -10
+a * b = 200
+b / a = 2
+b % a = 0
+a is not equal to b
+```
 
 
 

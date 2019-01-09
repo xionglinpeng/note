@@ -518,16 +518,223 @@ a is not equal to b
 
 算术运算符列表
 
-| 运算符 | 说明                                     | 举例 |
-| ------ | ---------------------------------------- | ---- |
-| +      | 加法                                     |      |
-| -      | 减法                                     |      |
-| *      | 乘法                                     |      |
-| /      | 除法                                     |      |
-| %      | 取余                                     |      |
-| =      | 赋值                                     |      |
-| ==     | 相等。用于比较两个数字，相同则返回true。 |      |
-| !=     |                                          |      |
+| 运算符 | 说明                                         | 举例 |
+| ------ | -------------------------------------------- | ---- |
+| +      | 加法                                         |      |
+| -      | 减法                                         |      |
+| *      | 乘法                                         |      |
+| /      | 除法                                         |      |
+| %      | 取余                                         |      |
+| =      | 赋值                                         |      |
+| ==     | 相等。用于比较两个数字，相同则返回true。     |      |
+| !=     | 不相等。用于比较两个数字，不相同则返回true。 |      |
+
+注意：添加表达式要放在方括号之间，并且要有空格，例如`[$a==$b]`是错误的，必须写成`[ $a == $b ]`。
+
+### 关系运算符
+
+关系运算符支持数字，不支持字符串，除非字符串的值是数字。
+
+先来看一个关系运算符的例子：
+
+```shell
+#!/bin/bash
+a=10
+b=20
+
+if [[ ${a} -eq ${b} ]]
+then
+    echo "$a -eq $b : a is equal to b."
+else
+    echo "$a -eq $b : a is not equal to b."
+fi
+
+if [[ ${a} -ne ${b} ]]
+then
+    echo "$a -ne $b : a is not equal to b."
+else
+    echo "$a -ne $b : a is equal to b."
+fi
+
+if [[ ${a} -lt ${b} ]]
+then
+    echo "$a -lt $b : a is less than b."
+else
+    echo "$a -lt $b : a is not less than b."
+fi
+
+if [[ ${a} -gt ${b} ]]
+then
+    echo "$a -gt $b : a is greater than b."
+else
+    echo "$a -gt $b : a is not greater than b."
+fi
+
+if [[ ${a} -le ${b} ]]
+then
+    echo "$a -le $b : a is less or equal to b."
+else
+    echo "$a -le $b : a is not less or equal to b."
+fi
+
+if [[ ${a} -ge ${b} ]]
+then
+    echo "$a -ge $b : a is greter or equal ti b."
+else
+    echo "$a -ge $b : a is not greter or equal ti b."
+fi
+```
+
+运行结果：
+
+```
+10 -eq 20 : a is not equal to b.
+10 -ne 20 : a is not equal to b.
+10 -lt 20 : a is less than b.
+10 -gt 20 : a is not greater than b.
+10 -le 20 : a is less or equal to b.
+10 -ge 20 : a is not greter or equal ti b.
+```
+
+关系运算符列表
+
+| 运算符 | Assist Understand | 说明                                                 |
+| ------ | ----------------- | ---------------------------------------------------- |
+| -eq    | ==                | 检测两个数是否相等，相等则返回true。                 |
+| -ne    | !=                | 检测两个数是否不相等，不相等则返回true。             |
+| -gt    | >                 | 检测左边的数是否大于右边的，如果是，则返回true。     |
+| -lt    | <                 | 检测左边的数是否小于右边的，如果是，则返回true。     |
+| -ge    | >=                | 检测左边的数是否大于等于右边的，如果是，则返回true。 |
+| -le    | <=                | 检测左边的数是否小于于右边的，如果是，则返回true。   |
+
+### 布尔运算符
+
+先来看一个布尔运算符的例子：
+
+```shell
+#!/bin/bash
+a=10
+b=20
+
+if [[ ${a} != ${b} ]]
+then
+    echo "$a != $b : a is not equal to b."
+else
+    echo "$a != $b : a is equal to b."
+fi
+
+if [[ ${a} -lt 100 && ${b} -gt 15 ]]
+then
+    echo "$a -lt 100 -a $b -gt 15 : returns true."
+else
+    echo "$a -lt 100 -a $b -gt 15 : returns false."
+fi
+
+if [[ ${a} -lt 100 || ${b} -gt 100 ]]
+then
+    echo "$a -lt 100 -o $b -gt 100 : return true."
+else
+    echo "$a -lt 100 -o $b -gt 100 : return false."
+fi
+
+if [[ ${a} -lt 5 || ${b} -gt 100 ]]
+then
+    echo "$a -lt 5 -o $b -gt 100 : return true."
+else
+    echo "$a -lt 5 -o $b -gt 100 : return false."
+fi
+```
+
+运行结果：
+
+```
+10 != 20 : a is not equal to b.
+10 -lt 100 -a 20 -gt 15 : returns true.
+10 -lt 100 -o 20 -gt 100 : return true.
+10 -lt 5 -o 20 -gt 100 : return false.
+```
+
+布尔运算符列表
+
+| 运算符 | Assist Understand | 说明                                            |
+| ------ | ----------------- | ----------------------------------------------- |
+| !      | !                 | 非运算，表达式为true则返回false，否则返回true。 |
+| -o     | \|\|              | 或运算，有一个表达式为true，则返回true。        |
+| -a     | &&                | 与运算，两个表达式都为true，才返回true。        |
+
+
+
+### 字符串运算符
+
+先来看一个例子：
+
+```shell
+#!/bin/bash
+a="abc"
+b="efg"
+
+# = : 检测字符串是否相等
+if [[ ${a} = ${b} ]]
+then
+    echo "$a = $b : a is equal to b."
+else
+    echo "$a = $b : a is not equal to b."
+fi
+
+# != : 检测字符串是否不相等
+if [[ ${a} != ${b} ]]
+then
+    echo "a is not equal to b."
+else
+    echo "a is equal to b."
+fi
+
+# -z 检测字符串长度是否为0
+if [[ -z ${a} ]]
+then
+    echo "-z $a : string length is zero."
+else
+    echo "-z $a : string length is not zero."
+fi
+
+# -n 检测字符串长度是否不为0
+if [[ -n ${a} ]]
+then
+    echo "-n $a : string length is not zero."
+else
+    echo "-n $a : string length is zero."
+fi
+
+# str : 检测字符串是否为空
+if [[ ${a} ]]
+then
+    echo "$a : string is not empty."
+else
+    echo "$a : string is empty."
+fi
+```
+
+运行结果：
+
+```
+abc = efg : a is not equal to b.
+a is not equal to b.
+-z abc : string length is not zero.
+-n abc : string length is not zero.
+abc : string is not empty.
+```
+
+字符串运算符列表
+
+| 运算符 | Assist Understand   | 说明                                         |
+| ------ | ------------------- | -------------------------------------------- |
+| =      | `"".equals("");`    | 检测两个字符串是否相等，相等则返回true。     |
+| !=     | `!"".equals("")`    | 检测两个字符串是否不相等，不相等则返回true。 |
+| -z     | `"".length() == 0`  | 检测字符串长度是否为0，为0返回true。         |
+| -n     | `"".length() != 0;` | 检测字符串长度是否不为0，不为0返回true。     |
+| str    | `"".isEmpty()`      | 检测字符串是否为空，不为空返回true。         |
+
+### 文件测试运算符
 
 
 
@@ -610,13 +817,152 @@ done
 
 
 
+## Shell函数
 
+函数可以让我们将一个复杂功能划分成若干模块，让程序结构更加清晰，代码重复利用率更高。像起他编程语言一样，Shell也支持函数。**Shell函数必须先定义后使用**。
 
+Shell函数的语法：
 
+```shell
+[function] function_name(){
+    list of commands
+    [ return value ]
+}
+```
 
+函数返回值，可以显示增加return语句；如果不加，会将最后一条命令运行结果作为返回值。
 
+Shell函数返回值只能是整数，一般用来表示函数执行成功与否，0表示成功，其他值表示失败。如果return其他数据，比如一个字符串，额俺哥昂会得到错误提示：“numeric argument required”。
 
+如果一定要让函数返回字符串，那么可以先定义一个变量，用来接收函数的计算结果，脚本在需要的时候访问这个变量来获得函数返回值。
 
+先来看一个例子：
+
+```shell
+#!/bin/bash
+function hello() {
+    echo "hello function!"
+}
+hello
+```
+
+运行结果：
+
+```
+hello function!
+```
+
+调用函数只需要给出函数名，不需要加括号。
+
+再来看一个带有`return`语句的函数：
+
+```shell
+#!/bin/bash
+funWithReturn(){
+    echo "这个函数是求两个数的和..."
+    echo -n "输入第一个数字："
+    read aNum
+    echo -n "输入第二个数字："
+    read tNum
+    echo "这两个数字是${aNum}和${tNum}!"
+    return $((${aNum}+${tNum}))
+}
+funWithReturn
+ret=$?
+echo "两个数字的和是${ret}!"
+```
+
+运行结果：
+
+```
+这个函数是求两个数的和...
+输入第一个数字：20
+输入第二个数字：88
+这两个数字是20和88!
+两个数字的和是108!
+```
+
+**函数返回值在调用该函数后通过$?来获得。**
+
+再来看一个函数嵌套的例子：
+
+```shell
+#!/bin/bash
+number_one(){
+    echo "my name is number_one."
+    number_twe
+}
+number_twe(){
+    echo "my name is number_twe."
+}
+number_one
+```
+
+运行结果：
+
+```
+my name is number_one.
+my name is number_twe.
+```
+
+像删除变量一样，删除韩式也可以使用`unset`命令，不过要加载`.f`选项，如下所示：
+
+```shell
+unset .f function_name
+```
+
+添加`.f`测试貌似无效，实际有效就是：
+
+```
+unset function_name
+```
+
+例如：
+
+```shell
+#!/bin/bash
+number_one(){
+    echo "my name is number_one."
+    number_twe
+}
+number_twe(){
+    echo "my name is number_twe."
+}
+unset number_twe
+number_one
+```
+
+运行结果：
+
+```
+my name is number_one.
+/root/hello.sh:行3: number_twe: 未找到命令
+```
+
+如果你希望直接从终端调用函数，可以将函数定义在主目录下的.profile文件，这样每次登陆后，在命令提示符后面输出函数名字就可以立即调用。
+
+```shell
+[root@localhost ~]# cat .profile 
+funWithReturn(){
+    echo "这个函数是求两个数的和..."
+    echo -n "输入第一个数字："
+    read aNum
+    echo -n "输入第二个数字："
+    read tNum
+    echo "这两个数字是${aNum}和${tNum}!"
+    return $((${aNum}+${tNum}))
+}
+[root@localhost ~]# source .profile 
+这个函数是求两个数的和...
+输入第一个数字：20
+输入第二个数字：80
+这两个数字是20和80!
+[root@localhost ~]# funWithReturn
+这个函数是求两个数的和...
+输入第一个数字：20
+输入第二个数字：80
+这两个数字是20和80!
+```
 
 
 

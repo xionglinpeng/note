@@ -122,13 +122,19 @@ guest这个默认的用户只能通过http://localhost:15672 来登录，不能�
 [root@localhost sbin]# ./rabbitmqctl add_user admin admin
 ```
 
-添加权限
+添加角色
 
 ```shell
 [root@localhost sbin]# ./rabbitmqctl set_user_tags admin administrator
 ```
 
-查看用户权限
+设置权限
+
+```shell
+[root@localhost sbin]# ./rabbitmqctl set_permissions -p / admin ".*" ".*" ".*"
+```
+
+查看用户
 
 ```shell
 [root@localhost sbin]# ./rabbitmqctl list_users

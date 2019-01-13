@@ -228,4 +228,442 @@ clusterOps.shutdown(NODE_7379);                                         ①
 
 ## [8. Redis Repositories](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#redis.repositories)
 
-- 
+使用Redis存储库可以在Redis哈希中无缝转换和存储域对象，应用自定义映射策略并利用二级索引。
+
+> Redis存储库至少需要Redis Server 2.8.0版本。
+
+### [8.1. Usage](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#redis.repositories.usage)
+
+Spring Data Redis让您轻松实现域实体，如下面的示例所示:
+
+*Example 8：Person实体示例*
+
+```java
+@Data
+@RedisHash("people")
+public class Person {
+    @Id
+    String id;
+    String firstname;
+    String lastname;
+    Address address;
+}
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class Address {
+    private String country;
+    private String city;
+}
+```
+
+我们有一个非常简单的域对象。注意，它的类型上有一个`@RedisHash`注解，以及一个名为`id`的属性，该属性使用`org.springframework.data.annotation.Id`进行注解。这两项负责创建用于持久化hash的实际key。
+
+>命名id或者用@Id标注的属性被视为标识符属性。即如果实体类中具有命名为`id`的属性，那么以`id`属性作为键，如果没有命令为`id`的属性，那么以标注`@Id`的属性作为键。如果同时即有命令为`id`的属性和标注`@Id`注解的属性，那么以标注`@Id`的属性作为键。
+
+现在要实际拥有一个负责存储和检索的组件，我们需要定义一个存储库接口，如下面的示例所示:
+
+*Example: 持久化Persion实体的基本存储库接口*
+
+```java
+public interface PersonRepository extends CrudRepository<Person,String> {
+}
+```
+
+当我们的存储库扩展CrudRepository时，它提供了基本的CRUD和finder操作。在这两者之间我们需要的是相应的Spring配置，如下例所示：
+
+*Example 9 : JavaConfig for RedisRepositories*
+
+```java
+@Configuration
+@EnableRedisRepositories
+public class ApplicationConfig {
+
+  @Bean
+  public RedisConnectionFactory connectionFactory() {
+    return new JedisConnectionFactory();
+  }
+
+  @Bean
+  public RedisTemplate<?, ?> redisTemplate() {
+
+    RedisTemplate<byte[], byte[]> template = new RedisTemplate<byte[], byte[]>();
+    return template;
+  }
+}
+```
+
+根据前面的设置，我们可以将PersonRepository注入到组件中，如下面的示例所示：
+
+*Example 10 ：Access to Persion Entities*
+
+```java
+@Autowired
+private PersonRepository personRepository;
+
+public void basicCrudOperations(){
+    Person person = new Person();
+    person.setFirstname("小明");
+    person.setLastname("小张");
+    person.setAddress(new Address("china","sichuan"));
+
+    Person pers = personRepository.save(person);   ①
+
+    Optional<Person> optionalPerson = personRepository.findById(person.getId());  ②
+
+    long count = personRepository.count();  ③
+
+    personRepository.delete(person);  ④
+}
+```
+
+①
+
+② 使用提供的id检索存储在`keyspace:id`中的对象。
+
+③
+
+④ 从Redis中删除给定对象的键。
+
+
+
+### [8.3. Object-to-Hash Mapping](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#redis.repositories.mapping)
+
+Redis存储库支持将对象持久化为哈希。这需要通过`RedisConverter`进行对象到哈希的转换。默认实现使用转换器将属性值与Redis本地byte[]进行映射。
+
+前几节中给定的Person类型，默认映射如下所示:
+
+```
+_class = com.xlp.example.redis.repositories.entity.Person    ①
+id = 2b084711-6606-42bb-ab98-b32cdc604aca
+firstname = 小明        ②
+lastname = 小张
+address.country = china    ③
+address.city = sichuan
+```
+
+① _class属性包括在根级别以及任何嵌套接口或抽象类型上。
+
+② 简单的属性值由路径映射。
+
+③ 复杂类型的属性由它们的点路径映射。
+
+下表描述了默认映射规则：
+
+*Table 7. Default Mapping Rules*
+
+| Type                    | Sample                                                       | Mapped Value                                                 |
+| ----------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| 简单类型（例如String）  | String firstname = "小明"                                    | firstname="小明"                                             |
+| 复杂类型（例如Address） | Address address = new Address("china", "sichuan");           | address.city="china"                                         |
+| List简单类型            | List<String> nicknames = Arrays.asList("西厢记","三国霸业"); | nicknames[0]="西厢记"<br/>nicknames[1]="三国霸业"            |
+| Map简单类型             | Map<String,String> atts = new HashMap<>();<br/>atts.put("name","小王"); <br/>atts.put("age","22"); | atts.[name]="小王"<br/>atts.[age]="22"                       |
+| List复杂类型            | List<Address> address= Arrays.asList(new Address("china","sichuan")); | address.[0].city="sichuan"<br/>address.[1].city="beijing"    |
+| Map复杂类型             | Map<String,Address> addressMap = new HashMap<>(); <br/>addressMap.put("address1",new Address("china","sichuan")); <br/>addressMap.put("address2",new Address("china","beijing")); | address.[address1].city="sichuan"<br/>address.[address2].city="beijing" |
+
+> 由于这种平面表示结构，映射键需要是简单类型，例如`String`或`Number`。
+
+映射行为可以通过在`RedisCustomConversions`中注册相应的`Converter`来定制。这些转换器可以处理从一个`byte[]`到另一个`byte[]`的转换，以及`Map<String,byte[]>`。第一个方法适用于(例如)将复杂类型转换为(例如)仍然使用默认映射散列结构的二进制JSON表示。第二个选项提供了对结果散列的完全控制。
+
+> 将对象写入Redis散列将删除散列中的内容并重新创建整个散列，因此将丢失未映射的数据。
+
+下面的例子显示了两个样本字节数组转换器:
+
+*Exmple 13. Sample byte[] Converters*
+
+```java
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.xlp.example.redis.repositories.entity.Address;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.convert.WritingConverter;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.lang.NonNull;
+
+@WritingConverter
+public class AddressToBytesConverter implements Converter<Address, byte[]> {
+
+    private final Jackson2JsonRedisSerializer<Address> serializer;
+
+    public AddressToBytesConverter(){
+        serializer = new Jackson2JsonRedisSerializer<>(Address.class);
+        serializer.setObjectMapper(new ObjectMapper());
+    }
+
+    @Override
+    public byte[] convert(@NonNull Address address) {
+        return serializer.serialize(address);
+    }
+}
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.xlp.example.redis.repositories.entity.Address;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.convert.ReadingConverter;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.lang.NonNull;
+
+@ReadingConverter
+public class BytesToAddressConverter implements Converter<byte[], Address> {
+
+    private final Jackson2JsonRedisSerializer<Address> serializer;
+
+    public BytesToAddressConverter(){
+        serializer = new Jackson2JsonRedisSerializer<>(Address.class);
+        serializer.setObjectMapper(new ObjectMapper());
+    }
+
+    @Override
+    public Address convert(@NonNull byte[] address) {
+        return serializer.deserialize(address);
+    }
+}
+```
+
+在`org.springframework.data.redis.core.convert.RedisCustomConversions`中注册`org.springframework.core.convert.converter.Converter`：
+
+```java
+@Bean
+public RedisCustomConversions redisCustomConversions(){
+    List<Converter> converters = Arrays.asList(
+        new AddressToBytesConverter(),
+        new BytesToAddressConverter());
+    return new RedisCustomConversions(converters);
+}
+```
+
+使用前面的字节数组转换器产生类似如下输出：
+
+```
+_class = com.xlp.example.redis.repositories.entity.Person
+id = 2b084711-6606-42bb-ab98-b32cdc604aca
+firstname = 小明
+lastname = 小张
+address = {"country": "china","city": "sichuan"}
+```
+
+下面的例子展示了两个`Map`转换器的例子:
+
+*Example 14. Sample Map<String,byte[]> Converters*
+
+```java
+import com.xlp.example.redis.repositories.entity.Address;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.convert.WritingConverter;
+import org.springframework.lang.NonNull;
+
+import java.util.Collections;
+import java.util.Map;
+
+@WritingConverter
+public class AddressToMapConverter implements Converter<Address, Map<String,byte[]>> {
+
+    @Override
+    public Map<String, byte[]> convert(@NonNull Address address) {
+        return Collections.singletonMap("ciudad",address.getCity().getBytes());
+    }
+}
+
+import com.xlp.example.redis.repositories.entity.Address;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.convert.ReadingConverter;
+import org.springframework.lang.NonNull;
+
+import java.util.Map;
+
+@ReadingConverter
+public class MapToAddressConverter implements Converter<Map<String,byte[]>, Address> {
+
+    @Override
+    public Address convert(@NonNull Map<String, byte[]> source) {
+        return new Address("china",new String(source.get("ciudad")));
+    }
+}
+```
+
+使用前面的Map`Converter`产生类似如下输出:
+
+```
+_class = com.xlp.example.redis.repositories.entity.Person
+id = 2b084711-6606-42bb-ab98-b32cdc604aca
+firstname = 小明
+lastname = 小张
+address.ciudad = sichuan
+```
+
+> 自定义转换对索引分辨率没有影响。即使对于自定义转换的类型，也会创建辅助索引。
+
+#### [8.3.1. Customizing Type Mapping](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#_customizing_type_mapping)
+
+如果您希望避免将整个Java类名写成类型信息，而希望使用键，您可以在持久化的实体类上使用`@TypeAlias`注释。如果您需要进一步定制映射，看看`TypeInformationMapper`接口。该接口的实例可以在`DefaultRedisTypeMapper`上配置，可以在`MappingRedisConverter`上配置。
+
+下面的例子展示了如何为实体定义类型别名:
+
+*Example 15. Defining `@TypeAlias` for an entity*
+
+```java
+@Data
+@TypeAlias("com.person")
+@RedisHash(value = "people",timeToLive = 1000)
+public class Person {
+    
+}
+```
+
+生成的hash文档将`com.person`作为`_class`字段中的值。
+
+**Configurting Custom Type Mapping**
+
+下面的例子演示了如何在`MappingRedisConverter`中配置自定义`RedisTypeMapper`：
+
+*Example 16. Configuring a custom `RedisTypeMapper` via Spring Java Config*
+
+
+
+
+
+
+
+### [8.4. Keyspaces](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#redis.repositories.keyspaces)
+
+Keyspaces是用于定义创建Redis Hash的键的前缀，默认情况下，前缀为持久化Hash实体类的`getClass(). getname()`，我们可以通过以下三种方式更改其默认值：
+
+1. `@RedisHash`的`value`属性。
+2. `@KeySpace`注解。
+3. 编程式方式：继承`org.springframework.data.redis.core.convert.KeyspaceConfiguration`，并重写`initialConfiguration()`方法，然后集成。
+
+注意，上述的三种配置方式都有一个优先级：`@KeySpace` > `@RedisHash(value=...)` > 编程式方式。
+
+下面的例子展示了如何使用`@KeySpace`注解设置keyspace：
+
+```java
+@RedisHash
+@KeySpace("{people}")
+public class Person {
+    ......
+}
+```
+
+下面的例子展示了如何使用`@EnableRedisRepositories`注解设置keyspace：
+
+*Example 17. Keyspace Setup via `@EnableRedisRepositories`*
+
+```java
+public class MyKeyspaceConfiguration extends KeyspaceConfiguration {
+    @Override
+    protected @NonNull Iterable<KeyspaceSettings> initialConfiguration() {
+        return Collections.singleton(new KeyspaceSettings(Person.class,"myPersion"));
+    }
+}
+
+@SpringBootApplication
+@EnableRedisRepositories(keyspaceConfiguration = MyKeyspaceConfiguration.class)
+public class RepositoriesMain {
+    ......
+}
+```
+
+下面的示例展示如何以编程方式设置keyspace：
+
+*Example 18. Progeammatic Keyscace setup*
+
+```java
+public class MyKeyspaceConfiguration extends KeyspaceConfiguration {
+    @Override
+    protected @NonNull Iterable<KeyspaceSettings> initialConfiguration() {
+        return Collections.singleton(new KeyspaceSettings(Person.class,"myPersion"));
+    }
+}
+
+@Bean(name = "keyValueMappingContext")
+public RedisMappingContext keyValueMappingContext(){
+    return new RedisMappingContext(
+        new MappingConfiguration(
+            new IndexConfiguration(),
+            new MyKeyspaceConfiguration()));
+}
+```
+
+注意，使用这种方式，其`RedisMappingContext`bean的名称必须为`keyValueMappingContext`，否则将无效。
+
+### [8.5. Secondary Indexes](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#redis.repositories.indexes)
+
+#### [8.5.1. Simple Property Index](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#redis.repositories.indexes.simple)
+
+#### [8.5.2. Geospatial Index](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#redis.repositories.indexes.geospatial)
+
+
+
+### [8.6. Query by Example](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#query-by-example)
+
+#### [8.6.1. Introduction](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#query-by-example.introduction)
+
+#### [8.6.2. Usage](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#query-by-example.usage)
+####  [8.6.3. Example Matchers](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#query-by-example.matchers)
+####  [8.6.4. Executing an Example](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#query-by-example.execution)
+
+### [8.7. Time To Live](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#redis.repositories.expirations)
+
+存储在Redis中的对象可能只在一定的时间内有效。这对于在Redis中持久化短生命周期的对象特别有用，当它们到达生命尽头时，无需手动删除它们。可以使用`@RedisHash(timeToLive=…)`设置以秒为单位的过期时间，也可以使用`KeyspaceSettings`设置过期时间(参见Keyspaces)。
+
+可以通过在数值属性或方法上使用`@TimeToLive`注释设置更灵活的过期时间。但是，不要在同一个类中的方法和属性上都应用@TimeToLive。下面的示例显示了属性和方法上的`@TimeToLive`注释:
+
+Example 29 : Expirations
+
+```java
+@Data
+@RedisHash(value = "people",timeToLive = 1000)
+public class Person {
+    @Id
+    private String id;
+    private String firstname;
+    private String lastname;
+    private Address address;
+
+    @TimeToLive
+    private long expiretion = 120L;
+
+    @TimeToLive
+    public long getTimeToLive() {
+        long seconds = new Random().nextInt();
+        System.out.printf("time to live : %ds\n",seconds);
+        return seconds;
+    }
+}
+```
+
+注意：已知设置过期的时间的方式有三种，它们之间的优先级是:
+
+`TimeToLive Property`> `TimeToLive Method` > `@RedisHash(timeToLive = ...)`。
+
+> 使用@TimeToLive显式注释属性将从Redis读取实际的TTL或PTTL值。即是说，如果是使用`@TimeToLive`注解标注属性设置过期时间，那么在查询的时候，例如执行`findById`等方法的时候，查询的对象其标注`@TimeToLive`注解的属性将返回当前Hash实际还剩余的有效时间。
+>
+> -1表示对象没有相关的过期时间。
+
+### [8.8. Persisting References](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#redis.repositories.references)
+
+用@Reference标记属性允许存储一个简单的键引用，而不是将值复制到散列本身。从Redis加载时，引用被自动解析并映射回对象中，如下例所示：
+
+*Example 30 : Sample Perperty Reference*
+
+```
+
+```
+
+
+
+- [8.2. Object Mapping Fundamentals](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#mapping.fundamentals)
+  - [8.2.1. Object creation](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#mapping.object-creation)
+  - [8.2.2. Property population](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#mapping.property-population)
+  - [8.2.3. General recommendations](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#_general_recommendations)
+  - [8.2.4. Kotlin support](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#_kotlin_support)
+- [8.9. Persisting Partial Updates](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#redis.repositories.partial-updates)
+- [8.10. Queries and Query Methods](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#redis.repositories.queries)
+- [8.11. Redis Repositories Running on a Cluster](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#redis.repositories.cluster)
+- [8.12. CDI Integration](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#redis.repositories.cdi-integration)
+- 8.13. Redis Repositories Anatomy
+  - [8.13.1. Insert new](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#_insert_new)
+  - [8.13.2. Replace existing](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#_replace_existing)
+  - [8.13.3. Save Geo Data](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#_save_geo_data)
+  - [8.13.4. Find using simple index](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#_find_using_simple_index)
+  - [8.13.5. Find using Geo Index](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#_find_using_geo_index)

@@ -588,9 +588,143 @@ public RedisMappingContext keyValueMappingContext(){
 
 ### [8.5. Secondary Indexes](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#redis.repositories.indexes)
 
+二级索引用于支持基于本地Redis结构的查找操作。值被写入每次保存的根据索引，并在对象被删除或过期时被删除。
+
 #### [8.5.1. Simple Property Index](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#redis.repositories.indexes.simple)
 
-#### [8.5.2. Geospatial Index](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#redis.repositories.indexes.geospatial)
+给定前面显示的示例Person实体，我们可以为firstname创建一个索引，方法是用@Indexed注释属性，如下面的例子所示:
+
+*Example 19. Annotation driven indexing*
+
+```java
+@RedisHash(value = "people")
+public class Person {
+    @Id
+    String id;
+    @Indexed
+    String firstname;
+    String lastname;
+    Address address;
+}
+```
+
+为属性值建立索引。添加两个Person（例如“tom”和“jerry”），将会在Redis中生成如下索引：
+
+> 注意，这个索引是set集合，通过`sadd`命令添加，即是说，同一个名字会包含多个索引。
+
+```
+SADD people:firstname:tom
+	899bf3e4-9cf0-4ffd-8660-07e99cfbf091
+SADD people:firstname:jerry
+	e2dca935-2daa-4373-a4ec-1678bb4384ad
+```
+
+同时还会生成一下两个反向的索引（也是set集合）：
+
+```
+SADD people::899bf3e4-9cf0-4ffd-8660-07e99cfbf091:idx
+	people:firstname:tom
+SADD people::e2dca935-2daa-4373-a4ec-1678bb4384ad:idx
+	people:firstname:jerry
+```
+
+在嵌套的对象上也可以有索引，例如在`Address`属性对象上有一个`city`属性，对该属性使用`@Indexed`进行注解，一旦当`person.address.city`属性不为空，那么就会为设置对应的二级索引，如下面的示例所示：
+
+```
+SADD people:address.city:sichuan
+	899bf3e4-9cf0-4ffd-8660-07e99cfbf091
+```
+
+同样，在`idx`,`set`集合当中会包含这个嵌套对象的索引：
+
+```
+SADD people::899bf3e4-9cf0-4ffd-8660-07e99cfbf091:idx
+	people:firstname:tom
+	people:address.city:sichuan
+```
+
+另外，编程设置可以让我们在Map和List集合属性上定义索引，如下面的示例所示：
+
+```java
+@RedisHash(value = "people")
+public class Person {
+    // ... other properties omitted
+    @Indexed
+    Map<String,String> attributes;  ①
+    @Indexed
+    Map<String,Person> relatives;   ②
+    @Indexed
+    List<Address> addresses;        ③
+}
+```
+
+① `people:attributes.age:20 899bf3e4-9cf0-4ffd-8660-07e99cfbf091`
+
+② `people:relatives.person.firstname:spongeBob 899bf3e4-9cf0-4ffd-8660-07e99cfbf091`
+
+③ `people:addresses.city:chengdu 899bf3e4-9cf0-4ffd-8660-07e99cfbf091 `
+
+同样，会在`idx`的`set`集合当中会包含这写集合的索引。
+
+> 不能在[References](https://docs.spring.io/spring-data/redis/docs/2.1.4.RELEASE/reference/html/#redis.repositories.references)上解析索引。
+
+与keyspaces一样，您可以通过继承`org.springframework.data.redis.core.index.IndexConfiguration`类，重写`initialConfiguration()`方法指定索引属性（`@EnableRedisRepositories`的`indexConfiguration`属性指定索引索引配置类），而不用通过`@Indexed`注解注释对象域类型。如下面的示例所示:
+
+*Example 20. Index Setup with @EnableRedisRepositories*
+
+```java
+@Configuration
+@EnableRedisRepositories(indexConfiguration = MyIndexConfiguration.class)
+public class ApplicationConfig {
+
+  //... RedisConnectionFactory and RedisTemplate Bean definitions omitted
+
+  public static class MyIndexConfiguration extends IndexConfiguration {
+
+    @Override
+    @NonNull
+    protected Iterable<IndexDefinition> initialConfiguration() {
+      return Collections.singleton(new SimpleIndexDefinition("people", "firstname"));
+    }
+  }
+}
+```
+
+与keyspaces一样，可以通过编程方式配置索引，如下面的示例所示:
+
+*Example 21. Programmatic Index setup*
+
+```java
+@Configuration
+@EnableRedisRepositories
+public class ApplicationConfig {
+
+  //... RedisConnectionFactory and RedisTemplate Bean definitions omitted
+    
+  @Bean(name = "keyValueMappingContext")
+  public RedisMappingContext keyValueMappingContext(){
+      return new RedisMappingContext(
+          new MappingConfiguration(
+              new MyIndexConfiguration(),
+              new MyKeyspaceConfiguration()));
+  }
+    
+  public static class MyIndexConfiguration extends IndexConfiguration {
+
+    @Override
+    @NonNull
+    protected Iterable<IndexDefinition> initialConfiguration() {
+      return Collections.singleton(new SimpleIndexDefinition("people", "firstname"));
+    }
+  }
+}
+```
+
+上面的方式其实就是通过代码配置的方式指定要生成索引的属性信息。
+
+注意：通过编程的方式，优先级比注解方式，@Enable属性方式更高。
+
+#### [8.5.2. Geospatial Index(地理空间索引)](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#redis.repositories.indexes.geospatial)
 
 
 

@@ -316,7 +316,7 @@ public class ExitCodeApplication {
 
 > ![](https://docs.spring.io/spring-boot/docs/2.1.1.RELEASE/reference/htmlsingle/images/caution.png) 启用此功能时要小心，因为MBean公开了关闭应用程序的方法。
 
-## [24. Externalized Configuration](https://docs.spring.io/spring-boot/docs/2.1.1.RELEASE/reference/htmlsingle/#boot-features-external-config)
+### [24. Externalized Configuration](https://docs.spring.io/spring-boot/docs/2.1.1.RELEASE/reference/htmlsingle/#boot-features-external-config)
 
 Spring Boot允许将配置外部化（externalized），这样你就能够在不同的环境下使用相同的代码。你可以使用properties文件，YAML文件，环境变量和命令行参数来外部化配置。使用`@Value`注解，可以直接将属性值注入到beans中，然后通过Spring的`Environment`抽象或通过`@ConfigurationProperties`绑定到结构化对象来访问。
 
@@ -378,17 +378,17 @@ public class MyBean {
 >
 > 或作为一个JNDI变量`java:comp/env/spring.application.json`。
 
-### [24.1. Configuring Random Values](https://docs.spring.io/spring-boot/docs/2.1.1.RELEASE/reference/htmlsingle/#boot-features-external-config-random-values)
+#### [24.1. Configuring Random Values](https://docs.spring.io/spring-boot/docs/2.1.1.RELEASE/reference/htmlsingle/#boot-features-external-config-random-values)
 
 
 
-### [24.2. Accessing Command Line Properties](https://docs.spring.io/spring-boot/docs/2.1.1.RELEASE/reference/htmlsingle/#boot-features-external-config-command-line-args)
+#### [24.2. Accessing Command Line Properties](https://docs.spring.io/spring-boot/docs/2.1.1.RELEASE/reference/htmlsingle/#boot-features-external-config-command-line-args)
 
 默认情况下，`SpringApplication`会将所有命令行配置参数（以`--`开头，比如`--server.port=9000`）转化成一个`property`，并将其添加到`Spring Environment`中。正如以上章节提过的，命令行属性总是优于其他属性源。
 
 如果不想将命令行属性添加到`Environment`，你可以使用`springApplication.setAddCommandLineProperties(false);`来禁用它们。
 
-### [24.3. Application Property Files](https://docs.spring.io/spring-boot/docs/2.1.1.RELEASE/reference/htmlsingle/#boot-features-external-config-application-property-files)
+#### [24.3. Application Property Files](https://docs.spring.io/spring-boot/docs/2.1.1.RELEASE/reference/htmlsingle/#boot-features-external-config-application-property-files)
 
 
 
@@ -420,6 +420,125 @@ public class MyBean {
 - [24.8.5. @ConfigurationProperties Validation](https://docs.spring.io/spring-boot/docs/2.1.1.RELEASE/reference/htmlsingle/#boot-features-external-config-validation)
 
 - [24.8.6. @ConfigurationProperties vs. @Value](https://docs.spring.io/spring-boot/docs/2.1.1.RELEASE/reference/htmlsingle/#boot-features-external-config-vs-value)
+
+### [33. Messaging](https://docs.spring.io/spring-boot/docs/2.1.2.RELEASE/reference/htmlsingle/#boot-features-messaging)
+
+#### [33.1. JMS](https://docs.spring.io/spring-boot/docs/2.1.2.RELEASE/reference/htmlsingle/#boot-features-jms)
+
+[33.1.1. ActiveMQ Support](https://docs.spring.io/spring-boot/docs/2.1.2.RELEASE/reference/htmlsingle/#boot-features-activemq)
+[33.1.2. Artemis Support](https://docs.spring.io/spring-boot/docs/2.1.2.RELEASE/reference/htmlsingle/#boot-features-artemis)
+[33.1.3. Using a JNDI ConnectionFactory](https://docs.spring.io/spring-boot/docs/2.1.2.RELEASE/reference/htmlsingle/#boot-features-jms-jndi)
+[33.1.4. Sending a Message](https://docs.spring.io/spring-boot/docs/2.1.2.RELEASE/reference/htmlsingle/#boot-features-using-jms-sending)
+[33.1.5. Receiving a Message](https://docs.spring.io/spring-boot/docs/2.1.2.RELEASE/reference/htmlsingle/#boot-features-using-jms-receiving)
+
+#### [33.2. AMQP](https://docs.spring.io/spring-boot/docs/2.1.2.RELEASE/reference/htmlsingle/#boot-features-amqp)
+
+高级消息队列协议(AMQP)是面向消息中间件的一种平台无关的、连线级别的协议。Spring AMQP项目将核心Spring概念应用于基于AMQP的消息传递解决方案的开发。Spring Boot为通过RabbitMQ使用AMQP提供了一些便利，包括`spring-boot-starter-amqp` “Starter”。
+
+##### [33.2.1. RabbitMQ support](https://docs.spring.io/spring-boot/docs/2.1.2.RELEASE/reference/htmlsingle/#boot-features-rabbitmq)
+
+RabbitMQ是基于AMQP协议的轻量级、可靠、可伸缩和可移植的消息代理。Spring使用RabbitMQ通过AMQP协议进行通信。
+
+RabbitMQ配置由`spring.rabbitmq.*`中的外部配置属性控制。例如，您可以在application.properties中声明以下部分:
+
+```properties
+spring.rabbitmq.host=localhost
+spring.rabbitmq.port=5672
+spring.rabbitmq.username=admin
+spring.rabbitmq.password=secret
+```
+
+如果上下文中存在ConnectionNameStrategy bean，它将自动用于命名由自动配置的ConnectionFactory创建的连接。有关支持的选项的更多信息，请参见[`RabbitProperties`](https://github.com/spring-projects/spring-boot/tree/v2.1.2.RELEASE/spring-boot-project/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure/amqp/RabbitProperties.java)。
+
+> ![](https://docs.spring.io/spring-boot/docs/2.1.1.RELEASE/reference/htmlsingle/images/note.png) 有关详细信息，请参见了解RabbitMQ使用的协议AMQP。
+
+
+##### [33.2.2. Sending a Message](https://docs.spring.io/spring-boot/docs/2.1.2.RELEASE/reference/htmlsingle/#boot-features-using-amqp-sending)
+
+Spring的AmqpTemplate和AmqpAdmin是自动配置的，您可以将它们直接自动注入到您自己的bean中，如下面的示例所示:
+
+```java
+import org.springframework.amqp.core.AmqpAdmin;
+import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+@Component
+public class MyBean {
+
+    private AmqpTemplate amqpTemplate;
+    private AmqpAdmin amqpAdmin;
+
+    @Autowired
+    public MyBean(AmqpTemplate amqpTemplate, AmqpAdmin amqpAdmin) {
+        this.amqpTemplate = amqpTemplate;
+        this.amqpAdmin = amqpAdmin;
+    }
+}
+```
+
+> ![](https://docs.spring.io/spring-boot/docs/2.1.1.RELEASE/reference/htmlsingle/images/note.png) 可以用类似的方式注入[`RabbitMessagingTemplate`](https://docs.spring.io/spring-amqp/docs/current/api/org/springframework/amqp/rabbit/core/RabbitMessagingTemplate.html)。如果定义了`MessageConverter`bean，它将自动关联到自动配置的`AmqpTemplate`。
+
+如果需要，任何被定义为bean的`org.springframework.amqp.core.Queue`都将被自动用于声明RabbitMQ实例上的相应队列。
+
+重试操作，可以在`AmqpTemplate`上启用重试(例如，在代理连接丢失的情况下):
+
+```properties
+spring.rabbitmq.template.retry.enabled=true
+spring.rabbitmq.template.retry.initial-interval=2s
+```
+
+默认情况下，重试是禁用的。还可以通过声明`RabbitRetryTemplateCustomizer`bean以编程方式自定义`RetryTemplate`。
+
+
+
+
+
+##### [33.2.3. Receiving a Message](https://docs.spring.io/spring-boot/docs/2.1.2.RELEASE/reference/htmlsingle/#boot-features-using-amqp-receiving)
+
+当Rabbit基础架构出现时，任何bean都可以用`@RabbitListener`进行注释，以创建侦听器端点。如果没有定义`RabbitListenerContainerFactory`，则会自动配置默认的`SimpleRabbitListenerContainerFactory`，您可以使用`spring.rabbitmq.listener.type`属性切换到直接容器。如果定义了`MessageConverter`或`MessageRecoverer`bean，它将自动与默认工厂关联。
+
+下面的示例组件在`someQueue`队列上创建侦听器端点:
+
+```java
+@Component
+public class MyBean {
+    @RabbitListener(queues = "someQueue")
+    public void processMessage(String content){
+        //...
+    }
+}
+```
+
+> ![](https://docs.spring.io/spring-boot/docs/2.1.2.RELEASE/reference/htmlsingle/images/tip.png) 有关更多细节，请参见[`@EnableRabbit`的javadoc](https://docs.spring.io/spring-amqp/docs/current/api/org/springframework/amqp/rabbit/annotation/EnableRabbit.html)。
+
+如果您需要创建更多RabbitListenerContainerFactory实例，或者想要覆盖默认值，Spring Boot提供了SimpleRabbitListenerContainerFactoryConfigurer和directrabbitlisterfactoryconfigurer，您可以使用它们初始化SimpleRabbitListenerContainerFactory和DirectRabbitListenerContainerFactory，它们的设置与自动配置所使用的工厂相同。
+
+> ![](https://docs.spring.io/spring-boot/docs/2.1.2.RELEASE/reference/htmlsingle/images/tip.png) 选择哪种容器类型并不重要。这两个bean通过自动配置公开。
+
+例如，下面的配置类公开了另一个使用特定MessageConverter的工厂：
+
+
+
+然后您可以在任何@ rabbitlistener注释的方法中使用工厂，如下所示：
+
+
+
+您可以启用重试来处理侦听器抛出异常的情况。默认情况下，使用RejectAndDontRequeueRecoverer，但是您可以定义自己的MessageRecoverer。当重试耗尽时，如果代理被配置为这样做，则消息将被拒绝，并被丢弃或路由到死信交换。默认情况下,重试是禁用的。还可以通过声明RabbitRetryTemplateCustomizer bean以编程方式自定义RetryTemplate。
+
+> ![](https://docs.spring.io/spring-boot/docs/2.1.2.RELEASE/reference/htmlsingle/images/important.png) **重要**
+>
+> 默认情况下，如果重试被禁用并且侦听器抛出异常，则会无限期地重试传递。您可以通过两种方式修改此行为：将defaultrequeuere属性设置为false，以便尝试0次重新传递，或者抛出AmqpRejectAndDontRequeueException来发出消息应该被拒绝的信号。后者是在启用重试并达到最大传递尝试次数时使用的机制。
+
+#### [33.3. Apache Kafka Support](https://docs.spring.io/spring-boot/docs/2.1.2.RELEASE/reference/htmlsingle/#boot-features-kafka)
+
+[33.3.1. Sending a Message](https://docs.spring.io/spring-boot/docs/2.1.2.RELEASE/reference/htmlsingle/#boot-features-kafka-sending-a-message)[33.3.2. Receiving a Message](https://docs.spring.io/spring-boot/docs/2.1.2.RELEASE/reference/htmlsingle/#boot-features-kafka-receiving-a-message)[33.3.3. Kafka Streams](https://docs.spring.io/spring-boot/docs/2.1.2.RELEASE/reference/htmlsingle/#boot-features-kafka-streams)[33.3.4. Additional Kafka Properties](https://docs.spring.io/spring-boot/docs/2.1.2.RELEASE/reference/htmlsingle/#boot-features-kafka-extra-props)
+
+
+
+
+
+
 
 
 

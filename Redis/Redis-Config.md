@@ -281,8 +281,8 @@ dir ./
 ```shell
 ################################# REPLICATION #################################
 
-# Master-Replica replication. Use replicaof to make a Redis instance a copy of
-# another Redis server. A few things to understand ASAP about Redis replication.
+# Master-Replica复制。 使用replicaof使一个Redis实例成为另一个Redis服务器的副本
+# 关于Redis复制，有几点需要尽快理解。
 #
 #   +------------------+      +---------------+
 #   |      Master      | ---> |    Replica    |
@@ -291,14 +291,16 @@ dir ./
 #
 # 1) Redis replication is asynchronous, but you can configure a master to
 #    stop accepting writes if it appears to be not connected with at least
-#    a given number of replicas.
+#    a given number of replicas.Redis复制是异步的，但是您可以配置一个master来停止接受写，如果它看起来没有连接到至少给定数量的副本。
 # 2) Redis replicas are able to perform a partial resynchronization with the
 #    master if the replication link is lost for a relatively small amount of
 #    time. You may want to configure the replication backlog size (see the next
 #    sections of this file) with a sensible value depending on your needs.
+如果复制链接丢失的时间相对较短，则Redis副本能够与主副本执行部分重新同步。您可能希望根据您的需要配置复制待办事项列表的大小(请参阅该文件的下一部分)，并设置一个合理的值。
 # 3) Replication is automatic and does not need user intervention. After a
 #    network partition replicas automatically try to reconnect to masters
 #    and resynchronize with them.
+复制是自动的，不需要用户干预。在网络分区之后，副本自动尝试重新连接到主机并与它们重新同步。
 #
 # replicaof <masterip> <masterport>
 
@@ -310,17 +312,17 @@ dir ./
 
 # When a replica loses its connection with the master, or when the replication
 # is still in progress, the replica can act in two different ways:
-#
+#当一个副本失去与主副本的连接时，或者当复制仍在进行时，该副本可以以两种不同的方式进行操作:
 # 1) if replica-serve-stale-data is set to 'yes' (the default) the replica will
 #    still reply to client requests, possibly with out of date data, or the
 #    data set may just be empty if this is the first synchronization.
-#
+#如果xxx设置为“yes”(默认值)，副本仍将响应客户机请求，可能带有过期数据，或者如果这是第一次同步，则数据集可能为空。
 # 2) if replica-serve-stale-data is set to 'no' the replica will reply with
 #    an error "SYNC with master in progress" to all the kind of commands
 #    but to INFO, replicaOF, AUTH, PING, SHUTDOWN, REPLCONF, ROLE, CONFIG,
 #    SUBSCRIBE, UNSUBSCRIBE, PSUBSCRIBE, PUNSUBSCRIBE, PUBLISH, PUBSUB,
 #    COMMAND, POST, HOST: and LATENCY.
-#
+#如果将xx设置为“no”，副本将对所有类型的命令回复错误“与主进程同步”，但对INFO、replicaOF、AUTH、PING、SHUTDOWN、REPLCONF、ROLE、CONFIG、SUBSCRIBE、UNSUBSCRIBE、PSUBSCRIBE、PUNSUBSCRIBE、PUBLISH、PUBSUB、COMMAND、POST、HOST:和延迟除外。
 replica-serve-stale-data yes
 
 # You can configure a replica instance to accept writes or not. Writing against
@@ -328,8 +330,8 @@ replica-serve-stale-data yes
 # written on a replica will be easily deleted after resync with the master) but
 # may also cause problems if clients are writing to it because of a
 # misconfiguration.
-#
-# Since Redis 2.6 by default replicas are read-only.
+#您可以配置一个副本实例来接受或不接受写操作。对副本实例进行写操作可能有助于存储一些临时数据(因为在与主服务器重新同步后，很容易删除在副本上写入的数据)，但如果客户端由于配置错误而对其进行写操作，也可能会导致问题。
+# Since Redis 2.6 by default replicas are read-only.因为默认情况下，Redis 2.6的副本是只读的。
 #
 # Note: read only replicas are not designed to be exposed to untrusted clients
 # on the internet. It's just a protection layer against misuse of the instance.
@@ -337,94 +339,100 @@ replica-serve-stale-data yes
 # such as CONFIG, DEBUG, and so forth. To a limited extent you can improve
 # security of read only replicas using 'rename-command' to shadow all the
 # administrative / dangerous commands.
+注意:只读副本不被设计为暴露给internet上不可信的客户机。它只是一个防止误用实例的保护层。默认情况下，只读副本导出所有管理命令，如配置、调试等。在一定程度上，您可以使用“rename-command”来隐藏所有管理/危险命令，从而提高只读副本的安全性。
 replica-read-only yes
 
-# Replication SYNC strategy: disk or socket.
+# Replication SYNC strategy: disk or socket.复制同步策略:磁盘或套接字。
 #
 # -------------------------------------------------------
-# WARNING: DISKLESS REPLICATION IS EXPERIMENTAL CURRENTLY
+# WARNING: DISKLESS REPLICATION IS EXPERIMENTAL CURRENTLY警告:无磁盘复制目前处于试验阶段
 # -------------------------------------------------------
 #
 # New replicas and reconnecting replicas that are not able to continue the replication
 # process just receiving differences, need to do what is called a "full
 # synchronization". An RDB file is transmitted from the master to the replicas.
 # The transmission can happen in two different ways:
-#
+#不能继续复制过程的新副本和重新连接的副本只接收差异，需要执行所谓的“完全同步”。RDB文件从主服务器传输到副本。传播可以通过两种不同的方式发生:
+
 # 1) Disk-backed: The Redis master creates a new process that writes the RDB
 #                 file on disk. Later the file is transferred by the parent
 #                 process to the replicas incrementally.
+Redis master创建一个新进程，该进程将RDB文件写到磁盘上。随后，文件由父进程增量地传输到副本。
 # 2) Diskless: The Redis master creates a new process that directly writes the
 #              RDB file to replica sockets, without touching the disk at all.
+Redis master创建一个新进程，该进程直接将RDB文件写入套接字副本，而完全不需要接触磁盘。
 #
 # With disk-backed replication, while the RDB file is generated, more replicas
 # can be queued and served with the RDB file as soon as the current child producing
 # the RDB file finishes its work. With diskless replication instead once
 # the transfer starts, new replicas arriving will be queued and a new transfer
 # will start when the current one terminates.
-#
+#使用磁盘支持的复制，在生成RDB文件时，只要生成RDB文件的当前子文件完成其工作，就可以将更多副本排队并使用RDB文件提供服务。在无磁盘复制的情况下，一旦传输开始，到达的新副本将被排队，当当前副本终止时，新传输将开始。
+
 # When diskless replication is used, the master waits a configurable amount of
 # time (in seconds) before starting the transfer in the hope that multiple replicas
 # will arrive and the transfer can be parallelized.
-#
+#当使用无磁盘复制时，主服务器在开始传输之前等待一段可配置的时间(以秒为单位)，希望多个副本能够到达，并且可以并行地进行传输。
+
 # With slow disks and fast (large bandwidth) networks, diskless replication
-# works better.
+# works better.对于慢磁盘和快速(大带宽)网络，无磁盘复制工作得更好。
 repl-diskless-sync no
 
 # When diskless replication is enabled, it is possible to configure the delay
 # the server waits in order to spawn the child that transfers the RDB via socket
-# to the replicas.
+# to the replicas.在启用无磁盘复制时，可以配置服务器等待的延迟，以便生成通过套接字将RDB传输到副本的子节点。
 #
 # This is important since once the transfer starts, it is not possible to serve
 # new replicas arriving, that will be queued for the next RDB transfer, so the server
-# waits a delay in order to let more replicas arrive.
+# waits a delay in order to let more replicas arrive.这一点很重要，因为一旦传输开始，就不可能为到达的新副本提供服务，这些副本将排队等待下一次RDB传输，因此服务器将等待一个延迟，以便让更多的副本到达。
 #
-# The delay is specified in seconds, and by default is 5 seconds. To disable
-# it entirely just set it to 0 seconds and the transfer will start ASAP.
+# The delay is specified in seconds, and by default is 5 seconds.延迟以秒为单位指定，默认为5秒。 To disable
+# it entirely just set it to 0 seconds and the transfer will start ASAP.要完全禁用它，只需将其设置为0秒，传输将尽快开始。
 repl-diskless-sync-delay 5
 
-# Replicas send PINGs to server in a predefined interval. It's possible to change
+# Replicas send PINGs to server in a predefined interval.副本以预定义的间隔向服务器发送ping。 It's possible to change
 # this interval with the repl_ping_replica_period option. The default value is 10
-# seconds.
+# seconds.可以使用repl_ping_replica_period选项更改此间隔。默认值是10秒。
 #
 # repl-ping-replica-period 10
 
-# The following option sets the replication timeout for:
+# The following option sets the replication timeout for:以下选项设置复制超时:
 #
-# 1) Bulk transfer I/O during SYNC, from the point of view of replica.
-# 2) Master timeout from the point of view of replicas (data, pings).
-# 3) Replica timeout from the point of view of masters (REPLCONF ACK pings).
+# 1) Bulk transfer I/O during SYNC, from the point of view of replica.从副本的角度来看，同步期间的批量传输I/O。
+# 2) Master timeout from the point of view of replicas (data, pings).从副本(数据、ping)的角度来控制超时。
+# 3) Replica timeout from the point of view of masters (REPLCONF ACK pings).从master (REPLCONF ACK ping)的角度来看，复制超时。
 #
 # It is important to make sure that this value is greater than the value
 # specified for repl-ping-replica-period otherwise a timeout will be detected
-# every time there is low traffic between the master and the replica.
+# every time there is low traffic between the master and the replica.重要的是确保该值大于为repl-ping-replica-period指定的值，否则每次主副本和副本之间的流量较低时都会检测到超时。
 #
 # repl-timeout 60
 
-# Disable TCP_NODELAY on the replica socket after SYNC?
+# Disable TCP_NODELAY on the replica socket after SYNC?同步后在复制套接字上禁用TCP_NODELAY ?
 #
 # If you select "yes" Redis will use a smaller number of TCP packets and
-# less bandwidth to send data to replicas. But this can add a delay for
+# less bandwidth to send data to replicas.如果选择“yes”，Redis将使用更少的TCP数据包和更少的带宽向副本发送数据。 But this can add a delay for
 # the data to appear on the replica side, up to 40 milliseconds with
-# Linux kernels using a default configuration.
+# Linux kernels using a default configuration.但是这可能会增加数据在复制端出现的延迟，对于使用默认配置的Linux内核，延迟可达40毫秒。
 #
 # If you select "no" the delay for data to appear on the replica side will
-# be reduced but more bandwidth will be used for replication.
+# be reduced but more bandwidth will be used for replication.如果您选择“否”，数据在复制端出现的延迟将减少，但复制将使用更多的带宽。
 #
 # By default we optimize for low latency, but in very high traffic conditions
 # or when the master and replicas are many hops away, turning this to "yes" may
-# be a good idea.
+# be a good idea.默认情况下，我们对低延迟进行优化，但是在非常高的流量条件下，或者主副本和副本需要多次跳转时，将其改为“yes”可能是一个好主意。
 repl-disable-tcp-nodelay no
 
-# Set the replication backlog size. The backlog is a buffer that accumulates
+# Set the replication backlog size.设置复制积压的大小。 The backlog is a buffer that accumulates
 # replica data when replicas are disconnected for some time, so that when a replica
 # wants to reconnect again, often a full resync is not needed, but a partial
 # resync is enough, just passing the portion of data the replica missed while
-# disconnected.
+# disconnected.backlog是一个缓冲区，当副本断开一段时间后，它会累积副本数据，因此当一个副本想要再次连接时，通常不需要完全的重新同步，但是部分的重新同步就足够了，只需要传递在断开连接时丢失的数据部分。
 #
 # The bigger the replication backlog, the longer the time the replica can be
-# disconnected and later be able to perform a partial resynchronization.
+# disconnected and later be able to perform a partial resynchronization.复制积压越大，副本断开连接的时间就越长，随后就能够执行部分重新同步。
 #
-# The backlog is only allocated once there is at least a replica connected.
+# The backlog is only allocated once there is at least a replica connected.只有在至少连接了一个副本时，才分配backlog。
 #
 # repl-backlog-size 1mb
 

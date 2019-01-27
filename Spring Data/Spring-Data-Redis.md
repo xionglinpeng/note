@@ -326,7 +326,12 @@ public void basicCrudOperations(){
 
 ④ 从Redis中删除给定对象的键。
 
+[8.2. Object Mapping Fundamentals](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#mapping.fundamentals)
 
+- [8.2.1. Object creation](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#mapping.object-creation)
+- [8.2.2. Property population](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#mapping.property-population)
+- [8.2.3. General recommendations](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#_general_recommendations)
+- [8.2.4. Kotlin support](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#_kotlin_support)
 
 ### [8.3. Object-to-Hash Mapping](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#redis.repositories.mapping)
 
@@ -730,7 +735,38 @@ public class ApplicationConfig {
 
 ### [8.6. Query by Example](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#query-by-example)
 
+本章对Query by Example进行了介绍，并介绍如何使用它。
+
+Query by Example (QBE)是一种用户友好的查询技术，具有简单的接口。它允许动态创建查询，并且不要求您编写包含字段名的查询。事实上，Query by Example根本不要求您使用特定的查询语言编写查询。
+
 #### [8.6.1. Introduction](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#query-by-example.introduction)
+
+Query by Example API由三部分组成：
+
+- Probe：具有填充字段的域对象的实际示例。
+- `ExampleMatcher`：`ExampleMatcher`提供关于如何匹配特定字段的详细信息。它可以跨多个示例重用。
+- `Example`：一个Example由probe和`ExampleMatcher`组成。它用于创建查询。
+
+Query by Example非常适合几个用例：
+
+- 使用一组静态或动态约束查询数据存储。
+- 频繁地重构域对象，而不用担心会破坏现有的查询。
+- 独立于底层数据存储API工作。
+
+Query by Example也有几个限制:
+
+- 不支持嵌套或分组的属性约束，例如 `firstname = ?0 和 (firstname = ?1 and lastname = ?2)`。
+- 仅支持字符串的开始/包含/结束/正则表达式匹配和其他属性类型的精确匹配。
+
+在开始使用Query by Example之前，您需要一个域对象。首先，为您的存储库创建一个接口，如下面的示例所示：
+
+*Example 22. Simple Person object*
+
+```java
+
+```
+
+
 
 #### [8.6.2. Usage](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#query-by-example.usage)
 ####  [8.6.3. Example Matchers](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#query-by-example.matchers)
@@ -784,18 +820,60 @@ public class Person {
 
 ```
 
+### [8.9. Persisting Partial Updates](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#redis.repositories.partial-updates)
 
+在某些情况下，您不需要为了在整个实体中设置一个新值而加载并重写整个实体。例如更新最后一个活动时间的会话时间戳这样一种场景，可能您希望更改一个属性。`PartialUpdate`允许您对现有对象进行`set`和`delete`操作，同时可以更新实体本身和索引结构的存在过期时间。下面的例子显示了局部更新:
 
-- [8.2. Object Mapping Fundamentals](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#mapping.fundamentals)
-  - [8.2.1. Object creation](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#mapping.object-creation)
-  - [8.2.2. Property population](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#mapping.property-population)
-  - [8.2.3. General recommendations](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#_general_recommendations)
-  - [8.2.4. Kotlin support](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#_kotlin_support)
-- [8.9. Persisting Partial Updates](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#redis.repositories.partial-updates)
-- [8.10. Queries and Query Methods](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#redis.repositories.queries)
-- [8.11. Redis Repositories Running on a Cluster](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#redis.repositories.cluster)
-- [8.12. CDI Integration](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#redis.repositories.cdi-integration)
+*Example 31. Simple Partial Update*
+
+```java
+public class SimplePartialUpateRunner implements ApplicationRunner {
+
+    @Autowired
+    private RedisKeyValueTemplate redisKeyValueTemplate;
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        PartialUpdate<Person> update = new PartialUpdate<>("16bbdf07...",Person.class)
+                .set("firstname","Tom")								①     
+                .set("address.city","Manhattan")					②
+                .del("lastname");									③
+        redisKeyValueTemplate.update(update);
+
+        update = new PartialUpdate<>("16bbdf07...",Person.class)
+                .set("address",new Address("America","NewYork"))	④
+                .set("attributes", Collections.singletonMap("nickname","雅诗兰黛"));  ⑤
+        redisKeyValueTemplate.update(update);
+
+        update = new PartialUpdate<>("16bbdf07...",Person.class)
+                .refreshTtl(true)									⑥
+                .set("expiretion",60000L);
+        redisKeyValueTemplate.update(update);
+    }
+}
+```
+
+① 将简单的firstname属性设置为Tom。
+
+② 将简单的“address.city”属性设置为“Manhattan”，而不需要传入整个对象。
+
+③ 删除lastname属性。
+
+④ 设置复杂的address属性。
+
+⑤ 设置一个map值，它删除以前存在的map，并用给定的值替换这些值。
+
+⑥ 更改过期时间的同时，自动更新服务器过期时间。
+
+> 更新复杂对象以及映射(或其他集合)结构需要与Redis进行进一步的交互，以确定现有的值，这意味着重写整个实体可能会更快。
+
+### [8.10. Queries and Query Methods](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#redis.repositories.queries)
+
+### [8.11. Redis Repositories Running on a Cluster](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#redis.repositories.cluster)
+
+### [8.12. CDI Integration](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#redis.repositories.cdi-integration)
+
 - 8.13. Redis Repositories Anatomy
+
   - [8.13.1. Insert new](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#_insert_new)
   - [8.13.2. Replace existing](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#_replace_existing)
   - [8.13.3. Save Geo Data](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#_save_geo_data)

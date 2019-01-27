@@ -305,8 +305,8 @@ dir ./
 # replicaof <masterip> <masterport>
 
 
-# 如果主服务器受密码保护(使用下面的“requirepass”配置指令)，可以在启动复制同步过程之前告诉
-# 副本进行身份验证，否则主服务器将拒绝副本请求。
+# 如果master服务器启用了密码保护(配置了下面的“requirepass”指令)，那么slave在启动复制
+# 同步的之前，必须进行master服务器的身份认证，否则master服务器将拒绝slave请求。
 # 
 # masterauth <master-password>
 
@@ -439,78 +439,79 @@ repl-disable-tcp-nodelay no
 # After a master has no longer connected replicas for some time, the backlog
 # will be freed. The following option configures the amount of seconds that
 # need to elapse, starting from the time the last replica disconnected, for
-# the backlog buffer to be freed.
+# the backlog buffer to be freed.主服务器有一段时间没有连接副本之后，积压将被释放。下面的选项配置从最后一个副本断开连接的时间开始需要多长时间来释放积压缓冲区。
 #
 # Note that replicas never free the backlog for timeout, since they may be
 # promoted to masters later, and should be able to correctly "partially
 # resynchronize" with the replicas: hence they should always accumulate backlog.
-#
-# A value of 0 means to never release the backlog.
+#请注意，副本永远不会为超时释放积压，因为稍后它们可能被提升为master，并且应该能够正确地与副本“部分重新同步”:因此，它们应该始终累积积压。
+
+# A value of 0 means to never release the backlog.值为0意味着永远不会释放积压。
 #
 # repl-backlog-ttl 3600
 
 # The replica priority is an integer number published by Redis in the INFO output.
 # It is used by Redis Sentinel in order to select a replica to promote into a
-# master if the master is no longer working correctly.
+# master if the master is no longer working correctly.副本优先级是Redis在信息输出中发布的整数。Redis Sentinel使用它来选择一个副本，以便在主节点不再正常工作时提升到主节点。
 #
 # A replica with a low priority number is considered better for promotion, so
 # for instance if there are three replicas with priority 10, 100, 25 Sentinel will
-# pick the one with priority 10, that is the lowest.
+# pick the one with priority 10, that is the lowest.优先级较低的副本被认为更适合升级，例如，如果有三个优先级为10,100的副本，25个Sentinel将选择优先级为10的副本，这是最低的。
 #
 # However a special priority of 0 marks the replica as not able to perform the
 # role of master, so a replica with priority of 0 will never be selected by
-# Redis Sentinel for promotion.
+# Redis Sentinel for promotion.但是，优先级为0的副本将不能执行master角色，因此优先级为0的副本将永远不会被Redis Sentinel选中进行升级。
 #
 # By default the priority is 100.
 replica-priority 100
 
 # It is possible for a master to stop accepting writes if there are less than
-# N replicas connected, having a lag less or equal than M seconds.
+# N replicas connected, having a lag less or equal than M seconds.如果连接的副本少于N个，且延迟小于或等于M秒，则主服务器可以停止接受写操作。
 #
-# The N replicas need to be in "online" state.
+# The N replicas need to be in "online" state.N个副本需要处于“联机”状态。
 #
 # The lag in seconds, that must be <= the specified value, is calculated from
-# the last ping received from the replica, that is usually sent every second.
+# the last ping received from the replica, that is usually sent every second.以秒为单位的延迟(必须<=指定值)是根据从副本接收到的最后一次ping计算的，该ping通常每秒发送一次。
 #
 # This option does not GUARANTEE that N replicas will accept the write, but
 # will limit the window of exposure for lost writes in case not enough replicas
-# are available, to the specified number of seconds.
+# are available, to the specified number of seconds.此选项不保证N个副本将接受写入，但在可用副本不足的情况下，将丢失写入的暴露窗口限制为指定的秒数。
 #
-# For example to require at least 3 replicas with a lag <= 10 seconds use:
+# For example to require at least 3 replicas with a lag <= 10 seconds use:例如，需要至少3个延迟<= 10秒的副本，请使用:
 #
 # min-replicas-to-write 3
 # min-replicas-max-lag 10
 #
-# Setting one or the other to 0 disables the feature.
+# Setting one or the other to 0 disables the feature.将其中一个设置为0将禁用该特性。
 #
 # By default min-replicas-to-write is set to 0 (feature disabled) and
-# min-replicas-max-lag is set to 10.
+# min-replicas-max-lag is set to 10.默认情况下，min-replicas-to-write设置为0(禁用特性)，min-replicas-max-lag设置为10。
 
 # A Redis master is able to list the address and port of the attached
 # replicas in different ways. For example the "INFO replication" section
 # offers this information, which is used, among other tools, by
-# Redis Sentinel in order to discover replica instances.
+# Redis Sentinel in order to discover replica instances.Redis master能够以不同的方式列出附加副本的地址和端口。例如，“信息复制”一节提供了这些信息，Redis Sentinel在其他工具中使用这些信息来发现副本实例。
 # Another place where this info is available is in the output of the
-# "ROLE" command of a master.
+# "ROLE" command of a master.此信息可用的另一个位置是在master的“ROLE”命令的输出中。
 #
 # The listed IP and address normally reported by a replica is obtained
-# in the following way:
+# in the following way:通常由副本报告的所列IP和地址的获取方法如下:
 #
 #   IP: The address is auto detected by checking the peer address
-#   of the socket used by the replica to connect with the master.
+#   of the socket used by the replica to connect with the master.通过检查副本用于连接主机的套接字的对等地址，可以自动检测该地址。
 #
 #   Port: The port is communicated by the replica during the replication
 #   handshake, and is normally the port that the replica is using to
-#   listen for connections.
+#   listen for connections.该端口在复制握手期间由副本进行通信，通常是副本用于侦听连接的端口。
 #
 # However when port forwarding or Network Address Translation (NAT) is
 # used, the replica may be actually reachable via different IP and port
-# pairs. The following two options can be used by a replica in order to
+# pairs.然而，当使用端口转发或网络地址转换(NAT)时，副本实际上可以通过不同的IP和端口对访问。 The following two options can be used by a replica in order to
 # report to its master a specific set of IP and port, so that both INFO
-# and ROLE will report those values.
+# and ROLE will report those values.副本可以使用以下两个选项向其主服务器报告一组特定的IP和端口，以便INFO和ROLE都报告这些值。
 #
 # There is no need to use both the options if you need to override just
-# the port or the IP address.
+# the port or the IP address.如果只需要覆盖端口或IP地址，则不需要同时使用这两个选项。
 #
 # replica-announce-ip 5.5.5.5
 # replica-announce-port 1234

@@ -64,6 +64,24 @@ Spring Redis需要Redis 2.6或更高版本，Spring Data Redis集成了[Lettuce]
 
 Redis支持提供了几个组件。对于大多数任务，高级抽象和支持服务是最佳选择。注意，在任何一点上，您都可以在层之间移动。例如，您可以获得一个低级连接(甚至是本机库)来直接与Redis通信。
 
+### [5.9. Redis Messaging (Pub/Sub)](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#pubsub)
+
+
+
+#### [5.9.1. Publishing (Sending Messages)](https://docs.spring.io/spring-data/redis/docs/2.1.5.RELEASE/reference/html/#redis:pubsub:publish)
+
+
+
+#### [5.9.2. Subscribing (Receiving Messages)](https://docs.spring.io/spring-data/redis/docs/2.1.5.RELEASE/reference/html/#redis:pubsub:subscribe)
+
+
+
+### [5.10. Redis Transactions](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#tx)
+
+
+
+#### [5.10.1. @Transactional Support](https://docs.spring.io/spring-data/redis/docs/2.1.5.RELEASE/reference/html/#tx.spring)
+
 
 
 

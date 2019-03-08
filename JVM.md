@@ -58,6 +58,40 @@ C:\Users\dandelion>java -help
 
 
 
+
+
+```shell
+[root@localhost ~]# jps -help
+usage: jps [--help]
+       jps [-q] [-mlvV] [<hostid>]
+
+Definitions:
+    <hostid>:      <hostname>[:<port>]
+    -? -h --help -help: Print this help message and exit.
+```
+
+
+
+```shell
+[root@localhost ~]# jinfo -?
+Usage:
+    jinfo <option> <pid>
+       (to connect to a running process)
+
+where <option> is one of:
+    -flag <name>         to print the value of the named VM flag
+    -flag [+|-]<name>    to enable or disable the named VM flag
+    -flag <name>=<value> to set the named VM flag to the given value
+    -flags               to print VM flags
+    -sysprops            to print Java system properties
+    <no option>          to print both VM flags and system properties
+    -? | -h | --help | -help to print this help message
+```
+
+
+
+
+
 ## jstat
 
 ```shell
@@ -90,9 +124,50 @@ Definitions:
 
 
 
+```shell
+[root@izbp12mpi6ej8nhsdjjk4kz ~]# jmap -?
+Usage:
+    jmap [option] <pid>
+        (to connect to running process)
+    jmap [option] <executable <core>
+        (to connect to a core file)
+    jmap [option] [server_id@]<remote server IP or hostname>
+        (to connect to remote debug server)
+
+where <option> is one of:
+    <none>               to print same info as Solaris pmap
+    -heap                to print java heap summary
+    -histo[:live]        to print histogram of java object heap; if the "live"
+                         suboption is specified, only count live objects
+    -clstats             to print class loader statistics
+    -finalizerinfo       to print information on objects awaiting finalization
+    -dump:<dump-options> to dump java heap in hprof binary format
+                         dump-options:
+                           live         dump only live objects; if not specified,
+                                        all objects in the heap are dumped.
+                           format=b     binary format
+                           file=<file>  dump heap to <file>
+                         Example: jmap -dump:live,format=b,file=heap.bin <pid>
+    -F                   force. Use with -dump:<dump-options> <pid> or -histo
+                         to force a heap dump or histogram when <pid> doesnot
+                         respond. The "live" suboption is not supported
+                         in this mode.
+    -h | -help           to print this help message
+    -J<flag>             to pass <flag> directly to the runtime system
+```
 
 
 
+| options                | descrition                                                   |
+| ---------------------- | ------------------------------------------------------------ |
+| `-heap`                | 显示java堆详细信息，例如使用哪种回收器，参数配置，分代状况等。只在Linux和Solaris平台有效。 |
+| `-histo`               |                                                              |
+| `-clatats`             |                                                              |
+| `-finalizerinfo`       |                                                              |
+| `-dump:<dump-options>` |                                                              |
+| `-F`                   |                                                              |
+| `-J<flag>`             |                                                              |
+| `-h | -help`           |                                                              |
 
 
 

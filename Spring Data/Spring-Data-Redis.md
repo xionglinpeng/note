@@ -76,6 +76,47 @@ Redis支持提供了几个组件。对于大多数任务，高级抽象和支持
 
 
 
+
+
+Spring Data Redis
+
+```java
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.MessageListener;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.listener.Topic;
+
+import java.util.*;
+
+@Configuration
+public class PubSubConfiguration {
+
+    @Bean
+    public MessageListener listener(){
+        return new DefaultMessageListener();
+    }
+
+    @Bean
+    public RedisMessageListenerContainer listenerContainer(RedisConnectionFactory collectionFactory){
+        RedisMessageListenerContainer listenerContainer = new RedisMessageListenerContainer();
+        listenerContainer.setConnectionFactory(collectionFactory);
+
+        List<Topic> topics = new ArrayList<>();
+        topics.add(new ChannelTopic("hello"));
+
+        Map<MessageListener, Collection<? extends Topic>> listeners = new HashMap<>();
+        listeners.put(listener(),topics);
+        listenerContainer.setMessageListeners(listeners);
+        return listenerContainer;
+    }
+}
+```
+
+
+
 ### [5.10. Redis Transactions](https://docs.spring.io/spring-data/redis/docs/2.1.3.RELEASE/reference/html/#tx)
 
 

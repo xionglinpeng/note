@@ -1,24 +1,53 @@
-
-
-
+# Redis的Sentinle文档
 
 Redis的Sentinel系统用于管理多个Redis服务器（instance），该系统执行以下三个任务：
 
 - **监控（Monitoring）：**Sentinel会不断地检查你的主服务器和从服务器是否运作正常。
 - **提醒（Notification）：**当被监控的某个Redis服务器出现问题时，Sentinel可以通过API向管理员或者其他应用程序发送通知。
-- **自动故障迁移（Automatic failover）：**当一个主服务器不能正常工作时，Sentinel会开始一次自动故障迁移操作，它会将失效主服务器的其中一个从服务器升级为新的主服务器，并让失效主服务器的其他从服务器改为复制新的主服务器；当客户端试图连接失效的主服务器时，集群也会向客户端返回新主服务器的地址，使得集群可以使用新主服务器带起代替服务器。
+- **自动故障迁移（Automatic failover）：**当一个主服务器不能正常工作时，Sentinel会开始一次自动故障迁移操作，它会将失效主服务器的其中一个从服务器升级为新的主服务器，并让失效主服务器的其他从服务器改为复制新的主服务器；当客户端试图连接失效的主服务器时，集群也会向客户端返回新主服务器的地址，使得集群可以使用新主服务器代替失效服务器。
 
+Redis Sentinel是一个分布式系统，你可以在一个架构中运行多个Sentinle进程（progress），这些进程使用流言协议（gossip protocols）来接收关于主服务器是否下线的信息，并使用投票协议（）来决定是否执行自动故障迁移，以及选择哪个从服务器作为新的主服务器。
 
+虽然Redis Sentinel释出为一个单独的可执行文件redis-sentinel，但实际上它只是一个运行在特殊模式下的Redis服务器，你可以在启动一个普通Redis服务器时通过给定`--sentinel`选项来启动Redis Sentinel。
 
 ## 获取Sentinel
 
+目前Sentinel系统是Redis的unstable分支的一部分，你必须到Redis项目的Githup页面克隆一份unstable，然后通过编译来获得Sentinel系统。
 
+简单的说就是下载、安装、编译Redis之后，自包含Redis-Sentinel程序。
 
 ## 启动Sentinel
 
+启动sentinel有两种方式：
 
+```shell
+redis-sentinel /path/to/sentinel.conf
+# 或者
+redis-server /path/to/sentinel.conf --sentinel
+```
+
+注意：启动Sentinel实例必须知道相应的配置文件，系统会使用配置文件来保存Sentinel的当前状态，并在Sentinel重启时通过载入配置文件来进行状态还原。
+
+如果启动Sentinel时没有指定相应的配置文件，或者指定的配置文件不可写（not writable），那么Sentinel会拒绝启动。
 
 ## 配置Sentinel
+
+
+
+```shell
+port 26379
+daemonize yes
+pidfile "/var/run/redis-sentinel.pid"
+logfile "redis-sentinel-26379.log"
+dir "/opt/redis/sentinel"
+sentinel monitor master 192.168.1.110 6379 2
+sentinel down-after-milliseconds master 15000
+sentinel auth-pass master sanyanguanxue
+sentinel parallel-syncs master 1
+sentinel failover-timeout master 180000
+```
+
+
 
 
 
@@ -278,6 +307,8 @@ OK
 <instance-type> <name> <ip> <port> @ <master-name> <master-ip> <master-port>
 ```
 
+@字符之后的内容用于指定主服务器，这些内容是可选的，它们仅在@字符串之前的内容指定的实例不是主服务器时使用。
+
 下面是一个订阅全部事件的示例：
 
 ```shell
@@ -288,16 +319,19 @@ Reading messages... (press Ctrl-C to quit)
 3) (integer) 1
 1) "pmessage"
 2) "*"
-3) "+sdown"	//主服务器192.168.1.110 6379进入了主观下线
+3) "+sdown"	//主服务器6379进入了主观下线
 4) "master master 192.168.1.110 6379"
 1) "pmessage"
 2) "*"
-3) "+odown"	//主服务器192.168.1.110 6379进入了客观下线，法定人数3/2
+3) "+odown"	//主服务器6379进入了客观下线，法定人数3/2
 4) "master master 192.168.1.110 6379 #quorum 3/2"
 1) "pmessage"
 2) "*"
 3) "+new-epoch"	//当前的epoch已被更新
 4) "21"
+## ====================================================================================
+## 这里开始选举执行故障迁移操作的Sengtinel（Raft算法，leader选举）。
+## ====================================================================================
 1) "pmessage"
 2) "*"
 3) "+try-failover"	//故障迁移执行中，等待被大多数Sentinel选中
@@ -308,19 +342,25 @@ Reading messages... (press Ctrl-C to quit)
 4) "b181e9255d264e4f766fdf950304b9f1761734b9 21"
 1) "pmessage"
 2) "*"
-3) "+elected-leader"	//赢得指定epoch的选举，可以开始故障迁移了
+3) "+elected-leader" //赢得指定epoch的选举，可以开始故障迁移了
 4) "master master 192.168.1.110 6379"
 1) "pmessage"
 2) "*"
-3) "+failover-state-select-slave"	//故障迁移操作现在处于select-slave状态（Sentinel正在寻找可以升级为主服务器的从服务器）
+## ====================================================================================
+## 这里已经完成了Sentinel的leader的选举，开始寻找寻找可以升级为主服务器的从服务器。
+## ====================================================================================
+3) "+failover-state-select-slave" //故障迁移操作现在处于select-slave状态（Sentinel正在寻找可以升级为主服务器的从服务器）
 4) "master master 192.168.1.110 6379"
 1) "pmessage"
 2) "*"
-3) "+selected-slave" //Sentinel顺利找到适合进行升级为主服务器的从服务器，是192.168.1.110 6381。
+3) "+selected-slave" //Sentinel顺利找到适合进行升级为主服务器的从服务器，是6381。
 4) "slave 192.168.1.110:6381 192.168.1.110 6381 @ master 192.168.1.110 6379"
 1) "pmessage"
 2) "*"
-3) "+failover-state-send-slaveof-noone"	 //Sentinel正在将指定从服务器升级为主服务器
+## ====================================================================================
+## 将找到的可以升级为主服务器的从服务器升级为主服务器
+## ====================================================================================
+3) "+failover-state-send-slaveof-noone" //Sentinel正在将指定从服务器升级为主服务器
 4) "slave 192.168.1.110:6381 192.168.1.110 6381 @ master 192.168.1.110 6379"
 1) "pmessage"
 2) "*"
@@ -336,19 +376,22 @@ Reading messages... (press Ctrl-C to quit)
 4) "slave 192.168.1.110:6381 192.168.1.110 6381 @ master 192.168.1.110 6379"
 1) "pmessage"
 2) "*"
+
 3) "+failover-state-reconf-slaves" //故障转移状态切换到了reconf-slaves状态
 4) "master master 192.168.1.110 6379"
 1) "pmessage"
 2) "*"
 3) "+slave-reconf-sent" //领头（leader）的Sentinel向slave实例发送了slave of命令，设置其新的主服务器。
 4) "slave 192.168.1.110:6380 192.168.1.110 6380 @ master 192.168.1.110 6379"
+## ====================================================================================
+## 开始将从服务器复制新的主服务器
+## ====================================================================================
 1) "pmessage"
 2) "*"
 3) "+slave-reconf-inprog" //实例正在将自己设置为指定主服务器的从服务器，但相应的同步过程仍未完成。
 4) "slave 192.168.1.110:6380 192.168.1.110 6380 @ master 192.168.1.110 6379"
 1) "pmessage"
 2) "*"
-
 3) "-odown" //原主服务器192.168.1.110 6379上线了，不再处于客观下线状态
 4) "master master 192.168.1.110 6379"
 1) "pmessage"
@@ -377,23 +420,51 @@ Reading messages... (press Ctrl-C to quit)
 4) "slave 192.168.1.110:6379 192.168.1.110 6379 @ master 192.168.1.110 6381"
 1) "pmessage"
 2) "*"
-3) "-role-change"				//
+3) "-role-change" //
 4) "slave 192.168.1.110:6379 192.168.1.110 6379 @ master 192.168.1.110 6381 new reported role is master"
 1) "pmessage"
 2) "*"
-3) "-sdown"				//
+3) "-sdown" //原主服务器192.168.1.110 6379已经不再处于主观下线状态
 4) "slave 192.168.1.110:6379 192.168.1.110 6379 @ master 192.168.1.110 6381"
 1) "pmessage"
 2) "*"
-3) "+role-change"				//
+3) "+role-change" //
 4) "slave 192.168.1.110:6379 192.168.1.110 6379 @ master 192.168.1.110 6381 new reported role is slave"
 ```
 
+- +sdown：给定的实例现在处于主观下线状态。
+- -sdown： 给定的实例已经不再处于主观下线状态。
+- +odown：给定的实例现在处于客观下线状态。
 
+- -odown： 给定的实例已经不再处于客观下线状态。
 
+- +new-epoch：当前的纪元（epoch）已经被更新。
+- +try-failover：一个新的故障迁移操作正在执行中，等待被大多数Sentinel选中。
+- +vote-for-leader：
+- +elected-leader：赢得指定纪元的选举，可以进行故障迁移操作了。
+- +failover-state-send-slaveof-noone：Sentinel正在将指定的从服务器升级为主服务器，等待升级功能完成。
+- +failover-state-select-slave：故障转移操作现在处于select-slave状态——Sentinel正在寻找可以升级为主服务器的从服务器。
+- +failover-state-reconf-slaves：故障转移状态切换到了reconf-slaves状态。
+- +failover-end：故障转移顺利完成。所有从服务器都开始复制新的主服务器了。
+- +selected-slave：Sentinel顺利找到合适进行升级的从服务器。
+- -role-change：
+- +promoted-slave：
+- +slave-reconf-sent：领头（leader）的Sentinel向实例发送了了`slaveof`命令，为实例设置新的主服务器。
 
+- +slave-reconf-inprog：实例正在将自己设置为指定主服务器的从服务器，但相应的同步过程仍未完成。
 
+- +slave-reconf-done：从服务器已经成功完成对新主服务器的同步。
 
+- +switch-master：配置变更，主服务器的IP和地址已经改变。
+
+- +tilt：进入tilt模式。
+- -tilt：退出tilt模式。
+- failover-end-for-timeout：故障转移因为超时而中止，不过最后所有从服务器都会开始复制新的主服务器。
+- no-good-slave：Sentinel未能找到合适进行升级的从服务器，Sentinel会在一段时间之后再次尝试寻找合适的从服务器来进行升级，又或者直接放弃执行故障转移操作。
+- +sentinel：一个监视给定主服务器的新Sentinel已经被识别并添加。
+- -dup-sentinel：对给定主服务器进行监视的一个或多个Sentinel已经因为重复出现而被移除——当Sentinel实例重启的时候，就会出现这种情况。
+- +failover-detected：另一个Sentinle开始了一次故障转移操作，或者一个从服务器转换成了主服务器。
+- +reset-master：主服务器已被重置。
 
 ## 故障转移
 

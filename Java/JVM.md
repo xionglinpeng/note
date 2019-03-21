@@ -187,7 +187,9 @@ public class TestClass {
 
 
 
+01 00  01 49
 
+01 00 06 3C
 
 ```java
 CA FE BA BE 00 00 00 36 00 13 0A 00 04 00 0F 09 
@@ -225,7 +227,122 @@ class文件版本
 
 `00`
 
-`13` 容量
+`13` 容量 0x13 = 19
+
+1. 0xA = 10，`CONSTANT_Methodref_info`
+
+```
+CONSTANT_Methodref_info {
+    u1 tag;
+    u2 class_index;
+    u2 name_and_type_index;
+}
+```
+
+0A 00 04 00 0F
+
+2. 0x9 = 9, `CONSTANT_Fieldref_info`
+
+```
+CONSTANT_Fieldref_info {
+    u1 tag;
+    u2 class_index;
+    u2 name_and_type_index;
+}
+```
+
+09 00 03 00 10
+
+3. 0x07 = 7, `CONSTANT_Class_info`
+
+```
+CONSTANT_Class_info {
+    u1 tag;
+    u2 name_index;
+}
+```
+
+07 00 11
+
+4. 07 00 12
+
+第五个常量
+
+0x01 = 1, `CONSTANT_Utf8_info`
+
+```
+CONSTANT_Utf8_info {
+    u1 tag;
+    u2 length;
+    u1 bytes[length];
+}
+```
+
+01 00 01 => 6D => m
+
+第六个常量
+
+01 00  01 => 49 => I
+
+第七个常量
+
+01 00 06 => 3C 69 6E 69 74 3E => <init>
+
+第八个常量
+
+01 00 03 => 28 29 56 => ()V
+
+第九个常量
+
+01 00 04 => 43 6F 64 65 => Code
+
+第十个常量
+
+01 00 0F => 4C 69 6E 65 4E 75 6D 62 65 72 54 61 62 6C 65 => LineNumberTable
+
+第十一个常量
+
+01 00 03 =>69 6E 63 => inc
+
+第十二个常量
+
+01 00 03 =>28 29 49 => ()I
+
+第十三个常量
+
+01 00 0A=>53 6F 75 72 63 65 46 69 6C 65 => SourceFile
+
+第十四个常量
+
+01 00 0E=>54 65 73 74 43 6C 61 73 73 2E 6A 61 76 61=>TestClass.java
+
+第十五个常量
+
+0x0C = 12,`CONSTANT_NameAndType_info`
+
+```
+CONSTANT_NameAndType_info {
+    u1 tag;
+    u2 name_index;
+    u2 descriptor_index;
+}
+```
+
+0C 00 07 00 08
+
+第十六个常量
+
+0C 00 05 00 06
+
+第十七个常量
+
+01 00 1F=>63 6F 6D 2F 65 78 61 6D 70 6C 65 2F 6A 76 6D 2F 63 6C 61 7A 7A 2F 54 65 73 74 43 6C 61 73 73
+
+=>com/example/jvm/clazz/TestClass
+
+第十八个常量
+
+01 00 10=>6A 61 76 61 2F 6C 61 6E 67 2F 4F 62 6A 65 63 74=>java/lang/Object
 
 
 
@@ -251,6 +368,30 @@ class文件版本
 
 
 
+
+```
+CONSTANT_Fieldref_info {
+    u1 tag;
+    u2 class_index;
+    u2 name_and_type_index;
+}
+CONSTANT_Methodref_info {
+    u1 tag;
+    u2 class_index;
+    u2 name_and_type_index;
+}
+CONSTANT_InterfaceMethodref_info {
+    u1 tag;
+    u2 class_index;
+    u2 name_and_type_index;
+}
+```
+
+
+
+紧接着是访问标志符
+
+00 21 = 
 
 
 

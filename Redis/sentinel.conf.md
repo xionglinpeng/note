@@ -122,15 +122,14 @@ sentinel down-after-milliseconds mymaster 30000
 
 # sentinel parallel-syncs <master-name> <numreplicas>
 #
-# How many replicas we can reconfigure to point to the new replica simultaneously
-# during the failover. Use a low number if you use the replicas to serve query
-# to avoid that all the replicas will be unreachable at about the same
-# time while performing the synchronization with the master.
+# 在故障转移期间，我们可以重新配置最多可以有多少个从服务器同时对新的主服务器进行同步。
+# 如果使用读写分离，那么请配置一个较低的数字，以避免从服务器在与主服务器同步期间，没
+# 有可用的从服务器进行读操作。
 sentinel parallel-syncs mymaster 1
 
 # sentinel failover-timeout <master-name> <milliseconds>
 #
-# Specifies the failover timeout in milliseconds. It is used in many ways:
+# 指定故障转移超时(以毫秒为单位)。它有很多用法:
 #
 # - The time needed to re-start a failover after a previous failover was
 #   already tried against the same master by a given Sentinel, is two

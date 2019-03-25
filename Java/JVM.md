@@ -175,6 +175,8 @@ where <option> is one of:
 
 
 
+### case analysis
+
 ```java
 package com.example.jvm.clazz;
 public class TestClass {
@@ -187,9 +189,7 @@ public class TestClass {
 
 
 
-01 00  01 49
 
-01 00 06 3C
 
 ```java
 CA FE BA BE 00 00 00 36 00 13 0A 00 04 00 0F 09 
@@ -213,72 +213,98 @@ CA FE BA BE 00 00 00 36 00 13 0A 00 04 00 0F 09
 01 00 0D 00 00 00 02 00 0E  
 ```
 
-魔数
+#### magic
 
 `CA FE BA BE`
 
-class文件版本
+#### minor_version
 
 `00 00` 小版本
 
+#### magic_version
+
 `00 36` 大版本
 
-常量池
+#### constant Pool
+
+由于常量池中常量的数量是固定的，所以在常量池的入口需要放置一项u2可惜的数据，代表常量池容量计数值（constant_pool_count）。与Java中语言习惯不一样的是，这个容量计数是从1而不是从0开始，例如常量池容量为十六进制数0x13，即十进制19，这就代表常量池中有18向常量，索引值范围为1~18。设计者将第0项常量空出来是有特殊考虑的，这样做的目的在于满足后面某些指向常量池的索引值的数据在特定情况下需要表达“不引用任何一个常量池项目”的含义，这种情况就可以把索引值置位0来表示。
+
+注意：Class文件结构只有常量池的容量计数是从1开始，对于其他集合类型，包括接口索引集合、字段表集合、方法表集合等的容量计数都与一般习惯相同，是从0开始的。
+
+首先是常量池第0位
 
 `00`
 
-`13` 容量 0x13 = 19
+##### constant_pool_count
 
-1. 0xA = 10，`CONSTANT_Methodref_info`
+十六进制数0x13，即十进制数19，表示当前常量池中有18个常量。
 
-```
-CONSTANT_Methodref_info {
-    u1 tag;
-    u2 class_index;
-    u2 name_and_type_index;
-}
-```
+##### constant_pool[constant_pool_count - 1]
 
-0A 00 04 00 0F
+1. **The one constant**
 
-2. 0x9 = 9, `CONSTANT_Fieldref_info`
+   tag值为0x0A，即十进制10，查看**常量池项目类型**表，可知为`CONSTANT_Methodref_info`表，共占用5个字节，如下：
 
-```
-CONSTANT_Fieldref_info {
-    u1 tag;
-    u2 class_index;
-    u2 name_and_type_index;
-}
-```
+   ```
+   CONSTANT_Methodref_info {
+       u1 tag;
+       u2 class_index;
+       u2 name_and_type_index;
+   }
+   ```
 
-09 00 03 00 10
+   十六进制数：0A 00 04 00 0F
 
-3. 0x07 = 7, `CONSTANT_Class_info`
+2. **The twe constant**
 
-```
-CONSTANT_Class_info {
-    u1 tag;
-    u2 name_index;
-}
-```
+   tag值为0x09，即十进制9，查看**常量池项目类型**表，可知为`CONSTANT_Fieldref_info`表，共占用5个字节，如下：
 
-07 00 11
+   ```
+   CONSTANT_Fieldref_info {
+       u1 tag;
+       u2 class_index;
+       u2 name_and_type_index;
+   }
+   ```
 
-4. 07 00 12
+   十六进制数：09 00 03 00 10
 
-第五个常量
+3. **The third constant**
 
-0x01 = 1, `CONSTANT_Utf8_info`
+   tag值为0x07，即十进制7，查看**常量池项目类型**表，可知为`CONSTANT_Class_info`表，共占用3个字节，如下：
 
-```
-CONSTANT_Utf8_info {
-    u1 tag;
-    u2 length;
-    u1 bytes[length];
-}
-```
+   ```
+   CONSTANT_Class_info {
+       u1 tag;
+       u2 name_index;
+   }
+   ```
+
+   十六进制数：07 00 11
+
+4. **The four constant**
+
+   07 00 12
+
+5. **The five constant**
+
+   tag值为0x01，即十进制1，查看**常量池项目类型**表，可知为`CONSTANT_Utf8_info`表，共占用1+2+length个字节，如下：
+
+   ```
+   CONSTANT_Utf8_info {
+       u1 tag;
+       u2 length;
+       u1 bytes[length];
+   }
+   ```
+
+   十六进制数：01 00 01 6D
 
 01 00 01 => 6D => m
+
+6. **The six constant**
+
+   tag值为0x01，
 
 第六个常量
 
@@ -346,7 +372,138 @@ CONSTANT_NameAndType_info {
 
 
 
-常量池的项目类型
+#### access_flags
+
+紧接着是访问标志符
+
+0x0021
+
+#### this_class
+
+0x0003
+
+#### super_class
+
+0x0004
+
+#### interfaces_count
+
+0x0000
+
+#### interfaces[interfaces_count]
+
+
+
+#### fields
+
+继类索引，父类索引，接口索引之后是字段表集合，字段表集合如下：
+
+```
+field_info {
+    u2 access_flags;
+    u2 name_index;
+    u2 descriptor_index;
+    u2 attributes_count;
+    attribute_info attributes[attributes_count];
+}
+```
+
+查看class format structure，在字段表集合之前还有两个字节，代表字段表的数量，所以对应的十六进制数如下：
+
+```
+00 01 00 02 00 05 00 06 00 00 00
+```
+
+字段表数量为十六进制数0x0001，即十进制1，即只有一个字段。
+
+access_flags为十六进制数0x0002，查看field access flags table，可知访问标志位`private`。
+
+name_index为十六进制数0x0005，即十进制5，对应常量表的第五个常量，查看第五个常量，为`CONSTANT_utf8_info`表，对应字段名称`m`。
+
+descriptor_index为十六进制数0x0006，即十进制6，对应常量表第六个常量，查看第六个常量，为`CONSTANT_utf8_info`，对应字段类型`I`，再查看字段描述符标识字段含义，`I`为基本类型`int`。
+
+attributes_count为十六进制数0x0000，即没有当前字段对应的属性表。
+
+所以，可以得出改字段为：
+
+```java
+private int m;
+```
+
+
+
+##### fields_count
+
+##### fields[fields_count]
+
+#### methods
+
+```
+method_info {
+    u2 access_flags;
+    u2 name_index;
+    u2 descriptor_index;
+    u2 attributes_count;
+    attribute_info attributes[attributes_count];
+}
+```
+
+00 02 => 00 01 00 07 00 08 00 01
+
+首先两个字节表明是方法的数量
+
+方法表数量为十六进制0x0002，即十进制2，代表有两个方法。
+
+第一个方法：
+
+access_flags为十六进制数0x0001，查看method access flags，访问标记为public。
+
+name_index为十六进制数0x0007，即十进制7，对应常量表第7个常量，查看第7个常量，为`CONSTANT_utf8
+_info`表，对应方法名称`<init>`，即时构造方法。
+
+descriptor_index为十六进制数0x0008，即十进制8，对应常量表第8个常量，查看第8个常量，为`CONSTANT_utf8_info`表，对应的方法返回值 `()V`。
+
+attributes_count为十六进制数0x0001，
+
+
+
+##### methods_count
+
+
+
+##### methods[methods_count]
+
+
+
+```
+CA FE BA BE 00 00 00 36 00 13 0A 00 04 00 0F 09 
+00 03 00 10 07 00 11 07 00 12 01 00 01 6D 01 00 
+01 49 01 00 06 3C 69 6E 69 74 3E 01 00 03 28 29 
+56 01 00 04 43 6F 64 65 01 00 0F 4C 69 6E 65 4E 
+75 6D 62 65 72 54 61 62 6C 65 01 00 03 69 6E 63 
+01 00 03 28 29 49 01 00 0A 53 6F 75 72 63 65 46 
+69 6C 65 01 00 0E 54 65 73 74 43 6C 61 73 73 2E 
+6A 61 76 61 0C 00 07 00 08 0C 00 05 00 06 01 00 
+1F 63 6F 6D 2F 65 78 61 6D 70 6C 65 2F 6A 76 6D 
+2F 63 6C 61 7A 7A 2F 54 65 73 74 43 6C 61 73 73 
+01 00 10 6A 61 76 61 2F 6C 61 6E 67 2F 4F 62 6A 
+65 63 74 00 21 00 03 00 04 00 00 00 01 00 02 00 
+05 00 06 00 00@00 02 00 01 00 07 00 08 00 01 00 
+09 00 00 00 1D 00 01 00 01 00 00 00 05 2A B7 00 
+01 B1 00 00 00 01 00 0A 00 00 00 06 00 01 00 00 
+00 03 00 01 00 0B 00 0C 00 01 00 09 00 00 00 1F 
+00 02 00 01 00 00 00 07 2A B4 00 02 04 60 AC 00 
+00 00 01 00 0A 00 00 00 06 00 01 00 00 00 08 00 
+01 00 0D 00 00 00 02 00 0E  
+```
+
+
+
+
+
+
+
+### 常量池的项目类型
 
 | type                               | tag  | description              |
 | ---------------------------------- | ---- | ------------------------ |
@@ -367,7 +524,13 @@ CONSTANT_NameAndType_info {
 
 
 
+#### `CONSTANT_Utf8_info`
 
+
+
+
+
+#### `CONSTANT_Fieldref_info`
 
 ```
 CONSTANT_Fieldref_info {
@@ -375,11 +538,21 @@ CONSTANT_Fieldref_info {
     u2 class_index;
     u2 name_and_type_index;
 }
+```
+
+#### `CONSTANT_Methodref_info`
+
+```
 CONSTANT_Methodref_info {
     u1 tag;
     u2 class_index;
     u2 name_and_type_index;
 }
+```
+
+#### `CONSTANT_InterfaceMethodref_info`
+
+```
 CONSTANT_InterfaceMethodref_info {
     u1 tag;
     u2 class_index;
@@ -389,15 +562,59 @@ CONSTANT_InterfaceMethodref_info {
 
 
 
-紧接着是访问标志符
+### Access flags table
 
-00 21 = 
+| flag name      | flag value | 含义                                                         |
+| -------------- | ---------- | ------------------------------------------------------------ |
+| ACC_PUBLIC     | 0x0001     | 是否为public类型                                             |
+| ACC_FINAL      | 0x0010     | 是否被什么为final，只有类可设置                              |
+| ACC_SUPER      | 0x0020     | 是否允许使用invokespecial字节码指令的新语意，invokespecial指令的语意在JDK 1.0.2发生过改变，为了区别这条指令使用哪种语意，JDK 1.0.2之后编译出来的类的这个标志都必须为真。 |
+| ACC_INTERFACE  | 0x0200     | 标识这是一个接口                                             |
+| ACC_ABSTRAT    | 0x0400     | 是否为abstract类型，对于接口或者抽象类来说，此标志值为真，其他类值为假 |
+| ACC_SYNTHETIC  | 0x1000     | 标识这个类并非由用户代码产生的                               |
+| ACC_ANNOTATION | 0x2000     | 标识这时一个注解                                             |
+| ACC_ENUM       | 0x4000     | 标识这是一个枚举                                             |
+
+### Field access flags table
+
+| flag name     | flag value | 含义                     |
+| ------------- | ---------- | ------------------------ |
+| ACC_PUBLIC    | 0x0001     | 字段是否public           |
+| ACC_PRIVATE   | 0x0002     | 字段是否private          |
+| ACC_PROTECTED | 0x0004     | 字段是否protected        |
+| ACC_STATIC    | 0x0008     | 字段是否static           |
+| ACC_FINAL     | 0x0010     | 字段是否final            |
+| ACC_VOLATILE  | 0x0040     | 字段是否volatile         |
+| ACC_TRANSIENT | 0x0080     | 字段是否transient        |
+| ACC_SYNTHETIC | 0x1000     | 字段是否由编译器自动产生 |
+| ACC_ENUM      | 0x4000     | 字段是否enum             |
 
 
 
+### 描述符标识字段含义
 
+| 标识字段 | 含义           | 标识字段 | 含义                          |
+| -------- | -------------- | -------- | ----------------------------- |
+| B        | 基本类型byte   | J        | 基本类型long                  |
+| C        | 基本类型char   | S        | 基本类型short                 |
+| D        | 基本类型double | Z        | 基本类型boolean               |
+| F        | 基本类型float  | V        | 特殊类型void                  |
+| I        | 基本类型int    | L        | 对象类型，如Ljava/lang/Object |
 
+### Method access flags
 
-
-
+| flag name        | flag value | 含义                           |
+| ---------------- | ---------- | ------------------------------ |
+| ACC_PUBLIC       | 0x0001     | 方法是否为public               |
+| ACC_PRIVATE      | 0x0002     | 方法是否为private              |
+| ACC_PROTEDTED    | 0x0004     | 方法是否为protected            |
+| ACC_STATIC       | 0x0008     | 方法是否为static               |
+| ACC_FINAL        | 0x0010     | 方法是否为final                |
+| ACC_SYNCHRONIZED | 0x0020     | 方法是否为synchronized         |
+| ACC_BRIDGE       | 0x0040     | 方法是否由编译器产生的桥接方法 |
+| ACC_VARARGS      | 0x0080     | 方法是否接受不定参数           |
+| ACC_NATIVE       | 0x0100     | 方法是否为native               |
+| ACC_ABSTRACT     | 0x0400     | 方法是否为abstract             |
+| ACC_STRICTFP     | 0x0800     | 方法是否为strictfp             |
+| ACC_SYNTHETLC    | 0x1000     | 方法是否由编译器自动产生       |
 

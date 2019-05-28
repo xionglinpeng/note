@@ -14,6 +14,11 @@
   对于已经存在的用户，还是原来的认证方式
 
   登录mysql，修改已创建用户的认证方式
-
+  ```mysql
+  alter user root@localhost identified WITH mysql_native_password by 'password';
+  ```
   刷新数据库权限，再去连接数据库就可以了
-引用：https://
+  ```mysql
+  flush privileges;
+  ```
+引用：https://jingyan.baidu.com/article/6dad5075284acfa123e36e35.html

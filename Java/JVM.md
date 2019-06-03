@@ -456,7 +456,7 @@ method_info {
 
 第一个方法：
 
-access_flags为十六进制数0x0001，查看method access flags，访问标记为public。
+access_flags为十六进制数0x0001，查看method access flags，访问标记为`public`。
 
 name_index为十六进制数0x0007，即十进制7，对应常量表第7个常量，查看第7个常量，为`CONSTANT_utf8
 _info`表，对应方法名称`<init>`，即时构造方法。
@@ -467,6 +467,7 @@ attributes_count为十六进制数0x0001，
 
 
 
+<<<<<<< HEAD
 00 
 09 00 00 00 1D 00 01 00 01 00 00 00 05 2A B7 00 
 01 B1 00 00 00 01 00 0A 00 00 00 06 00 01 00 00 
@@ -477,6 +478,155 @@ attributes_count为十六进制数0x0001，
 00 01 00 0B 00 0C 00 01 00 09 00 00 00 1F 
 00 02 00 01 00 00 00 07 2A B4 00 02 04 60 AC 00 
 00 00 01 00 0A 00 00 00 06 00 01 00 00 00 08
+=======
+
+
+```
+attribute_info {
+    u2 attribute_name_index;
+    u4 attribute_length;
+    u1 info[attribute_length];
+}
+```
+
+00 09 00 00 00 1D 00
+
+attribute_name_index为十六进制0x0009，即十进制9，对应常量表第9个常量，查看第9个常量，为`CONSTANT_utf8_info`表，对应属性名Code。
+
+attribute_length为十六进制0x0000001D，即十进制29，即有29个属性，每个属性站一个字节，即29个字节
+
+info：
+
+```java
+14 -                00 01 00 01 00 00 00 05 2A B7 00 
+15 - 01 B1 00 00 00 01 00 0A 00 00 00 06 00 01 00 00 
+16 - 00 03
+```
+
+
+
+第一个方法Code属性
+
+- attribute_name_index：00 01
+- attribute_length： 
+- max_stack：00 01 
+- max_locals：00 00 00 05 = 2A B7 00 01 B1
+  - 2A => aload_0 => 将第一个引用类型本地变量推送至栈顶
+  - B7 => invokespecial => 调用超类的构造方法，实例初始化方法，私有方法
+  - 01 => nop => 什么都不做 
+  - B1 => return => 从当前方法返回void
+- code_length：00 00 00 01
+- code：
+- exception_table_length：
+- ：
+- ：
+- attributes_count：
+- attribute_info：
+
+```
+Code_attribute {
+    u2 attribute_name_index;
+    u4 attribute_length;
+    u2 max_stack;
+    u2 max_locals;
+    u4 code_length;
+    u1 code[code_length];
+    u2 exception_table_length;
+    { 	u2 start_pc;
+        u2 end_pc;
+        u2 handler_pc;
+        u2 catch_type;
+    } exception_table[exception_table_length];
+    u2 attributes_count;
+    attribute_info attributes[attributes_count];
+}
+```
+
+
+
+第二个方法：
+
+```java
+16 -       00 01 00 0B 00 0C 00 01 00 09 00 00 00 1F 
+17 - 00 02 00 01 00 00 00 07 2A B4 00 02 04 60 AC 00 
+18 - 00 00 01 00 0A 00 00 00 06 00 01 00 00 00 08
+```
+
+- access_flags : 00 01 = 1 = ACC_PUBLIC
+
+- name_index : 00 0B = 11 = inc
+
+- descriptor_index : 00 0C = 12 =  ()I => ()表示无参，l表示返回值int类型
+
+- attributes_count : 00 01 = 1 = 1个属性
+
+- attribute_info ：
+
+  - attribute_name_index：00 09 = 9 = Code
+
+  - attribute_length：00 00 00 1F = 31
+
+  - info：
+
+    ```java
+    17 - 00 02 00 01 00 00 00 07 2A B4 00 02 04 60 AC 00 
+    18 - 00 00 01 00 0A 00 00 00 06 00 01 00 00 00 08
+    ```
+
+
+
+
+
+第二个方法Code属性
+
+```java
+17 - 00 02^00 01^00 00 00 07^2A B4 00 02 04 60 AC^00 
+18 - 00 00 01 00 0A 00 00 00 06 00 01 00 00 00 08
+```
+
+- attribute_name_index：00 02
+- attribute_length：
+- max_stack：00 01 
+- max_locals：00 00 00 07 = 2A B4 00 02 04 60^AC
+  - aload_0 => 将第一个引用类型本地变量推送至栈顶
+  - getfield => 获取指定类的实例域，并将其值压入栈顶
+  - iconst_m1 => 将int型_上推送至栈顶
+  - iconst_1 =>  将int型1推送至栈顶
+  - iadd => 将栈顶两int型数值相加并将结果压入栈顶
+  - ireturn => 从当前方法返回int
+- code_length：00 00 00 01
+- code：
+- exception_table_length：
+- ：
+- ：
+- attributes_count：
+- attribute_info：
+
+
+
+```
+Code_attribute {
+    u2 attribute_name_index;
+    u4 attribute_length;
+    u2 max_stack;
+    u2 max_locals;
+    u4 code_length;
+    u1 code[code_length];
+    u2 exception_table_length;
+    { 	u2 start_pc;
+        u2 end_pc;
+        u2 handler_pc;
+        u2 catch_type;
+    } exception_table[exception_table_length];
+    u2 attributes_count;
+    attribute_info attributes[attributes_count];
+}
+```
+
+
+
+
+>>>>>>> 2a07e6ce0269c13e6a2f420b105ff9e5fddf674b
 
 ##### methods_count
 
@@ -486,7 +636,28 @@ attributes_count为十六进制数0x0001，
 
 
 
+```java
+1  - CA FE BA BE 00 00 00 36 00 13 0A 00 04 00 0F 09 
+2  - 00 03 00 10 07 00 11 07 00 12 01 00 01 6D 01 00 
+3  - 01 49 01 00 06 3C 69 6E 69 74 3E 01 00 03 28 29 
+4  - 56 01 00 04 43 6F 64 65 01 00 0F 4C 69 6E 65 4E 
+5  - 75 6D 62 65 72 54 61 62 6C 65 01 00 03 69 6E 63 
+6  - 01 00 03 28 29 49 01 00 0A 53 6F 75 72 63 65 46 
+7  - 69 6C 65 01 00 0E 54 65 73 74 43 6C 61 73 73 2E 
+8  - 6A 61 76 61 0C 00 07 00 08 0C 00 05 00 06 01 00 
+9  - 1F 63 6F 6D 2F 65 78 61 6D 70 6C 65 2F 6A 76 6D 
+10 - 2F 63 6C 61 7A 7A 2F 54 65 73 74 43 6C 61 73 73 
+11 - 01 00 10 6A 61 76 61 2F 6C 61 6E 67 2F 4F 62 6A 
+12 - 65 63 74 00 21 00 03 00 04 00 00 00 01 00 02 00 
+13 - 05 00 06 00 00@00 02 00 01 00 07 00 08 00 01 00 
+14 - 09 00 00 00 1D^00 01 00 01 00 00 00 05 2A B7 00 
+15 - 01 B1 00 00 00 01 00 0A 00 00 00 06 00 01 00 00 
+16 - 00 03@00 01 00 0B 00 0C 00 01 00 09 00 00 00 1F 
+17 - 00 02 00 01 00 00 00 07 2A B4 00 02 04 60 AC 00 
+18 - 00 00 01 00 0A 00 00 00 06 00 01 00 00 00 08 00 
+19 - 01 00 0D 00 00 00 02 00 0E  
 ```
+<<<<<<< HEAD
 CA FE BA BE 00 00 00 36 00 13 0A 00 04 00 0F 09 
 00 03 00 10 07 00 11 07 00 12 01 00 01 6D 01 00 
 01 49 01 00 06 3C 69 6E 69 74 3E 01 00 03 28 29 
@@ -506,6 +677,71 @@ CA FE BA BE 00 00 00 36 00 13 0A 00 04 00 0F 09
 00 02 00 01 00 00 00 07 2A B4 00 02 04 60 AC 00 
 00 00 01 00 0A 00 00 00 06 00 01 00 00 00 08 00 
 01 00 0D 00 00 00 02 00 0E  
+=======
+
+
+
+
+
+```java
+C:\Users\dandelion\Desktop>javap -verbose TestClass.class
+Classfile /C:/Users/dandelion/Desktop/TestClass.class
+  Last modified 2019年3月28日; size 297 bytes
+  MD5 checksum 28c5755e84efa06bef94473ec2353bf0
+  Compiled from "TestClass.java"
+public class com.example.jvm.clazz.TestClass
+  minor version: 0
+  major version: 55
+  flags: (0x0021) ACC_PUBLIC, ACC_SUPER
+  this_class: #3                          // com/example/jvm/clazz/TestClass
+  super_class: #4                         // java/lang/Object
+  interfaces: 0, fields: 1, methods: 2, attributes: 1
+Constant pool:
+   #1 = Methodref          #4.#15         // java/lang/Object."<init>":()V
+   #2 = Fieldref           #3.#16         // com/example/jvm/clazz/TestClass.m:I
+   #3 = Class              #17            // com/example/jvm/clazz/TestClass
+   #4 = Class              #18            // java/lang/Object
+   #5 = Utf8               m
+   #6 = Utf8               I
+   #7 = Utf8               <init>
+   #8 = Utf8               ()V
+   #9 = Utf8               Code
+  #10 = Utf8               LineNumberTable
+  #11 = Utf8               inc
+  #12 = Utf8               ()I
+  #13 = Utf8               SourceFile
+  #14 = Utf8               TestClass.java
+  #15 = NameAndType        #7:#8          // "<init>":()V
+  #16 = NameAndType        #5:#6          // m:I
+  #17 = Utf8               com/example/jvm/clazz/TestClass
+  #18 = Utf8               java/lang/Object
+{
+  public com.example.jvm.clazz.TestClass();
+    descriptor: ()V
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=1, locals=1, args_size=1
+         0: aload_0
+         1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+         4: return
+      LineNumberTable:
+        line 2: 0
+
+  public int inc();
+    descriptor: ()I
+    flags: (0x0001) ACC_PUBLIC
+    Code:
+      stack=2, locals=1, args_size=1
+         0: aload_0
+         1: getfield      #2                  // Field m:I
+         4: iconst_1
+         5: iadd
+         6: ireturn
+      LineNumberTable:
+        line 5: 0
+}
+SourceFile: "TestClass.java"
+>>>>>>> 2a07e6ce0269c13e6a2f420b105ff9e5fddf674b
 ```
 
 

@@ -1,6 +1,4 @@
-Assembly-Line（流水线）
-
-
+# Parallel Assembly-Line（并行流水线）
 
 并发算法虽然可以充分发挥多核CPU的性能，但不幸的是，并非所有的计算都可以改造成并发的形式。那么什么样的算法是无法使用并发进行计算的呢？简单来说，执行过程中有数据相关的性的运算都是无法完美并行化的。
 
@@ -160,3 +158,147 @@ public static void serial(){
 
 
 > 上面的两个例子测试结果仅做参考，不能作为依据，因为在不能的物理机上其表现的性能肯定是不一样的。
+
+
+
+# Parallel Search（并行搜索）
+
+搜索几乎是每一个软件都必不可少的功能，对于有序数据，通常可以采用二分查找方法。对于无序数据，则只能挨个查找。而通过并行的方式，在一定程度上可以加快搜索的效率。
+
+一种简单的策略就是将原始数据集合按照期望的线程数进行分割，由多个线程同时对各自的段进行搜索。
+
+以下示例：多个线程同时搜索，只要有一个线程搜索到结果，所有线程将立即返回，不在进行后续的搜索。
+
+```java
+import lombok.AllArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * 并行搜索
+ */
+public class ParallelSearch {
+    private ExecutorService threadPool = Executors.newCachedThreadPool();
+    private AtomicInteger result = new AtomicInteger();
+    private int threadNum;
+    private int[] arrs;
+
+    public ParallelSearch(int threadNum, int[] arrs) {
+        this.threadNum = threadNum;
+        this.arrs = arrs;
+    }
+
+    @AllArgsConstructor
+    private class SearchTask implements Callable<Integer> {
+        private int searchValue;
+        private int beginPos;
+        private int endPos;
+        @Override
+        public Integer call() throws Exception {
+            return search(searchValue,beginPos,endPos);
+        }
+    }
+	
+    /**
+     * 并发搜索会要求每个线程查找arr中的一段，
+     * 因此，搜索函数必须指定线程需要搜索的起始位置和结束位置。
+     */
+    private int search(int searchValue,int beginPos,int endPos) {
+        for (int i = beginPos; i < endPos; i++) {
+            if (result.get() > 0){
+                return result.get();
+            }
+            if (arrs[i] == searchValue) {
+                if (result.compareAndSet(0,i)){
+                    return i;
+                }
+                return result.get();
+            }
+        }
+        return -1;
+    }
+
+    public int PSearch(int searchValue) throws ExecutionException, InterruptedException {
+        List<Future<Integer>> re = new ArrayList<>();
+        int everyGroupNum = arrs.length/threadNum+1;
+        for (int i = 0; i < arrs.length; i+=everyGroupNum) {
+            int endPos = i+everyGroupNum;
+            if (endPos >= arrs.length)
+                endPos = arrs.length;
+
+            re.add(threadPool.submit(new SearchTask(searchValue,i,endPos)));
+        }
+        for (Future<Integer> future : re) {
+            if (future.get()>=0)
+                return future.get();
+        }
+        return -1;
+    }
+
+
+    public static void main(String[] args) 
+        				throws ExecutionException, InterruptedException {
+        //生成10000个随机数
+        Random random = new Random();
+        int[] arrs = new int[10000];
+        for (int i = 0; i < 10000; i++) {
+            arrs[i] = random.nextInt(10000);
+        }
+        //搜索
+        ParallelSearch parallelSearch = new ParallelSearch(3,arrs);
+        int i = parallelSearch.PSearch(186);
+        //输出结果
+        if (i == -1) {
+            System.out.println("no value was found.");
+        } else {
+            System.out.println("i = "+i + ", arrs[i] = "+arrs[i]);
+        }
+        parallelSearch.threadPool.shutdown();
+    }
+
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

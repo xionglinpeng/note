@@ -62,5 +62,49 @@ some beef	一些牛肉
 
 
 
+what is it? 它是什么？
 
+Hi. Can I help you?
+Yes. I'd like a roast beef sandwich, please.
+OK.
+There you go. Anything else?
+Uh, a bag of potato chips.
+Here you are. Would you like a drink?
+Yes. a bottle of water.
+Anything else? How about some dessert?
+Oh ... A piece of chocolate cake, please.
+Would you like a bag?
+Yes, please.
+How much is that?
+That's, uh, 14 dollars.
+Here you go.
+Thanks!
+
+a bag  of
+	一包
+a bottle of
+	一瓶
+a piece of
+	一片
+a cup of
+a glass of
+a bowl of
+
+礼貌的请求
+使用这些疑问句礼貌提出帮助或食物
+Can I help you?
+Would you like a drink?
+用Can I have或I'd like 发出礼貌的请求。在英语口语中，缩写I'd比I would更常见。
+Can I have a sandwich?
+I'd like a bowl of soup.
+I would like a glass of water.
+提出请求时记得用please，这样更加礼貌。
+I'd like a glass of water,please.
+We'd like two hamburgers,please.
+Can I have some ice cream,please?
+服务员会用anything else来询问您是否还需要什么别的。
+A: Can I help you?
+B: Yes, I'd like a chicken sandwich, please.
+A: Anything else?
+B: Yes, a glass of milk.
 

@@ -62,6 +62,52 @@ some beef	一些牛肉
 
 
 
+3、推荐一家午餐餐厅
+
+描述味道的形容词
+
+食物有不同的味道。学习一些用来描述您所吃的食物的形容词。
+
+Lemons are sour.	柠檬是酸的。
+
+The fries are very salty.	薯条很咸。
+
+I love sweet desserts.	我爱甜点。
+
+It's really spicy!	真辣！
+
+The salad is fresh.	色拉是新鲜的。
+
+您可以用表示国籍的形容词谈论各种菜的种类。
+
+I don't like Italian food.	我不喜欢意大利菜。
+
+My favorite food is Japanese.	我最爱日本料理。
+
+
+
+用属性形容词说说食物是好是坏。
+
+非常好
+
+The restaurant has delicious food.	那家餐馆的食物很美味。
+
+The food tastes really good.	食物的味道很棒。
+
+一般
+
+My salad is OK.	我的色拉不错。
+
+This sandwich isn't bad.	这三明治不错。
+
+不好
+
+The soup taste bad.	这汤水很难喝。
+
+My salad is awful.	我的色拉很难吃。
+
+
+
 what is it? 它是什么？
 
 Hi. Can I help you?

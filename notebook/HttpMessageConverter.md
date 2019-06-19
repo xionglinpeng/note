@@ -160,6 +160,234 @@ public abstract class AbstractMessageConverterMethodArgumentResolver implements 
 
 > 如果有两个或两个以上都可以匹配的HttpMessageConverter，将会选择HTTP消息转换器列表中第一个匹配的HttpMessageConverter进行HTTP消息的转换处理。
 
+那么响应的消息是怎么处理的呢？
+在抽象类`org.springframework.web.servlet.mvc.method.annotation.AbstractMessageConverterMethodProcessor`中
+
+```java
+protected <T> void writeWithMessageConverters(@Nullable T value, MethodParameter returnType,
+			ServletServerHttpRequest inputMessage, ServletServerHttpResponse outputMessage)
+			throws IOException, HttpMediaTypeNotAcceptableException, HttpMessageNotWritableException {
+
+	Object body;
+	Class<?> valueType;
+	Type targetType;
+
+	if (value instanceof CharSequence) {
+		body = value.toString();
+		valueType = String.class;
+		targetType = String.class;
+	}
+	else {
+		body = value;
+		valueType = getReturnValueType(body, returnType);
+		targetType = GenericTypeResolver.resolveType(getGenericType(returnType), returnType.getContainingClass());
+	}
+
+	if (isResourceType(value, returnType)) {
+		outputMessage.getHeaders().set(HttpHeaders.ACCEPT_RANGES, "bytes");
+		if (value != null && inputMessage.getHeaders().getFirst(HttpHeaders.RANGE) != null &&
+				outputMessage.getServletResponse().getStatus() == 200) {
+			Resource resource = (Resource) value;
+			try {
+				List<HttpRange> httpRanges = inputMessage.getHeaders().getRange();
+				outputMessage.getServletResponse().setStatus(HttpStatus.PARTIAL_CONTENT.value());
+				body = HttpRange.toResourceRegions(httpRanges, resource);
+				valueType = body.getClass();
+				targetType = RESOURCE_REGION_LIST_TYPE;
+			}
+			catch (IllegalArgumentException ex) {
+				outputMessage.getHeaders().set(HttpHeaders.CONTENT_RANGE, "bytes */" + resource.contentLength());
+				outputMessage.getServletResponse().setStatus(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE.value());
+			}
+		}
+	}
+
+	MediaType selectedMediaType = null;
+	MediaType contentType = outputMessage.getHeaders().getContentType();
+	if (contentType != null && contentType.isConcrete()) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("Found 'Content-Type:" + contentType + "' in response");
+		}
+		selectedMediaType = contentType;
+	}
+	else {
+		HttpServletRequest request = inputMessage.getServletRequest();
+		List<MediaType> acceptableTypes = getAcceptableMediaTypes(request);
+		List<MediaType> producibleTypes = getProducibleMediaTypes(request, valueType, targetType);
+
+		if (body != null && producibleTypes.isEmpty()) {
+			throw new HttpMessageNotWritableException(
+					"No converter found for return value of type: " + valueType);
+		}
+		List<MediaType> mediaTypesToUse = new ArrayList<>();
+		for (MediaType requestedType : acceptableTypes) {
+			for (MediaType producibleType : producibleTypes) {
+				if (requestedType.isCompatibleWith(producibleType)) {
+					mediaTypesToUse.add(getMostSpecificMediaType(requestedType, producibleType));
+				}
+			}
+		}
+		if (mediaTypesToUse.isEmpty()) {
+			if (body != null) {
+				throw new HttpMediaTypeNotAcceptableException(producibleTypes);
+			}
+			if (logger.isDebugEnabled()) {
+				logger.debug("No match for " + acceptableTypes + ", supported: " + producibleTypes);
+			}
+			return;
+		}
+
+		MediaType.sortBySpecificityAndQuality(mediaTypesToUse);
+
+		for (MediaType mediaType : mediaTypesToUse) {
+			if (mediaType.isConcrete()) {
+				selectedMediaType = mediaType;
+				break;
+			}
+			else if (mediaType.isPresentIn(ALL_APPLICATION_MEDIA_TYPES)) {
+				selectedMediaType = MediaType.APPLICATION_OCTET_STREAM;
+				break;
+			}
+		}
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("Using '" + selectedMediaType + "', given " +
+					acceptableTypes + " and supported " + producibleTypes);
+		}
+	}
+
+	if (selectedMediaType != null) {
+		selectedMediaType = selectedMediaType.removeQualityValue();
+		for (HttpMessageConverter<?> converter : this.messageConverters) {
+			GenericHttpMessageConverter genericConverter = (converter instanceof GenericHttpMessageConverter ?
+					(GenericHttpMessageConverter<?>) converter : null);
+			if (genericConverter != null ?
+					((GenericHttpMessageConverter) converter).canWrite(targetType, valueType, selectedMediaType) :
+					converter.canWrite(valueType, selectedMediaType)) {
+				body = getAdvice().beforeBodyWrite(body, returnType, selectedMediaType,
+						(Class<? extends HttpMessageConverter<?>>) converter.getClass(),
+						inputMessage, outputMessage);
+				if (body != null) {
+					Object theBody = body;
+					LogFormatUtils.traceDebug(logger, traceOn ->
+							"Writing [" + LogFormatUtils.formatValue(theBody, !traceOn) + "]");
+					addContentDispositionHeader(inputMessage, outputMessage);
+					if (genericConverter != null) {
+						genericConverter.write(body, targetType, selectedMediaType, outputMessage);
+					}
+					else {
+						((HttpMessageConverter) converter).write(body, selectedMediaType, outputMessage);
+					}
+				}
+				else {
+					if (logger.isDebugEnabled()) {
+						logger.debug("Nothing to write: null body");
+					}
+				}
+				return;
+			}
+		}
+	}
+
+	if (body != null) {
+		throw new HttpMediaTypeNotAcceptableException(this.allSupportedMediaTypes);
+	}
+}
+```
+
+
+- org.springframework.web.servlet.mvc.method.annotation.RequestBodyAdvice
+- org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice
+
+依赖第三方库的解析器需要在类路径下存在对应的库
+
+org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport
+```java
+public class WebMvcConfigurationSupport implements ApplicationContextAware, ServletContextAware {
+	
+	......
+	
+	static {
+		ClassLoader classLoader = WebMvcConfigurationSupport.class.getClassLoader();
+		romePresent = ClassUtils.isPresent("com.rometools.rome.feed.WireFeed", classLoader);
+		jaxb2Present = ClassUtils.isPresent("javax.xml.bind.Binder", classLoader);
+		jackson2Present = ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper", classLoader) &&
+						ClassUtils.isPresent("com.fasterxml.jackson.core.JsonGenerator", classLoader);
+		jackson2XmlPresent = ClassUtils.isPresent("com.fasterxml.jackson.dataformat.xml.XmlMapper", classLoader);
+		jackson2SmilePresent = ClassUtils.isPresent("com.fasterxml.jackson.dataformat.smile.SmileFactory", classLoader);
+		jackson2CborPresent = ClassUtils.isPresent("com.fasterxml.jackson.dataformat.cbor.CBORFactory", classLoader);
+		gsonPresent = ClassUtils.isPresent("com.google.gson.Gson", classLoader);
+		jsonbPresent = ClassUtils.isPresent("javax.json.bind.Jsonb", classLoader);
+	}
+	
+	......
+	
+	protected final void addDefaultHttpMessageConverters(List<HttpMessageConverter<?>> messageConverters) {
+		StringHttpMessageConverter stringHttpMessageConverter = new StringHttpMessageConverter();
+		stringHttpMessageConverter.setWriteAcceptCharset(false);  // see SPR-7316
+
+		messageConverters.add(new ByteArrayHttpMessageConverter());
+		messageConverters.add(stringHttpMessageConverter);
+		messageConverters.add(new ResourceHttpMessageConverter());
+		messageConverters.add(new ResourceRegionHttpMessageConverter());
+		try {
+			messageConverters.add(new SourceHttpMessageConverter<>());
+		}
+		catch (Throwable ex) {
+			// Ignore when no TransformerFactory implementation is available...
+		}
+		messageConverters.add(new AllEncompassingFormHttpMessageConverter());
+
+		if (romePresent) {
+			messageConverters.add(new AtomFeedHttpMessageConverter());
+			messageConverters.add(new RssChannelHttpMessageConverter());
+		}
+
+		if (jackson2XmlPresent) {
+			Jackson2ObjectMapperBuilder builder = Jackson2ObjectMapperBuilder.xml();
+			if (this.applicationContext != null) {
+				builder.applicationContext(this.applicationContext);
+			}
+			messageConverters.add(new MappingJackson2XmlHttpMessageConverter(builder.build()));
+		}
+		else if (jaxb2Present) {
+			messageConverters.add(new Jaxb2RootElementHttpMessageConverter());
+		}
+
+		if (jackson2Present) {
+			Jackson2ObjectMapperBuilder builder = Jackson2ObjectMapperBuilder.json();
+			if (this.applicationContext != null) {
+				builder.applicationContext(this.applicationContext);
+			}
+			messageConverters.add(new MappingJackson2HttpMessageConverter(builder.build()));
+		}
+		else if (gsonPresent) {
+			messageConverters.add(new GsonHttpMessageConverter());
+		}
+		else if (jsonbPresent) {
+			messageConverters.add(new JsonbHttpMessageConverter());
+		}
+
+		if (jackson2SmilePresent) {
+			Jackson2ObjectMapperBuilder builder = Jackson2ObjectMapperBuilder.smile();
+			if (this.applicationContext != null) {
+				builder.applicationContext(this.applicationContext);
+			}
+			messageConverters.add(new MappingJackson2SmileHttpMessageConverter(builder.build()));
+		}
+		if (jackson2CborPresent) {
+			Jackson2ObjectMapperBuilder builder = Jackson2ObjectMapperBuilder.cbor();
+			if (this.applicationContext != null) {
+				builder.applicationContext(this.applicationContext);
+			}
+			messageConverters.add(new MappingJackson2CborHttpMessageConverter(builder.build()));
+		}
+	}
+	
+	......
+}
+```
+
 ### 4.3、HttpMessageConverter列表顺序
 
 由于HttpMessageConverter的选择方式是选择列表中第一个配置的，所以，HTTP消息转换器列表中的HttpMessageConverter的顺序就非常重要了，那么Spring MVCS是如何控制HttpMessageConverter列表的顺序？

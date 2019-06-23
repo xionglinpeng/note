@@ -63,6 +63,30 @@ org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter
 
 ### 2.2、默认注册的消息转换器
 
+Spring MVC默认为我们提供了4个HttpMessageConverter
+- StringHttpMessageConverter
+- ByteArrayHttpMessageConverter
+- SourceHttpMessageConverter
+- AllEncompassingFormHttpMessageConverter
+
+RequestMappingHandlerAdapter类的构造方法可以证明
+```java
+public RequestMappingHandlerAdapter() {
+	StringHttpMessageConverter stringHttpMessageConverter = new StringHttpMessageConverter();
+	stringHttpMessageConverter.setWriteAcceptCharset(false);  // see SPR-7316
+
+	this.messageConverters = new ArrayList<>(4);
+	this.messageConverters.add(new ByteArrayHttpMessageConverter());
+	this.messageConverters.add(stringHttpMessageConverter);
+	try {
+		this.messageConverters.add(new SourceHttpMessageConverter<>());
+	}
+	catch (Error err) {
+		// Ignore when no TransformerFactory implementation is available
+	}
+	this.messageConverters.add(new AllEncompassingFormHttpMessageConverter());
+}
+```
 
 
 ### 2.3、注册消息转换器

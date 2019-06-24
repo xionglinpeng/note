@@ -424,6 +424,14 @@ You’re welcome.	不用客气。
 
 How old are you?	你大多了？
 
+
+n名词
+vt动词
+adj形容词
+adv副词
+
+
+
 ## Program English
 
 

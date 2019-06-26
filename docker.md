@@ -1,5 +1,7 @@
 # Docker
 
+docker官方文档地址：https://docs.docker.com/
+
 
 
 ## Docker安装
@@ -285,13 +287,268 @@ docker search TERM
 
 ## container
 
+### 创建容器
 
+创建容器的语法：`docker create image[:tag]`
 
-删除容器
+例如：`docker create -it java`
+
+使用`docker create`命令新建的容器处于停止状态，可以使用`docker start`命令来启动它。
+
+create命令和后续的run命令支持的选项都十分复杂，主要包括如下几大类：
+
+- 与容器运行模式相关
+- 与容器和环境配置相关
+- 与容器资源限制和安全保护相关
+
+**启动容器**
+
+语法：
 
 ```shell
-$ docker rm [选项] CONTAINER [CONTAINER]
+$ docker start [CONTAINER_ID]
 ```
+
+CONTAINER_ID可以为部分容器ID标识，例如容器ID为b803f81e081abae971a3c，可以使用部分启动，或者是全部ID，如下：
+
+```shell
+# 部分ID标识符
+$ docker start b80
+# 完整ID标识符
+$ docker start b803f81e081abae971a3c
+```
+
+容器启动之后可以使用命令docker ps查看启动的容器。
+
+**新建并启动容器**
+
+```shell
+# 输出Hello World之后，容器自动退出
+$ docker run ubuntu /bin/echo 'Hello World'
+# 启动一个bash终端
+$ docker run -it ubuntu /bin/bash
+# exit命令bash终端
+root@fc33f9733f21:/# exit
+exit
+```
+
+当利用docker run来创建并启动容器时，Docker在后台运行的标准操作包括：
+
+1. 检查本地是否存在指定的镜像，不存在就从公有仓库下载；
+2. 利用镜像创建一个容器，并启动该容器；
+3. 分配一个文件系统给容器，并在只读的镜像层外面挂载挂载一层可读写层；
+4. 从宿主主机配置的网桥接口中桥接一个虚拟接口到容器中；
+5. 从网桥的地址池配置一个IP地址给容器；
+6. 执行用户指定的应用程序；
+7. 执行完毕后容器被自动终止；
+
+**守护态运行**
+
+使用`-d`选项使Docker容器在后台以守护态形式运行，例如：
+
+```shell
+$ docker run -d ubuntu /bin/sh
+```
+
+### 查看容器
+
+语法
+
+```shell
+$ docker ps [OPTIONS]
+```
+
+help
+
+```
+Usage:	docker ps [OPTIONS]
+
+List containers
+
+Options:
+  -a, --all             Show all containers (default shows just running)
+  -f, --filter filter   Filter output based on conditions provided
+      --format string   Pretty-print containers using a Go template
+  -n, --last int        Show n last created containers (includes all states) (default -1)
+  -l, --latest          Show the latest created container (includes all states)
+      --no-trunc        Don't truncate output
+  -q, --quiet           Only display numeric IDs
+  -s, --size            Display total file sizes
+```
+
+
+
+### 启动-终止-重启容器
+
+语法
+
+```shell
+# start container
+$ docker start [OPTIONS] CONTAINER [CONTAINER...]
+# termination container
+$ docker stop [OPTIONS] CONTAINER [CONTAINER...]
+$ docker kill [OPTIONS] CONTAINER [CONTAINER...]
+# restart container
+$ docker restart [OPTIONS] CONTAINER [CONTAINER...]
+```
+- docker start --help
+
+    ```
+    Usage:	docker start [OPTIONS] CONTAINER [CONTAINER...]
+    
+    Start one or more stopped containers
+    
+    Options:
+    -a, --attach              Attach STDOUT/STDERR and forward signals
+       --detach-keys string   Override the key sequence for detaching a container
+    -i, --interactive         Attach container's STDIN
+    ```
+
+    
+
+- docker stop --help
+
+    >Usage:	`docker stop [OPTIONS] CONTAINER [CONTAINER...]`
+    >
+    >Stop one or more running containers
+    >
+    >Options:
+    >`-t`, --time int   Seconds to wait for stop before killing it (default 10)
+
+- docker kill --help
+
+    >Usage:	docker kill [OPTIONS] CONTAINER [CONTAINER...]
+    >
+    >Kill one or more running containers
+    >
+    >Options:
+    >  -s, --signal string   Signal to send to the container (default "KILL")
+
+- docker restart --help
+  > Usage:	`docker restart [OPTIONS] CONTAINER [CONTAINER...]`
+  >
+  > Restart one or more containers
+  >
+  > Options:
+  >   `-t`, --time int   Seconds to wait for stop before killing the container (default 10)
+
+
+
+### 进入容器
+
+#### 1、attach command
+
+语法：
+
+```shell
+$ docker attach [OPTIONS] CONTAINER
+```
+
+help
+
+```
+Usage:	docker attach [OPTIONS] CONTAINER
+
+Attach local standard input, output, and error streams to a running container
+
+Options:
+      --detach-keys string   Override the key sequence for detaching a container
+      --no-stdin             Do not attach STDIN
+      --sig-proxy            Proxy all received signals to the process (default true)
+```
+
+选项
+
+- --detach-keys string
+
+  指定退出attach模式的快捷键序列，默认是CTRL-p、CTRL-q
+
+- --no-stdin
+
+  是否关闭标准输入，默认是保持打开；
+
+- --sig-proxy
+
+  是否代理收到的系统信号给应用进程，默认为true。
+
+示例
+
+```shell
+[root@localhost ~]# docker start fc33f9733f21
+fc33f9733f21
+[root@localhost ~]# docker ps
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                NAMES
+fc33f9733f21        ubuntu              "/bin/bash"              23 hours ago        Up 3 seconds                             infallible_khayyam
+[root@localhost ~]# docker attach infallible_khayyam
+root@fc33f9733f21:/#
+```
+
+在使用`docker attach`命令进入容器时，指定容器可以使用CONTAINER ID，前缀CONTAINER ID，或者是NAMES。例如：
+
+```shell
+$ docker attach fc33f9
+$ docker attach fc33f9733f21
+$ docker attach infallible_khayyam
+```
+
+可以使用命令exit命令退出，退出之后容器也会跟着退出。
+
+当多个窗口同时使用attach命令连接到同一个容器的时候，所有窗口都会同步显示，当某个窗口命令阻塞时，其他窗口业务执行操作了。
+
+#### 2、exec command
+
+语法：
+
+```shell
+$ docker exec [OPTIONS] CONTAINER COMMAND [ARG...]
+```
+
+help
+
+```
+Usage:	docker exec [OPTIONS] CONTAINER COMMAND [ARG...]
+
+Run a command in a running container
+
+Options:
+  -d, --detach               Detached mode: run command in the background
+      --detach-keys string   Override the key sequence for detaching a container
+  -e, --env list             Set environment variables
+  -i, --interactive          Keep STDIN open even if not attached
+      --privileged           Give extended privileges to the command
+  -t, --tty                  Allocate a pseudo-TTY
+  -u, --user string          Username or UID (format: <name|uid>[:<group|gid>])
+  -w, --workdir string       Working directory inside the container
+```
+
+#### 3、nsenter tool
+
+
+
+
+
+### delete container
+
+语法
+
+```shell
+$ docker rm [OPTIONS] CONTAINER [CONTAINER...]
+```
+
+help
+
+```
+Usage:	docker rm [OPTIONS] CONTAINER [CONTAINER...]
+
+Remove one or more containers
+
+Options:
+  -f, --force     Force the removal of a running container (uses SIGKILL)
+  -l, --link      Remove the specified link
+  -v, --volumes   Remove the volumes associated with the container
+```
+
+
 
 
 
@@ -303,3 +560,75 @@ docker rm b77
 
 docker rm 6b 58
 
+### import and export container
+
+#### export container
+
+语法：
+
+```shell
+$ docker export [OPTIONS] CONTAINER
+```
+
+help
+
+```
+Usage:	docker export [OPTIONS] CONTAINER
+
+Export a container's filesystem as a tar archive
+
+Options:
+  -o, --output string   Write to a file, instead of STDOUT
+```
+
+
+
+#### import container
+
+语法：
+
+```shell
+$ docker import [OPTIONS] file|URL|- [REPOSITORY[:TAG]]
+```
+
+help
+
+```
+Usage:	docker import [OPTIONS] file|URL|- [REPOSITORY[:TAG]]
+
+Import the contents from a tarball to create a filesystem image
+
+Options:
+  -c, --change list      Apply Dockerfile instruction to the created image
+  -m, --message string   Set commit message for imported image
+```
+
+
+
+## docker error
+
+error 1
+
+```
+Error response from daemon: Get https://index.docker.io/v1/search...
+```
+
+在浏览器上测试访问地址：https://index.docker.io/v1/search?q=registry可以正常返回数据，但是在终端上使用命令docker search不能搜索。原因为服务器DNS网络配置问题：
+
+查看服务器DNS网络配置
+
+```shell
+$ vi /etc/resolv.conf
+```
+
+把里面的内容清除，并改为：
+
+```
+`nameserver ``8.8``.``8.8``nameserver ``8.8``.``8.4`
+```
+
+重启网络服务
+
+```shell
+`systemctl restart network`
+```

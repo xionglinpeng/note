@@ -1,6 +1,184 @@
+## 单元三、城市与国家
+
+### “Be from”和“live in”
+
+用动词be + from表示一个人某地出生。用动词live + in表示一个人现在居住某地但是不一定在哪里出生。对于he，she和it，在动词live后加s。
+
+I‘m from the US.	我来自美国。
+
+I live in Japan.	我居住在日本。
+
+John is from Korea.	John来自韩国。
+
+He lives in London, Englang.	他居住在英国伦敦。
+
+用but对比一个人的家乡和他现在居住的地方。
+
+He's from Los Angeles, but he lives in New York.
+
+### “哪里”的问题
+
+用where疑问句询问某人来自哪里以及一个地方在哪里。用in解释一个城市在那个国家。
+
+Where are you from?	您来自哪里？
+
+I'm from Lyon.	我来自里昂。
+
+Where is Lyon.	里昂在哪里？
+
+Lyon is in France.	里昂在法国。
+
+人们有时候会告诉您他们来自的城市和国家。在书面形式的表达时，在城市后放一个逗号（,）。
+
+Where are you from.	您来自哪里？
+
+I'm from Rome,Italy.	我来自意大利罗马。
 
 
-## 单元5、购物
+
+
+
+
+
+## 单元四、人
+
+
+
+### 一般现在时的陈述句
+
+使用一般现在时陈述事实和习惯。请看图表一般现在时的结构。在he，she和it之后使用动词+s。
+
+称述句
+
+| 主语          | 动词       | 宾语  |
+| ------------- | ---------- | ----- |
+| I、You        | come from  | Italy |
+| He、She、It   | comes from | Italy |
+| We、You、They | come from  | Italy |
+
+### 一般现在时的否定句
+
+I、you、we或they的一般现在时否定陈述句，用do not + 动词。对于he、she或it的一般现在时否定陈述句，则用does not + 动词。注意，主动词形式不变。
+
+在英语口语中，否定表达do not几乎总是缩写为don't。否定表达式does no几乎总是缩写为doesn't。
+
+否定词
+
+| 主语          | 动词              | 宾语  |
+| ------------- | ----------------- | ----- |
+| I、You        | don't come from   | Italy |
+| He、She、It   | doesn't come from | Italy |
+| We、You、They | don't come from   | Italy |
+
+不规则动词‘have’
+
+动词have，对于第三人称 - he，she和it用has。和have的否定式，any常被用到。动词have为否定时，不得使用单数形式has。
+
+I have one brother.	我有一个哥哥。
+
+I don't have any sisters.	我没有姐妹。
+
+She has twe sisters.	她有两个姐妹。
+
+She doesn't have any brothers.	她没有兄弟。
+
+用‘how many’提问的问句
+
+请用how many询问数量。
+
+How many people are in your family?	您家里有几口人？
+
+在how many的问句中，名词总是复数的。
+
+How many students are there?	学生有多少人？
+
+注意一些名词，如people这样的词，是不规则的复数，词尾不需要加s。
+
+How many people are there?	那里有多少人？
+
+### 询问对某人的描述
+
+请用一下问题询问他人的一般描述。
+
+What does he look like?	他看起来怎么样？
+
+What does she look like?	她看起来怎么样？
+
+What do they look like?	他们看起来怎么样？
+
+请用一下的问句询问某人的头发颜色。
+
+What color is his hair?	他的头发什么颜色？
+
+请用一下的问句询问某人头发的长度。
+
+Is his hair long or short?	他的头发是短还是长？
+
+请用以下的问句询问某人眼睛颜色。
+
+What color are her eyes?	她的眼睛什么颜色？
+
+What color are his eyes?	他的眼睛什么颜色？
+
+在英式英语中，color一词拼写成colour。
+
+请用一下问句询问某人的身高。
+
+Is he tall or short?	他高还是矮？
+
+请用连词or列出选项。
+
+Are his eyes blue or brown?	他的眼睛是蓝色还是褐色？
+
+在形容词前，比如long之前的副词very，加强形容词的修饰程度。
+
+A：What does he look like?	他长什么样子？
+
+B：He has very long hair.	他有一头常常的头发。
+
+### 描述一个同事
+
+宾格
+
+在in，from，to，for，with这样的介词之后用宾格。
+
+I have a question for him.	我有个问题要问他。
+
+She is very friendly to me.	她对我很友好。
+
+当描述一个事物和另一个事物的关系时使用介词with。
+
+John is with them.	John和他们在一起。
+
+请看表看看所有的宾格。
+
+| 主格 | 宾格 |                                             |                                |
+| ---- | ---- | ------------------------------------------- | ------------------------------ |
+| I    | me   | John always comes to Paris with me.         | John一直和我一起来巴黎。       |
+| you  | you  | I have a question for you?                  | 我有个问题要问你。             |
+| he   | him  | Mary is with him.                           | Mary和他在一起                 |
+| she  | her  | I am always very friendly to her.           | 我对她一直很友好。             |
+| it   | it   | He has a big house.Seven people live in it. | 他有一所大房子。里面住着七口人 |
+| we   | us   | My grandmather lives with us.               | 我的祖母和我们住在一起。       |
+| they | them | John is with them.                          | John和他们在一起。             |
+
+描述性格
+
+请用一下的问句询问某人的性格。
+
+A：What's she like?	她看起来怎么样？
+
+B：She's hardworking.	她很勤奋。
+
+A：What are they like?	他们看起来怎么样？
+
+B：They're friendly.	他们很友好。
+
+在社交场合与人见面
+
+
+
+## 单元五、购物
 
 ### 指示形容词
 

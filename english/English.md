@@ -306,7 +306,9 @@ B：It's from Germany.	它来自德国。
 
 ## 单元6、食物
 
-**表达您的欲望**
+### 1、谈论一顿饭
+
+#### 表达您的欲望
 
 请用want+noun来表达某人想要某物。记得在he，she或it之后的want后面加s。
 
@@ -336,7 +338,7 @@ Pizza's my favorite food.	我最爱吃披萨。
 
 His favorite is chocolate.	他最爱吃巧克力。
 
-**可数名词和不可数名词**
+#### 可数名词和不可数名词
 
 一些名词可数，其他的都是不可数名词。可数的名词（例如apples和hamburgers）称为可数名词。不可数的名词（例如rice或water）称为不可数名词。
 
@@ -360,63 +362,9 @@ some water	一些水
 
 some beef	一些牛肉
 
+### 2、和朋友们准备一顿饭
 
-
-
-
-
-
-描述味道的形容词
-
-事务有不同的味道。学习一些用来描述您所吃的食物的形容词。
-
-
-
-1、谈论一顿饭
-
-表达您的欲望
-
-请用want+noun来表达某人想要某物。记得在he，she或it之后的want后面加s。
-
-I want a hamburger.	我想要一个汉堡。
-
-She wants some ice cream.	她想要冰淇淋。
-
-They want dessert.	他们想要甜点。
-
-They don't want coffee.	他们不想喝咖啡。
-
-用如一下的问句询问某人想要什么。
-
-What do you want?	您想要什么？
-
-Do you want some water?	您想喝水吗？
-
-Does he want a salad?	他想吃色拉吗？
-
-表达喜好
-
-用形容词favorite谈谈您最爱的事物，包括食物。
-
-What's your favorite food?	您最喜欢吃的食物是什么？
-
-Pizza's my favorite food.	我最爱吃披萨。
-
-His favorite is chocolate.	他最爱吃巧克力。
-
-可数名词和不可数名词
-
-一些名词可数，其他的都是不可数名词。可数的名词（例如apples和hamburgers）
-
-称为可数名词。不可数的名词（例如rice或water）称为不可数名词。单数，可数名词用冠词a和an。
-
-*a hamburger = one hamburger (... two hamburgers, three hamburgers)*
-
-an apple = one apple (... two apples, three apples)
-
-2、和朋友们准备一顿饭
-
-食物分组
+#### 食物分组
 
 你可以谈论食物组 - 食物类别。看看食物组合它们包括的一些食物。
 
@@ -468,11 +416,33 @@ rice	米饭
 
 noodles	面条
 
+#### 祈使句
 
+使用祈使句发出命令或要求。祈使语气动词与动词原形是相同的。
 
-3、推荐一家午餐餐厅
+Cut the vegetables.	切青菜。
 
-描述味道的形容词
+Slice the bread.	把面包切片。
+
+Give me the vegetables.	请给我青菜。
+
+Pass me the knife.	把刀给我。
+
+在祈使句前用don't表达否定的命令。在写作中，你可以在句尾用感叹号（!），加强陈述的语气。
+
+Don't cut the vegetables too small.	请不要把青菜切得太小。
+
+Don't be lazy!	别偷懒！
+
+用please发出祈使会更礼貌。please出现在祈使句的句首或句末。如果please置于句末，在please之前添加一个逗号（,）。
+
+Please give me the cheese.	请把芝士给我。
+
+Help me, please.	请帮帮我。
+
+### 3、推荐一家午餐餐厅
+
+#### 描述味道的形容词
 
 食物有不同的味道。学习一些用来描述您所吃的食物的形容词。
 
@@ -491,8 +461,6 @@ The salad is fresh.	色拉是新鲜的。
 I don't like Italian food.	我不喜欢意大利菜。
 
 My favorite food is Japanese.	我最爱日本料理。
-
-
 
 用属性形容词说说食物是好是坏。
 
@@ -514,6 +482,63 @@ The soup taste bad.	这汤水很难喝。
 
 My salad is awful.	我的色拉很难吃。
 
+### 4、定外卖
+
+#### 量词与不可数名词一起使用
+
+可数名词有复数形式。它们是可数的。比如说hamburger - hamburgers。
+
+We want two hamburgers.	我们想要两个汉堡。
+
+不可数名词没有复数形式。它们是不可数的。例如：rice，water。
+
+She has some rice.	她吃了些米饭。
+
+We want some water.	我们想喝些水。
+
+用量词描述不可数名词的数量。量词可以是一包、一瓶、一碗或其他用来承食物的物体。
+
+Give me two bags of  chips, please.	请给我两包薯条。
+
+I want a bottle of water.	我想要一瓶水。
+
+There are three bowls of rice. 	那里有三碗米饭。
+
+Please give me a piece of cake.	请给我一块蛋糕。
+
+We want four glasses of  water.	我们想要4杯水。
+
+They have three cups of tea.	它们有三杯茶。
+
+#### 礼貌的请求
+使用这些疑问句礼貌提出帮助或食物。
+
+Can I help you?	有什么能帮您的吗？
+Would you like a drink?	您想喝点什么？
+
+用Can I have或I'd like 发出礼貌的请求。在英语口语中，缩写I'd比I would更常见。
+
+Can I have a sandwich?	我可以吃一个三明治吗？
+I'd like a bowl of soup.	我想要一碗汤。
+I would like a glass of water.	我想要一杯水。
+
+提出请求时记得用please，这样更加礼貌。
+
+I'd like a glass of water,please.
+We'd like two hamburgers,please.
+Can I have some ice cream,please?
+
+服务员会用anything else来询问您是否还需要什么别的。
+
+A: Can I help you?
+B: Yes, I'd like a chicken sandwich, please.
+A: Anything else?
+B: Yes, a glass of milk.
+
+
+
+
+
 
 
 what is it? 它是什么？
@@ -534,33 +559,14 @@ That's, uh, 14 dollars.
 Here you go.
 Thanks!
 
-a bag  of
-	一包
-a bottle of
-	一瓶
-a piece of
-	一片
-a cup of
-a glass of
-a bowl of
+a bag  of	一包
+a bottle of	一瓶
+a piece of	一块
+a cup of	一杯
+a glass of	一杯（玻璃容器）
+a bowl of	一碗
 
-礼貌的请求
-使用这些疑问句礼貌提出帮助或食物
-Can I help you?
-Would you like a drink?
-用Can I have或I'd like 发出礼貌的请求。在英语口语中，缩写I'd比I would更常见。
-Can I have a sandwich?
-I'd like a bowl of soup.
-I would like a glass of water.
-提出请求时记得用please，这样更加礼貌。
-I'd like a glass of water,please.
-We'd like two hamburgers,please.
-Can I have some ice cream,please?
-服务员会用anything else来询问您是否还需要什么别的。
-A: Can I help you?
-B: Yes, I'd like a chicken sandwich, please.
-A: Anything else?
-B: Yes, a glass of milk.
+
 
 
 
@@ -594,7 +600,7 @@ it	its	It's(It has; It is)
 
 How about	你认为...怎么样
 
-What...about	什么...怎么样
+What about	什么...怎么样
 
 Here you go	给你。
 
@@ -602,6 +608,7 @@ You’re welcome.	不用客气。
 
 How old are you?	你大多了？
 
+There you go, Anything else?	好了，还有吗?
 
 n名词
 vt动词

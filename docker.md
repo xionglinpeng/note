@@ -1,4 +1,4 @@
-# Docker
+# `Docker
 
 docker官方文档地址：https://docs.docker.com/
 
@@ -100,6 +100,22 @@ Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docke
 
 
 
+```shell
+Usage:	docker pull [OPTIONS] NAME[:TAG|@DIGEST]
+
+Pull an image or a repository from a registry
+
+Options:
+  -a, --all-tags                Download all tagged images in the repository
+      --disable-content-trust   Skip image verification (default true)
+```
+
+
+
+
+
+
+
 ### 查看镜像信息
 
 语法
@@ -107,6 +123,22 @@ Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docke
 ```
 docker images [OPTIONS] [REPOSITORY[:TAG]]
 ```
+
+```shell
+Usage:	docker images [OPTIONS] [REPOSITORY[:TAG]]
+
+List images
+
+Options:
+  -a, --all             Show all images (default hides intermediate images)
+      --digests         Show digests
+  -f, --filter filter   Filter output based on conditions provided
+      --format string   Pretty-print images using a Go template
+      --no-trunc        Don't truncate output
+  -q, --quiet           Only show numeric IDs
+```
+
+
 
 
 
@@ -191,25 +223,75 @@ SEE ALSO
 
 docker search TERM
 
+
+
+```shell
+Usage:	docker search [OPTIONS] TERM
+
+Search the Docker Hub for images
+
+Options:
+  -f, --filter filter   Filter output based on conditions provided
+      --format string   Pretty-print search using a Go template
+      --limit int       Max number of search results (default 25)
+      --no-trunc        Don't truncate output
+```
+
+
+
 ### 删除镜像
+
+删除一个或多个镜像
+
+**语法**
+
+```shell
+$ docker rmi [OPTIONS] IMAGE [IMAGE...]
+```
+
+IMAGE可以为**标签**或**[部分]ID**。
 
 删除镜像的命令是`docker rmi INAGE [IMAGE...]`，其中IMAGE可以为**标签**或**ID**。
 
-1. 使用标签删除镜像
+**选项**
 
-   docker rmi nginx:latest
+| 选项        | 说明                           |
+| ----------- | ------------------------------ |
+| -f, --force | 强制删除镜像。                 |
+| --no-prune  | Do not delete untagged parents |
 
-   Error response from daemon: conflict: unable to remove repository reference "centos:latest" (must force) - container b770c3a63681 is using its referenced image 9f38484d220f
+如果镜像对应的容器正在运行，不能直接删除镜像，可以直接`-f`选项强制删除。
 
-2. 使用镜像ID删除镜像
+**示例**
 
-   ```shell
-   [root@localhost ~]# docker rmi fce289e99eb9
-   Untagged: hello-world:latest
-   Untagged: hello-world@sha256:0e11c388b664df8a27a901dce21eb89f11d8292f7fca1b3e3c4321bf7897bffe
-   Deleted: sha256:fce289e99eb9bca977dae136fbe2a82b6b7d4c372474c9235adc1741675f587e
-   Deleted: sha256:af0b15c8625bb1938f1d7b17081031f649fd14e6b233688eea3c5483994a66a3
-   ```
+```shell
+[root@localhost ~]# docker rmi nginx:latest
+[root@localhost ~]# docker rmi fce289e99eb9
+```
+
+如果容器正在运行，不能删除镜像
+
+```shell
+[root@localhost sss]# docker rmi register:1.0.0
+Error response from daemon: conflict: unable to remove repository reference "register:1.0.0" (must force) - container e22fa860294e is using its referenced image 33f233c6b8a1
+```
+
+使用-f选项强制删除：
+
+但是实际上镜像不会被删除，会将`REPOSITORY`和`TAG`变为`<none>`，而对应运行的容器仍然是正常运行。
+
+```shell
+[root@localhost opt]# docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+register            1.0.0               33f233c6b8a1        12 hours ago        689MB
+[root@localhost opt]# docker rmi -f register:1.0.0
+Untagged: register:1.0.0
+[root@localhost opt]# docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+<none>              <none>              33f233c6b8a1        12 hours ago        689MB
+```
+
+
 
 ### 创建镜像
 
@@ -228,6 +310,24 @@ docker search TERM
    ```shell
    $ docker commit [OPTION] CONTAINER [REPOSITORY[:TAG]]
    ```
+
+   
+
+   ```shell
+   Usage:	docker commit [OPTIONS] CONTAINER [REPOSITORY[:TAG]]
+   
+   Create a new image from a container's changes
+   
+   Options:
+     -a, --author string    Author (e.g., "John Hannibal Smith <hannibal@a-team.com>")
+     -c, --change list      Apply Dockerfile instruction to the created image
+     -m, --message string   Commit message
+     -p, --pause            Pause container during commit (default true)
+   ```
+
+   
+
+   
 
    选项
 
@@ -264,18 +364,47 @@ docker search TERM
 
 
 
-1. 导出镜像
+导出镜像
 
-   ```shell
-   $ docker save -o centos-latest.jar centos:latest
-   ```
+```shell
+$ docker save -o centos-latest.jar centos:latest
+```
 
-2. 导入镜像
 
-   ```shell
-   [root@localhost ~]# docker load --input centos-latest.jar 
-   [root@localhost ~]# docker load < centos-latest.jar
-   ```
+
+```shell
+Usage:	docker save [OPTIONS] IMAGE [IMAGE...]
+
+Save one or more images to a tar archive (streamed to STDOUT by default)
+
+Options:
+  -o, --output string   Write to a file, instead of STDOUT
+```
+
+
+
+
+
+导入镜像
+
+```shell
+[root@localhost ~]# docker load --input centos-latest.jar 
+[root@localhost ~]# docker load < centos-latest.jar
+```
+
+
+
+```shell
+Usage:	docker load [OPTIONS]
+
+Load an image from a tar archive or STDIN
+
+Options:
+  -i, --input string   Read from tar archive file, instead of STDIN
+  -q, --quiet          Suppress the load output
+```
+
+
 
 
 
@@ -290,6 +419,161 @@ docker search TERM
 ### 创建容器
 
 创建容器的语法：`docker create image[:tag]`
+
+```shell
+Usage:	docker create [OPTIONS] IMAGE [COMMAND] [ARG...]
+
+Create a new container
+
+Options:
+      --add-host list                  Add a custom host-to-IP mapping (host:ip)
+  -a, --attach list                    Attach to STDIN, STDOUT or STDERR
+      --blkio-weight uint16            Block IO (relative weight), between 10 and 1000, or 0 to disable (default 0)
+      --blkio-weight-device list       Block IO weight (relative device weight) (default [])
+      --cap-add list                   Add Linux capabilities
+      --cap-drop list                  Drop Linux capabilities
+      --cgroup-parent string           Optional parent cgroup for the container
+      --cidfile string                 Write the container ID to the file
+      --cpu-period int                 Limit CPU CFS (Completely Fair Scheduler) period
+      --cpu-quota int                  Limit CPU CFS (Completely Fair Scheduler) quota
+      --cpu-rt-period int              Limit CPU real-time period in microseconds
+      --cpu-rt-runtime int             Limit CPU real-time runtime in microseconds
+  -c, --cpu-shares int                 CPU shares (relative weight)
+      --cpus decimal                   Number of CPUs
+      --cpuset-cpus string             CPUs in which to allow execution (0-3, 0,1)
+      --cpuset-mems string             MEMs in which to allow execution (0-3, 0,1)
+      --device list                    Add a host device to the container
+      --device-cgroup-rule list        Add a rule to the cgroup allowed devices list
+      --device-read-bps list           Limit read rate (bytes per second) from a device (default [])
+      --device-read-iops list          Limit read rate (IO per second) from a device (default [])
+      --device-write-bps list          Limit write rate (bytes per second) to a device (default [])
+      --device-write-iops list         Limit write rate (IO per second) to a device (default [])
+      --disable-content-trust          Skip image verification (default true)
+      --dns list                       Set custom DNS servers
+      --dns-option list                Set DNS options
+      --dns-search list                Set custom DNS search domains
+      --entrypoint string              Overwrite the default ENTRYPOINT of the image
+  -e, --env list                       Set environment variables
+      --env-file list                  Read in a file of environment variables
+      --expose list                    Expose a port or a range of ports
+      --group-add list                 Add additional groups to join
+      --health-cmd string              Command to run to check health
+      --health-interval duration       Time between running the check (ms|s|m|h) (default 0s)
+      --health-retries int             Consecutive failures needed to report unhealthy
+      --health-start-period duration   Start period for the container to initialize before starting health-retries countdown
+                                       (ms|s|m|h) (default 0s)
+      --health-timeout duration        Maximum time to allow one check to run (ms|s|m|h) (default 0s)
+      --help                           Print usage
+  -h, --hostname string                Container host name
+      --init                           Run an init inside the container that forwards signals and reaps processes
+  -i, --interactive                    Keep STDIN open even if not attached
+      --ip string                      IPv4 address (e.g., 172.30.100.104)
+      --ip6 string                     IPv6 address (e.g., 2001:db8::33)
+      --ipc string                     IPC mode to use
+      --isolation string               Container isolation technology
+      --kernel-memory bytes            Kernel memory limit
+  -l, --label list                     Set meta data on a container
+      --label-file list                Read in a line delimited file of labels
+      --link list                      Add link to another container
+      --link-local-ip list             Container IPv4/IPv6 link-local addresses
+      --log-driver string              Logging driver for the container
+      --log-opt list                   Log driver options
+      --mac-address string             Container MAC address (e.g., 92:d0:c6:0a:29:33)
+  -m, --memory bytes                   Memory limit
+      --memory-reservation bytes       Memory soft limit
+      --memory-swap bytes              Swap limit equal to memory plus swap: '-1' to enable unlimited swap
+      --memory-swappiness int          Tune container memory swappiness (0 to 100) (default -1)
+      --mount mount                    Attach a filesystem mount to the container
+      --name string                    Assign a name to the container
+      --network string                 Connect a container to a network (default "default")
+      --network-alias list             Add network-scoped alias for the container
+      --no-healthcheck                 Disable any container-specified HEALTHCHECK
+      --oom-kill-disable               Disable OOM Killer
+      --oom-score-adj int              Tune host's OOM preferences (-1000 to 1000)
+      --pid string                     PID namespace to use
+      --pids-limit int                 Tune container pids limit (set -1 for unlimited)
+      --privileged                     Give extended privileges to this container
+  -p, --publish list                   Publish a container's port(s) to the host
+  -P, --publish-all                    Publish all exposed ports to random ports
+      --read-only                      Mount the container's root filesystem as read only
+      --restart string                 Restart policy to apply when a container exits (default "no")
+      --rm                             Automatically remove the container when it exits
+      --runtime string                 Runtime to use for this container
+      --security-opt list              Security Options
+      --shm-size bytes                 Size of /dev/shm
+      --stop-signal string             Signal to stop a container (default "SIGTERM")
+      --stop-timeout int               Timeout (in seconds) to stop a container
+      --storage-opt list               Storage driver options for the container
+      --sysctl map                     Sysctl options (default map[])
+      --tmpfs list                     Mount a tmpfs directory
+  -t, --tty                            Allocate a pseudo-TTY
+      --ulimit ulimit                  Ulimit options (default [])
+  -u, --user string                    Username or UID (format: <name|uid>[:<group|gid>])
+      --userns string                  User namespace to use
+      --uts string                     UTS namespace to use
+  -v, --volume list                    Bind mount a volume
+      --volume-driver string           Optional volume driver for the container
+      --volumes-from list              Mount volumes from the specified container(s)
+  -w, --workdir string                 Working directory inside the container
+```
+
+
+
+create命令与容器运行模式相关的选项
+
+|      |      |
+| ---- | ---- |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+|      |      |
+
+
 
 例如：`docker create -it java`
 
@@ -322,6 +606,149 @@ $ docker start b803f81e081abae971a3c
 
 **新建并启动容器**
 
+
+
+
+
+
+
+```shell
+Usage:	docker run [OPTIONS] IMAGE [COMMAND] [ARG...]
+
+Run a command in a new container
+
+Options:
+      --add-host list                  Add a custom host-to-IP mapping (host:ip)
+  -a, --attach list                    Attach to STDIN, STDOUT or STDERR
+      --blkio-weight uint16            Block IO (relative weight), between 10 and 1000, or 0 to disable (default 0)
+      --blkio-weight-device list       Block IO weight (relative device weight) (default [])
+      --cap-add list                   Add Linux capabilities
+      --cap-drop list                  Drop Linux capabilities
+      --cgroup-parent string           Optional parent cgroup for the container
+      --cidfile string                 Write the container ID to the file
+      --cpu-period int                 Limit CPU CFS (Completely Fair Scheduler) period
+      --cpu-quota int                  Limit CPU CFS (Completely Fair Scheduler) quota
+      --cpu-rt-period int              Limit CPU real-time period in microseconds
+      --cpu-rt-runtime int             Limit CPU real-time runtime in microseconds
+  -c, --cpu-shares int                 CPU shares (relative weight)
+      --cpus decimal                   Number of CPUs
+      --cpuset-cpus string             CPUs in which to allow execution (0-3, 0,1)
+      --cpuset-mems string             MEMs in which to allow execution (0-3, 0,1)
+  -d, --detach                         Run container in background and print container ID
+      --detach-keys string             Override the key sequence for detaching a container
+      --device list                    Add a host device to the container
+      --device-cgroup-rule list        Add a rule to the cgroup allowed devices list
+      --device-read-bps list           Limit read rate (bytes per second) from a device (default [])
+      --device-read-iops list          Limit read rate (IO per second) from a device (default [])
+      --device-write-bps list          Limit write rate (bytes per second) to a device (default [])
+      --device-write-iops list         Limit write rate (IO per second) to a device (default [])
+      --disable-content-trust          Skip image verification (default true)
+      --dns list                       Set custom DNS servers
+      --dns-option list                Set DNS options
+      --dns-search list                Set custom DNS search domains
+      --entrypoint string              Overwrite the default ENTRYPOINT of the image
+  -e, --env list                       Set environment variables
+      --env-file list                  Read in a file of environment variables
+      --expose list                    Expose a port or a range of ports
+      --group-add list                 Add additional groups to join
+      --health-cmd string              Command to run to check health
+      --health-interval duration       Time between running the check (ms|s|m|h) (default 0s)
+      --health-retries int             Consecutive failures needed to report unhealthy
+      --health-start-period duration   Start period for the container to initialize before starting health-retries countdown
+                                       (ms|s|m|h) (default 0s)
+      --health-timeout duration        Maximum time to allow one check to run (ms|s|m|h) (default 0s)
+      --help                           Print usage
+  -h, --hostname string                Container host name
+      --init                           Run an init inside the container that forwards signals and reaps processes
+  -i, --interactive                    Keep STDIN open even if not attached
+      --ip string                      IPv4 address (e.g., 172.30.100.104)
+      --ip6 string                     IPv6 address (e.g., 2001:db8::33)
+      --ipc string                     IPC mode to use
+      --isolation string               Container isolation technology
+      --kernel-memory bytes            Kernel memory limit
+  -l, --label list                     Set meta data on a container
+      --label-file list                Read in a line delimited file of labels
+      --link list                      Add link to another container
+      --link-local-ip list             Container IPv4/IPv6 link-local addresses
+      --log-driver string              Logging driver for the container
+      --log-opt list                   Log driver options
+      --mac-address string             Container MAC address (e.g., 92:d0:c6:0a:29:33)
+  -m, --memory bytes                   Memory limit
+      --memory-reservation bytes       Memory soft limit
+      --memory-swap bytes              Swap limit equal to memory plus swap: '-1' to enable unlimited swap
+      --memory-swappiness int          Tune container memory swappiness (0 to 100) (default -1)
+      --mount mount                    Attach a filesystem mount to the container
+      --name string                    Assign a name to the container
+      --network string                 Connect a container to a network (default "default")
+      --network-alias list             Add network-scoped alias for the container
+      --no-healthcheck                 Disable any container-specified HEALTHCHECK
+      --oom-kill-disable               Disable OOM Killer
+      --oom-score-adj int              Tune host's OOM preferences (-1000 to 1000)
+      --pid string                     PID namespace to use
+      --pids-limit int                 Tune container pids limit (set -1 for unlimited)
+      --privileged                     Give extended privileges to this container
+  -p, --publish list                   Publish a container's port(s) to the host
+  -P, --publish-all                    Publish all exposed ports to random ports
+      --read-only                      Mount the container's root filesystem as read only
+      --restart string                 Restart policy to apply when a container exits (default "no")
+      --rm                             Automatically remove the container when it exits
+      --runtime string                 Runtime to use for this container
+      --security-opt list              Security Options
+      --shm-size bytes                 Size of /dev/shm
+      --sig-proxy                      Proxy received signals to the process (default true)
+      --stop-signal string             Signal to stop a container (default "SIGTERM")
+      --stop-timeout int               Timeout (in seconds) to stop a container
+      --storage-opt list               Storage driver options for the container
+      --sysctl map                     Sysctl options (default map[])
+      --tmpfs list                     Mount a tmpfs directory
+  -t, --tty                            Allocate a pseudo-TTY
+      --ulimit ulimit                  Ulimit options (default [])
+  -u, --user string                    Username or UID (format: <name|uid>[:<group|gid>])
+      --userns string                  User namespace to use
+      --uts string                     UTS namespace to use
+  -v, --volume list                    Bind mount a volume
+      --volume-driver string           Optional volume driver for the container
+      --volumes-from list              Mount volumes from the specified container(s)
+  -w, --workdir string                 Working directory inside the container
+
+```
+
+
+
+|                                |                                             |
+| ------------------------------ | ------------------------------------------- |
+|                                |                                             |
+| `-d,--detach=true|false`       | 在后台运行容器，并打印容器ID，默认为false。 |
+|                                |                                             |
+| `-p, --publish list`           | 将容器的端口发布到主机                      |
+| `-P, --publish-all`            | 将所有公开的端口发布到随机端口              |
+|                                |                                             |
+| `-i, --interactive=true|false` | 保持标准输入打开，默认为false。             |
+| `-t, --tty=true|false`         | 是否分配一个伪终端，默认为false。           |
+|                                |                                             |
+|                                |                                             |
+|                                |                                             |
+|                                |                                             |
+|                                |                                             |
+|                                |                                             |
+|                                |                                             |
+|                                |                                             |
+|                                |                                             |
+|                                |                                             |
+
+
+
+
+
+|               |                                                           |
+| ------------- | --------------------------------------------------------- |
+| --name string | 为容器分配一个名称，即容器的别名。                        |
+| --link list   | 添加链接到另一个容器，例如`--link [<name or id>:alias]`。 |
+|               |                                                           |
+|               |                                                           |
+
+
+
 ```shell
 # 输出Hello World之后，容器自动退出
 $ docker run ubuntu /bin/echo 'Hello World'
@@ -352,7 +779,9 @@ $ docker run -d ubuntu /bin/sh
 
 ### 查看容器
 
-语法
+列出本地容器
+
+**语法**
 
 ```shell
 $ docker ps [OPTIONS]
@@ -376,6 +805,19 @@ Options:
   -s, --size            Display total file sizes
 ```
 
+**选项**
+
+| 选项                  | 说明                                            |
+| --------------------- | ----------------------------------------------- |
+| `-a, --all`           | 显示所有容器(默认显示正在运行)。                |
+| `-f, --filter filter` | Filter output based on conditions provided      |
+| `--format string`     | Pretty-print containers using a Go template     |
+| `-n, --last int`      | 显示最后创建的n个容器(包括所有状态)(默认值-1)。 |
+| `-l, --latest`        | 显示最新创建的容器(包括所有状态)。              |
+| `--no-trunc`          | Don't truncate output                           |
+| `-q, --quiet`         | 只显示数字id。                                  |
+| `-s, --size`          | 显示总文件大小。                                |
+
 
 
 ### 启动-终止-重启容器
@@ -391,9 +833,9 @@ $ docker kill [OPTIONS] CONTAINER [CONTAINER...]
 # restart container
 $ docker restart [OPTIONS] CONTAINER [CONTAINER...]
 ```
-- docker start --help
+- docker start --help 
 
-    ```
+    ```shell
     Usage:	docker start [OPTIONS] CONTAINER [CONTAINER...]
     
     Start one or more stopped containers
@@ -529,23 +971,29 @@ Options:
 
 ### delete container
 
-语法
+删除一个或多个容器
+
+**语法**
 
 ```shell
 $ docker rm [OPTIONS] CONTAINER [CONTAINER...]
 ```
 
-help
+**选项**
 
-```
-Usage:	docker rm [OPTIONS] CONTAINER [CONTAINER...]
+| 选项          | 说明                                |
+| ------------- | ----------------------------------- |
+| -f, --force   | 强制移除正在运行的容器(使用SIGKILL) |
+| -l, --link    | 删除指定链接                        |
+| -v, --volumes | 删除与容器关联的卷                  |
 
-Remove one or more containers
 
-Options:
-  -f, --force     Force the removal of a running container (uses SIGKILL)
-  -l, --link      Remove the specified link
-  -v, --volumes   Remove the volumes associated with the container
+
+```shell
+[root@localhost sss]# docker rm 21bf43d3a168
+Error response from daemon: You cannot remove a running container 21bf43d3a168232722894067af1670b9933e829947a5f9587807ab55ca518d8c. Stop the container before attempting removal or force remove
+[root@localhost sss]# docker rm -f 21bf43d3a168
+21bf43d3a168
 ```
 
 
@@ -602,6 +1050,159 @@ Options:
   -c, --change list      Apply Dockerfile instruction to the created image
   -m, --message string   Set commit message for imported image
 ```
+
+
+
+## 使用Dockerfile创建镜像
+
+
+
+Dockerfile指令说明
+
+| 指令                       | 说明                                                         |
+| -------------------------- | ------------------------------------------------------------ |
+| FROM（from）               | 指定所创建镜像的基础镜像。                                   |
+| MAINTAINER（maintainer）   | 指定维护者信息。                                             |
+| RUN（run）                 | 运行命令。                                                   |
+| CMD（cmd）                 | 指定启动容器时默认执行的命令。                               |
+| LABEL（label）             | 指定生成镜像的元数据标签信息。                               |
+| EXPOSE（expose）           | 声明镜像内服务所监听的端口。                                 |
+| ENV（env）                 | 指定环境变量                                                 |
+| ADD（add）                 | 复制指定的<src>路径下的内容到容器中的<dest>路径下，<src>可以为URL；如果为tar文件，会自动解压到<dest>路径下。 |
+| COPY（copy）               | 复制本地主机的<src>路径下的内容到镜像中的<dest>路径下，一般情况下推荐使用COPY，而不是ADD。 |
+| ENTRYPOINT（entrypoint）   | 指定镜像的默认入口。                                         |
+| VOLUME（volume）           | 创建数据卷挂载点。                                           |
+| USER（user）               | 指定运行容器时的用户名或UID。                                |
+| WORKDIR（workdir）         | 配置工作目录。                                               |
+| ARG（arg）                 | 指定镜像内使用的参数（例如版本号等信息）                     |
+| ONBUILD（onbuild）         | 配置当所创建的镜像作为其他镜像的基础镜像时，所执行的指令。   |
+| STOPSIGNAL（stopsignal）   | 容器退出的信号值。                                           |
+| HEALTHCHECK（healthcheck） | 如何进行健康检查。                                           |
+| SHELL（shell）             | 指定使用shell时的默认shell类型。                             |
+
+
+
+### 1. FROM
+
+指定所创建镜像的基础镜像，如果本地不存在，则默认会去Docker Hub下载指定镜像。
+
+格式
+
+```dockerfile
+from <image>
+from <image>:<tag>
+from <image>@<digest>
+```
+
+任何Dockerfile中的第一条指令必须为FROM指令。并且，如果在同一个Dockerfile中创建多个镜像，可以使用多个FROM指令（每个镜像一次。）
+
+### MAINTAINER
+
+指定维护者的信息。
+
+格式
+
+```dockerfile
+maintainer <name>
+```
+
+该信息会写入生成镜像的Author属性域中。
+
+### RUN
+
+运行指定命令。
+
+
+
+### CMD
+
+CMD指令用来指定启动容器时默认执行的命令。它支持三种格式：
+
+- `CMD ["executable","param1","param2"]`使用exec执行，是推荐使用的方式；
+- `CMD command param1 param2`在/bin/sh中执行，提供给需要交互的应用；
+- `CMD ["param1","param2"]`提供给ENTRYPOINT的默认参数。
+
+每个Dockerfile只能有一条CMD命令。如果指定了多条命令，只有最后一条会被执行。
+
+
+
+LABEL
+
+LABEL指令用来指定生成镜像的元数据标签信息。
+
+格式
+
+```dockerfile
+LABEL <key>=<value> <key>=<value> <key>=<value>...
+```
+
+
+
+## EXPOSE
+
+声明镜像内服务所监听的端口。
+
+格式
+
+```dockerfile
+EXPOSE <port> [<port>...]
+```
+
+注意，该指令只是起到声明作用，并不会自动完成端口映射。
+
+在启动容器时需要使用`-P`，Docker主机会自动分配一个宿主机的临时端口转发到指定的端口；使用`-p`，则可以具体指定那个宿主机的本地端口会映射过来。
+
+
+
+### COPY
+
+
+
+
+
+### WORKDIR
+
+为后续的RUN、CMD和ENTRYPOINT指令配置工作目录。
+
+格式
+
+```dockerfile
+WORKDIR /path/to/workdir
+```
+
+可以使用多个WORKDIR指令，后续指令如果参数是相对路径，则会基于之前命令指定的路径。例如
+
+```dockerfile
+WORKDIR /a
+WORKDIR	b
+WORKDIR c
+```
+
+则最终路径为/a/b/c。
+
+
+
+```dockerfile
+from java:8
+maintainer xlp
+
+copy . /usr/javaapp
+workdir /usr/javaapp
+
+cmd nohup java -jar registration-center-1.0.0.jar > registration-center.log 2>&1 &
+label version="1.0"
+expose 8761
+```
+
+
+
+
+
+## 端口映射与容器互联
+
+
+
+
 
 
 

@@ -1,10 +1,220 @@
+## 单元一、问候及介绍
+
+### 1、自我介绍
+
+**问好**
+
+使用hello和hi来打造胡。hello可以使用在正式和非正式的场合。hi是非正式的。但是hello和hi都可以在一天的任何时段使用。
+
+Hello	您好。
+
+Hi	嗨！
+
+**介绍你的姓名**
+
+使用I'm和My name is告诉别人你的名字。
+
+I'm Paul.
+
+My name is Nancy.
+
+**询问和告诉别人姓名**
+
+询问某人姓名用疑问句what。
+
+What's your name?
+
+有两种告诉别人你的名字的常用方法。你可以说I'm + 你的名字。I'm和I am的缩写。在对话中我们经常使用缩写。
+
+I'm Joe.
+
+你还可以用My name is + 你的名字。这比I'm稍微正式一些。
+
+My name is Ann.
+
+文化点：在英文中，当别人问你的name时，它们通常都值你的名字，不是姓。
+
+**与人初次见面**
+
+当你初次见到某人，你会说很高兴见到他们，他们会说too很高兴见到你们。too的意思是也。
+
+A：Nice to meet you.
+
+B：Nice to meet you too.
+
+**告别**
+
+对话结束时用goodbye一词。Bye是goodbye的简短形式。更加非正式一些。
+
+Goodbye.	再见。
+
+Bye.	拜拜。
+
+### 2、把您的名字告诉某人
+
+**要求拼写**
+
+人们通常提供两个名字：first name和last name。前者是你的名，后者因为来源你的家族，所以也称为family name。一下是一些firt name和last name的例子。
+
+名		姓
+
+Sally	Phillips
+
+Carlos	Cruz
+
+Steve	Jobs
+
+请用这些问句去叫别人拼写他们的名字。
+
+How do you spell your name?	您的名字怎么拼写？
+
+How do you spell your last name?	您的姓怎么拼写？
+
+How do you spell that?	您怎么拼？
+
+请用it's的句型说出您的名字。
+
+A：How do you spell your last name?
+
+B：It's P-H-I-L-L-I-P-S.
+
+使用thanks或thank you感谢人们拼出自己的名字。Thanks没有Thank you正式。用you're welcome回应感谢。
+
+Thanks!	谢谢！
+
+A：Thank you.	谢谢。
+
+B：You're welcome.	不用谢。
+
+### 3、交换电话号码
+
+**be动词**
+
+be动词有三种形式：am、is和are，具体使用视人称代词而定。请看下面的人称代词。
+
+I（我）	it（它）
+
+you（你）	we（我们）
+
+he（他）	you（你们）
+
+she（她）	they（他们）
+
+注意，人称代词you既可作单数，也可作复数。
+
+使用am搭配人称代词I。
+
+I am Sally.	我叫Sally。
+
+使用is搭配人称代词he、she和it。
+
+He is an architect.	它是建筑师。
+
+She is an enginner.	她是工程师。
+
+It is new.	它是新的。
+
+使用are搭配代词we、you和they。
+
+We are roommates.	我们是室友。
+
+You are new.	你是新来的。
+
+They are architects.	他们是建筑师。
+
+**‘be’动词：缩写形式**
+
+缩写是两个词连载一起成为一个词。使用缩写让你的讲话听起来更加自然，请看一下句子的完整形式和缩写形式。
+
+| 完整形式             | 缩写形式            |
+| -------------------- | ------------------- |
+| I am Sally.          | I'm Sally.          |
+| He is an architect.  | He's an architect.  |
+| She is an engineer.  | She's an engineer.  |
+| It is new.           | It's new.           |
+| We are roommates.    | We're roommates.    |
+| You are new.         | You're new.         |
+| They are architects. | They're architects. |
+
+**电话**
+
+两个电话用词：
+
+telephone	电话			phone	电话
+
+请用一下问句询问他人他们的电话号码：
+
+What's your telephone number?	您的电话号码是多少？
+
+What's your phone number?	您的电话号码是多少？
+
+What's your cellphone number?	您的手机号码是多少？
+
+What's your number?	您的号码是多少？
+
+要问某人另一个人的电话号码，请在那个人的名字后加‘s’。
+
+What's Mary's telephone number?	Mary的电话号是多少？
+
+What's Joe's phone number?	Joe的电话号码是多少？
+
+请用it's句式给出一个电话号码。
+
+A：What's John's telephone number?	John的电话号码是多少？
+
+B：It's 555-6792
+
+### 4、1
+
+**be动词的否定形式**
+
+使用not搭配be动词构成否定句。not一词位于be动词之后。
+
+I am a student.	我是学生。
+
+I am not a student.	我不是学生。
+
+He is busy.	他很忙。
+
+He is not busy.	他不忙。
+
+They are neat.	他们很整洁。
+
+Ther are not neat.	他们都不整洁。
+
+be动词的否定式缩写
+
+动词be否定形式的缩写有两种形式。第一种是缩写主格和动词be。
+
+I am not a student.	我不是学生。
+
+I'm not a student.	我不是学生。
+
+She is not neat.	她衣着不整洁。
+
+She's not neat.	她衣着不整洁。
+
+We are not teachers.	我们不是老师。
+
+We‘re not teachers.	我们不是老师。
+
+另一种方法是缩写be动词和单词not。主格代词I不能采用这样的方法。
+
+He is not a student.	他不是学生。
+
+He isn't a student.	他不是学生。
+
+They are not new student.	他们不是新学生。
+
+They aren't new student.	他们不是新学生。
+
 ## 单元三、城市与国家
 
 ### “Be from”和“live in”
 
 用动词be + from表示一个人某地出生。用动词live + in表示一个人现在居住某地但是不一定在哪里出生。对于he，she和it，在动词live后加s。
 
-I‘m from the US.	我来自美国。
+I'm from the US.	我来自美国。
 
 I live in Japan.	我居住在日本。
 

@@ -164,7 +164,7 @@ A：What's John's telephone number?	John的电话号码是多少？
 
 B：It's 555-6792
 
-### 4、1
+### 4、问候
 
 **be动词的否定形式**
 
@@ -208,9 +208,111 @@ They are not new student.	他们不是新学生。
 
 They aren't new student.	他们不是新学生。
 
+日常问候
+
+Morning — afternoon — evening
+
+中午之前用good morning问候。从中午到下午6点用good afternoon问候。从下午6点到午夜用good evening问候。
+
+Good morning.	早上好。
+
+Good afternoon.	下午好。
+
+Good evening.	晚上好。
+
+使用good night在晚上对某人说再见或者用来表示您要去睡觉了。
+
+Good night.	晚安。
+
+在比较正式的场合，比如办公司，使用How are you?进行问候。
+
+How are you?	你好吗？
+
+请使用一下句子回应How are you?这句问候语
+
+I'm fine, thanks. And you?	我很好，谢谢。您呢？
+
+I'm good.	我不错。
+
+在早上结束对话时，你可以对某人说希望他们度过愉快的一天。
+
+Have a nice day!	全天愉快！
+
+**标点符号和大写**
+
+标点符号
+
+在称述句的句尾使用句号（.）。
+
+They are students.
+
+在问句的句尾使用问好（?）。
+
+What's your name?
+
+缩写时请使用所有格符号（'）。
+
+They aren't busy.
+
+说话时要停顿使用逗号（,）。
+
+I'm fine, thanks.
+
+大写
+
+一个句子的首字母要大写。
+
+How are you today?
+
+人名的首字母要大写。
+
+My name is Sam.
+
+**'be'动词引导的疑问句**
+
+为了构成含有be动词的是非问句，将动词移至句首。记住在句尾加上问好（?）。
+
+称述句
+
+He is a student.	他是学生。	Is he a student?	他是学生吗？
+
+They are new.	他们是新来的。	Are They new?	他们是新来的吗？
+
+You are busy.	你们很忙。	Are you busy?	你们很忙吗？
+
+是非问句的简短回答，回答是非问句时，我们通常使用yes或no启头，后跟be动词形式的简单回答。
+
+问句
+
+Is he a student?	他是学生吗？	Yes. he is.	是，他是的。
+
+Is she new?	她是新来的吗？	No, she isn't.	不，她不是的。
+
+Is it 555-1212?	是555-1212吗？	No, it's not.	不，不是的。
+
+Are they busy?	他们忙吗？	Yes, they are.	是的，他们忙。
+
+Are they OK?	他们好吗？	No, they aren't.	不，他们不好。
+
+**含疑问词的疑问句**
+
+有些疑问句以how或者what等疑问词起句。注意，疑问词位于be动词之前。
+
+What's your name?	你叫什么？
+
+How are you?	你好吗？
+
+What's your telephone number?	你的点好号码是多少?
+
+Waht's your last name?	你姓什么？
+
+
+
 ## 单元三、城市与国家
 
-### “Be from”和“live in”
+### 1、说说你来自哪里
+
+**“Be from”和“live in”**
 
 用动词be + from表示一个人某地出生。用动词live + in表示一个人现在居住某地但是不一定在哪里出生。对于he，she和it，在动词live后加s。
 
@@ -226,7 +328,7 @@ He lives in London, Englang.	他居住在英国伦敦。
 
 He's from Los Angeles, but he lives in New York.
 
-### “哪里”的问题
+**“哪里”的问题**
 
 用where疑问句询问某人来自哪里以及一个地方在哪里。用in解释一个城市在那个国家。
 
@@ -244,17 +346,23 @@ Where are you from.	您来自哪里？
 
 I'm from Rome,Italy.	我来自意大利罗马。
 
+### 2、？？？介绍同事
 
 
 
+### 3、？？？会见陌生人
+
+
+
+### 4、？？？描述您的城市
 
 
 
 ## 单元四、人
 
+### 1、谈论家人
 
-
-### 一般现在时的陈述句
+**一般现在时的陈述句**
 
 使用一般现在时陈述事实和习惯。请看图表一般现在时的结构。在he，she和it之后使用动词+s。
 
@@ -266,7 +374,7 @@ I'm from Rome,Italy.	我来自意大利罗马。
 | He、She、It   | comes from | Italy |
 | We、You、They | come from  | Italy |
 
-### 一般现在时的否定句
+**一般现在时的否定句**
 
 I、you、we或they的一般现在时否定陈述句，用do not + 动词。对于he、she或it的一般现在时否定陈述句，则用does not + 动词。注意，主动词形式不变。
 
@@ -292,7 +400,7 @@ She has twe sisters.	她有两个姐妹。
 
 She doesn't have any brothers.	她没有兄弟。
 
-用‘how many’提问的问句
+**用‘how many’提问的问句**
 
 请用how many询问数量。
 
@@ -306,7 +414,9 @@ How many students are there?	学生有多少人？
 
 How many people are there?	那里有多少人？
 
-### 询问对某人的描述
+There are six people.	有六人。
+
+### 2、询问对某人的描述
 
 请用一下问题询问他人的一般描述。
 
@@ -346,7 +456,7 @@ A：What does he look like?	他长什么样子？
 
 B：He has very long hair.	他有一头常常的头发。
 
-### 描述一个同事
+### 3、？？描述一个同事
 
 宾格
 
@@ -384,7 +494,7 @@ A：What are they like?	他们看起来怎么样？
 
 B：They're friendly.	他们很友好。
 
-在社交场合与人见面
+### 4、？？？在社交场合与人见面
 
 
 

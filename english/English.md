@@ -456,9 +456,27 @@ A：What does he look like?	他长什么样子？
 
 B：He has very long hair.	他有一头常常的头发。
 
-### 3、？？描述一个同事
+### 3、描述一个同事
 
-宾格
+**反义词**
+
+当您学习形容词时，同时学习它们的反义词对您很有帮助。请看这些形容词以及它们的反义词。
+
+hardworking - lazy	勤奋的 - 懒惰的
+
+intelligent - stupid	聪明的 - 愚蠢的
+
+serious - funny	严肃的 - 有趣的
+
+good - bad	好的 - 坏的
+
+请用前缀un-把一些形容词变为他们的反义词
+
+happy - unhappy	开心的 - 不开心的
+
+friendly - unfriendly	友好的 - 不友好的	
+
+**宾格**
 
 在in，from，to，for，with这样的介词之后用宾格。
 
@@ -482,7 +500,7 @@ John is with them.	John和他们在一起。
 | we   | us   | My grandmather lives with us.               | 我的祖母和我们住在一起。       |
 | they | them | John is with them.                          | John和他们在一起。             |
 
-描述性格
+**描述性格**
 
 请用一下的问句询问某人的性格。
 
@@ -494,13 +512,115 @@ A：What are they like?	他们看起来怎么样？
 
 B：They're friendly.	他们很友好。
 
-### 4、？？？在社交场合与人见面
+**形容词**
 
+有不同的方式表达某人的性格。例如，您可以使用形容词。
 
+He's lazy.	他很懒。
+
+She's friendly.	她很友好。
+
+They're funny.	它们很有趣。
+
+**副词**
+
+您也可以使用副词描述性格。用副词always描述一种习惯。用副词never描述一种从未发生过的行为。
+
+She never smiles.	她从来不笑。
+
+They're always busy.	他们一直很忙。
+
+He always looks unhappy.	他一直看起来不开心。
+
+### 4、在社交场合与人见面
+
+**一般现在时疑问句**
+
+一般现在时的一般疑问句中，把do置于I，you，we和they之前，把does置于he，she和it之前。把动词置于代名词之后。请看表，看看问句的例句。
+
+| do/does | 主格   |                  | 是               | 否                 |
+| ------- | ------ | ---------------- | ---------------- | ------------------ |
+| Do      | you    | like your job？  | Yes.I do         | No,I don't.        |
+| Does    | he/she | live in berlin?  | Yes.he/she does. | No,he/she doesn's. |
+| Does    | it     | come from Italy? | Yes.it does.     | No,it doesn't.     |
+| Do      | they   | like their jobs? | Yes.they do.     | No,they don't.     |
+
+用疑问词构成一般现在时疑问句，把疑问词置于do或does之前。
+
+| 疑问词           | do/does |           |
+| ---------------- | ------- | --------- |
+| Where            | do      | you live? |
+| What             | does    | he do?    |
+| How many sisters | do      | you have? |
+| Where            | do      | you work? |
+
+**联谊**
+
+在联谊活动中，在短时间尽可能与越多人见面越好。所以交谈会很快。人们想尽快了解对方的职业，在哪里工作，居住在哪里，看看他们是否有足够的相同点进一步的交谈。
+
+常见问题：
+
+What do you do?	您做什么工作的？
+
+What company do you work for?	您在哪家公司上班？
+
+Do you like you job?	您喜欢您的工作吗？
+
+尽管不建议询问某人是否已婚或是否有小孩了，但是如果他们谈及以下话题之一时是可以问以上的问题的。
+
+A：I live with my wife in New York.	我和我夫人住在纽约。
+
+B：What does you wife do?	您夫人从事什么职业？
+
+当您在联谊活动中和某人谈话时，最重要的是保持交谈的顺利进行。简单的回应也比保持沉默要好。您的回答可以是积极的，中立的或者表示赞同的。
+
+积极地：
+
+That's interesting.	真有趣。
+
+Really?	真的吗？
+
+That's great!	太棒了！
+
+中立的：
+
+I see.	我明白了。
+
+Un-huh.	恩。
+
+Oh.	恩。
+
+赞同的：
+
+That's too bad.	那太糟糕了。
 
 ## 单元五、购物
 
-### 指示形容词
+### 1、在商场试衣服
+
+**衣服 - 单数和复数**
+
+关于服装的词总是复数的，尽管他们指的是单个物品。
+
+pants	裤子
+
+jeans	牛子裤
+
+当服饰是成双的时候，通常使用复数。
+
+socks	袜子
+
+shoes	鞋子
+
+当你说起裤子，牛子裤，袜子和鞋的时候，你也可以使用a pair of这个量词。
+
+I have a pair of pants.	我有一条新裤子。
+
+文化注释：在英式英语中，pants是内裤的意思，在英国，人们说trousers。
+
+trousers	长裤
+
+**指示形容词**
 
 用指示形容词this、that、these和those确认你周围的事物。
 
@@ -516,7 +636,7 @@ that shirt	那件衬衫
 
 those shirts	哪些衬衫
 
-### Here和there
+**Here和there**
 
 指示形容词常与方位词here和there结合使用。Here与this和these搭配使用，表示说话人附近的事物。There与that和those搭配使用，表示不再说话人附近的事物，你也可以说over here或over there以示强调。
 
@@ -534,7 +654,25 @@ This drees is too big.	这条连衣裙太大了。
 
 These pants are too small.	这条裤子太小了。
 
+**征求意见**
 
+用短语what about和how about征求某人对某事物的意见。
+
+A：What about this dress?	这条件连衣裙怎么样？
+
+B：It's beautiful.	真美。
+
+A：How about those shoes?	那双鞋怎么样？
+
+B：It's ugly!	真丑！
+
+您也可以使用What do you think?来询问某人的意见。
+
+A：What do you think?	您觉得呢？
+
+B：I think it's nice.	我觉得不错。
+
+### 2、？？？描述某人的穿着
 
 **询问价格和出价**
 
@@ -620,7 +758,11 @@ B：It's from Germany.	它来自德国。
 
 
 
+### 3、？？？和销售人员交谈
 
+
+
+### 4、？？？介绍您购物的地方
 
 
 

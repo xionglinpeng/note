@@ -306,11 +306,187 @@ What's your telephone number?	你的点好号码是多少?
 
 Waht's your last name?	你姓什么？
 
+## 单元二、办公室和学校
 
+### 1、谈论您的课堂
+
+**带how的意见型疑问句**
+
+请用how is或how are征求某人的意见。请用how is的缩写how's。
+
+How's your class?	您的课怎么样？
+
+How's you teacher?	您的老师怎么样？
+
+How are your classes?	您这些课怎么样？
+
+How are your teacher?	您的这些老师怎么样？
+
+回答可以是肯定，中立或否定。
+
+**Positive**
+
+A：How's your teacher?	您的老师怎么样？
+
+B：She's good.	她很好。
+
+A：How are your classes?	您这些课怎么样？
+
+B：They're great!	太棒了！
+
+**Neutral**
+
+A：How's your teacher?	您的老师怎么样？
+
+B：He's OK.	他不错。
+
+A：How are your classes?	您这些课怎么样？
+
+B：They're so-so!	它们一般般。
+
+**Negative**
+
+A：How's your teacher?	您的老师怎么样？
+
+B：He's bad.	他不好。
+
+A：How are your classes?	您这些课怎么样？
+
+B：They're terrible!	太糟糕了！
+
+### 2、欢迎新员工
+
+**this和that**
+
+用this和that指示人和物。用this指代离你近的人或物，用that指代离你远的人或物。
+
+| 称述句             | 否定句                 |
+| ------------------ | ---------------------- |
+| This is my desk.   | This is not your desk. |
+| That is your desk. | That is not my desk.   |
+| This is John.      | That is not Mary.      |
+
+**用this介绍人认识。**
+
+John, this is Pamela, Pamela, this is john.	John，这位是 Pamela。Pamela，这位是 John。
+
+缩写：this is 没有缩写形式。请使用that's作为that is的缩写形式。
+
+That's not Jim, That's Bill.	那不是 Jim，那是 Bill。
+
+把is移到句首，构成this is和thats is的疑问句。你可以用简短的回答来回应。
+
+| 疑问句                 | 简短回答      |
+| ---------------------- | ------------- |
+| Is this your computer? | No, it isn't. |
+| Is that your computer? | Yes, it is.   |
+| Is that Bill?          | Yes, it is.   |
+
+**所有格形容词**
+
+请看表中主格代词以及跟它们搭配的所有格形容词。
+
+用所有格形容词表示一个动词有谁所有。**所有格形容词始终后接一个名词。**
+
+| 主语代词 |      | 所有格形容词 |        |                             |                       |
+| -------- | ---- | ------------ | ------ | --------------------------- | --------------------- |
+| I        | 我   | my           | 我的   | my name is Harry.           | 我的名字叫Harry。     |
+| you      | 你   | your         | 你的   | Is that your phone?         | 那是您的电话吗？      |
+| he       | 他   | his          | 他的   | That's his desk.            | 那是他的桌子。        |
+| she      | 她   | her          | 她的   | It's her chair.             | 这时她的椅子。        |
+| it       | 它   | its          | 它的   | Oh, a dog? What's its name? | ...，它的名字叫什么？ |
+| we       | 我们 | our          | 我们的 | This is our microphone.     | 这是我们的麦克风。    |
+| they     | 他们 | their        | 他们的 | It's their computer.        | 这是他们的电脑。      |
+
+### 3、给出个人信息
+
+**询问某人年龄**
+
+用疑问短语how old询问年龄？
+
+how old are you?	您多少岁？
+I'm 25.	我二十五岁。
+
+How old is she?	她多少岁？
+She's 46.	她四十六岁。
+
+有两种方式报年龄。您可以只给出数字。您也可以用短语years old。
+
+How old are they?	他们多少岁？
+They're 51.	他们五十一岁。
+
+How old is it?	它多少岁？
+It's 100 years old.	它一百岁。
+
+How old is he?	他多少岁？
+He's 18 years old.	他18岁。
+
+文化说明：在英语国家，询问某人的年龄通常被认为是粗鲁的。
+
+### 4、描述您的办公室
+
+**构成复数**
+
+大多数名词复数都是在词尾加s。
+
+desk = desks
+
+coffice = coffices
+
+以x，sh，s，ss以及ch结尾的单词要在词尾后加es。
+
+class = classes
+
+**复数发音**
+
+有三种方式发出以s或es**结尾的复数名词的音。
+
+| /s/      | /z/       | /ɪz/    |
+| -------- | --------- | ------- |
+| desks    | phones    | classes |
+| students | computers | offices |
+
+基本的量词
+
+请用there is和there are来谈论某物的数量。there is的单数形式常常缩写成：
+
+There's a book on my desk.	我的桌上有一本书。
+
+There are 12 students in my English class.	我的英语课堂里有 12 名学生。
+
+a lot of、some和a few用于表达数量。三到四个用a few，数量超过一个用some，但不用于大的数量。表达大的数量用a lot of。
+
+There are a few chairs in the kitchen.	厨房里有几把椅子。
+
+There are some computer in the office.	办公室里有一些电脑。
+
+There are a lot of people in my company.	我的公司里有很多员工。
+
+请注意，这些词是如何置于它们所描述的名词前面的。
 
 ## 单元三、城市与国家
 
 ### 1、说说你来自哪里
+
+**非正式的介绍他人**
+
+用this is非正式地介绍朋友或他人。
+
+Eric, this is Brenda. Brenda, this is Eric. 	Eric，这是 Brenda。Brenda，这是 Eric。
+
+Han, this is my friend, Brenda.	Han，这是我的朋友 Brenda。
+
+通常您要给出一些您要介绍的人的信息 - 例如，它们来自哪里或它们住在哪里。
+
+This is mu friend, Han. He's from Korea.	这是我的朋友 Han。他来自韩国。
+
+He live in Seoul.	他住在首尔。
+
+用How's it going?作为非正式的问候。它与How are you?相似。但是不一定需要回应。
+
+A：Hi! How's it going?	嗨！最近怎么样？
+
+B：Hi!.	嗨！
 
 **“Be from”和“live in”**
 
@@ -346,17 +522,140 @@ Where are you from.	您来自哪里？
 
 I'm from Rome,Italy.	我来自意大利罗马。
 
-### 2、？？？介绍同事
+### 2、介绍同事
 
+国家和国籍
 
+名词用来指国家，形容词用来描述国籍或语言。把名词转换成形容词，最常见的是加一个后缀-ian，-ese和-ish。
 
-### 3、？？？会见陌生人
+| 国家      | 国籍       |
+| --------- | ---------- |
+| Japan     | Japanese   |
+| France    | French     |
+| Brazil    | Brazilish  |
+| Russia    | Russian    |
+| the US    | American   |
+| the UK    | British    |
+| Germany   | German     |
+| China     | chinese    |
+| Australia | Australian |
+| Italy     | Italian    |
 
+**连词：and，but**
 
+用连词and连接两个词或分句表达一个相近的意思。
 
-### 4、？？？描述您的城市
+Hank is Australian, and Sheila is, too.	Hank 是澳大利亚人，Sheila 也是。
 
+There are a lot of window and a nice kitchen.	那有很多窗户，还有一个很不错的厨房。
 
+用连词but连接两个表达不同意思的分句。
+
+Hiro is Japanese, but he lives in Italy.	Hiro 是日本人，但是他住在意大利。
+
+She's from Paris, but she lives in New York.	她来自巴黎，但是她住在纽约。
+
+标点：连接含有but和and的两个句子，第一个句子后常用逗号（,）。
+
+There is a desk, but there is no chair.	那有桌子，不过没有椅子。
+
+### 3、会见陌生人
+
+**数字11-100**
+
+eleven(11)	twelve(12)	thirteen(13)	fourteen(14)	fifteen(15)	sixteen(16)
+
+seventeen(17)	eighteen(18)	nineteen(19)
+
+注意哪些用连字符的数字
+
+twenty(20)	twenty-twe(22)	thirty(30)	thirty-five(35)	
+
+forty(40)	foty-three(43)	fifty(50)	fifty-four(54)
+
+sixty(60)	sixty-one(61)	seventy(70)	seventy-eight(78)
+
+eighty(80)	eighty-six(86)	niney(90)	nonety-sevent(97)
+
+ninety-none(99)	one hundred(100)
+
+**形容词**
+
+adjective修饰形名词。形容词置于动词be之后或名词之前。
+
+动词be之后的形容词
+
+Paris is beautiful.	巴黎很美。
+
+London is expensive.	伦敦生活成本高昂。
+
+用副词really加强形容词的修饰程度。
+
+Brazil is really big.	巴西真的很大。
+
+Salvador is really exciting.	萨尔瓦多真的很令人振奋。
+
+当形容词出现在单数名词前面时把冠词a或an置于形容词之前。a和an意味着‘one of something’在以元音字母发音a,e,i,o,u开头的词之前用an。
+
+**冠词+形容词+名词**
+
+Paris is a beautiful city.	巴黎是一个美丽的城市。
+
+Brazil is a big country.	巴西是一个很大的国家。
+
+Salvador is an exectiog city.	萨尔瓦多是一座令人振奋的城市。
+
+当您学习形容词时，请试着同时学习它们的反义词。例子如下：
+
+| 正        |        | 反       |        |
+| --------- | ------ | -------- | ------ |
+| execting  | 兴奋的 | boring   | 无聊的 |
+| beautiful | 美丽的 | ugly     | 丑陋的 |
+| big       | 大的   | small    | 小的   |
+| wonderful | 美好的 | terrible | 糟糕的 |
+| quiet     | 安静   | noisy    | 嘈杂   |
+
+**询问关于一座城市或一个乡村的情况“What's it like?”**
+
+使用what's + 名词 + like疑问句，询问他人对某城市或国家的描述或看法。
+
+A：What's Britain like?	英国怎么样？
+
+B：It's great.	太棒了！
+
+A：What's it like?	它怎么样？
+
+B：It's crowded!	很拥挤。
+
+你也可以用how疑问句询问某人对一个城市或国家的看法
+
+A：How's London?	伦敦怎么样？
+
+B：It's execting.	真是令人振奋。
+
+A：How is it?	它怎么样？
+
+B：It's boring.	很无聊。
+
+### 4、描述您的城市
+
+**不定冠词a和an**
+
+在不具体特指的单数名词或单数名词之前的形容词**前**，使用冠词“a”和“an”。
+
+It's a shop.	这是一家商店。
+
+**“an”搭配元音**
+
+在以a，e，i，o，u开头的名词或形容词前用an。
+
+It's an expensive shop.	这是一家很贵的商店。
+
+It's an office.	这是一间办公室。
+
+**There is + a或an**
+
+There's a big park in New Youk.	纽约有一个大公园。
 
 ## 单元四、人
 
@@ -672,7 +971,48 @@ A：What do you think?	您觉得呢？
 
 B：I think it's nice.	我觉得不错。
 
-### 2、？？？描述某人的穿着
+### 2、描述某人的穿着
+
+**现在进行时**
+
+用现在进行时描述正在发生的动作。动词be和动词+ing构成现在进行时。
+
+​				**称述句**										**否定句**
+
+| 主语        | be   | 动词+ing |      | be+not                                             | 动词+ing |
+| ----------- | ---- | -------- | ---- | -------------------------------------------------- | -------- |
+| I           | am   | comming  |      | I'm not                                            | comming  |
+| You         | are  | comming  |      | 【You're not】【You aren't】                       | comming  |
+| He/She/It   | is   | comming  |      | 【He's/She's/It's not】【He/She/It isn't】         | comming  |
+| We/You/They | are  | comming  |      | 【We're/You're/They're not】【We/You/They aren't】 | comming  |
+
+**问句**
+
+将动词be至于句首构成一般疑问句。
+
+He is wearing a beautiful shirt.	他身穿一件漂亮的衬衫。
+
+They are going home.	他们回家了。
+
+Is he wearing a beautiful shirt?	他是不是身穿一件漂亮的衬衫？
+
+Are they going home.	他们是不是要回家了？
+
+将what或where这样的疑问词置于句首构成特殊疑问句。
+
+陈述句
+
+You are going home.	您要回家了。
+
+She is wearing a blue dress.	她身穿一条蓝色连衣裙。
+
+带疑问词的疑问句
+
+Where are you going?	您去哪？
+
+What is she wearing?	她穿什么？
+
+### 3、和销售人员交谈
 
 **询问价格和出价**
 
@@ -704,7 +1044,7 @@ $14.65 - fourteen sixty five.
 
 文化注释：在英国，使用的货币是pounds和pence。
 
-看服装标签
+**看服装标签**
 
 了解服装的三个重要事项是尺寸，面料和原产地。
 
@@ -724,7 +1064,7 @@ A：What size is it?	什么尺码？
 
 B：It's a medium.	这是中号。
 
-材料
+**材料**
 
 最常见的材料在下方列出，如果是混合不同的面料，这些面料往往有一个百分比符号标在它们旁边 。
 
@@ -756,21 +1096,69 @@ A：Where's it from?	它来自哪儿？
 
 B：It's from Germany.	它来自德国。
 
+### 4、介绍您购物的地方
 
+**指示代词**
 
-### 3、？？？和销售人员交谈
+This，that，there和those
 
+This，that，there和those可以与名词用，也可以不和名词一起使用。
 
+How about there? = How about there shoes?	这怎么样？= 这鞋子怎么样?
 
-### 4、？？？介绍您购物的地方
+I like those. = I like those pants.	我喜欢那条。=我喜欢那条裤子。
 
+当this和tha不与名词使用时，它们有时会跟随着one这个词。
 
+I like this one.	我喜欢这个。
+
+That one is too expensive.	那个太贵了。
+
+That成成用于针对一种情况或事件给出意见。
+
+That's too bad.	那太糟糕了。
+
+That's great!	太棒了！
+
+That's stupid!	真蠢！
+
+**副词**
+
+副词是给出动词和形容词的额外信息的词性。有几种类型的副词。
+
+*频率副词*
+
+Always和never是频率副词。它们告诉你事情发生的频率。这些副词出现在be动词之后出现在一个句子中。但在所有其他动词之前。
+
+Their prices are never cheap.	它们的价格从不便宜。
+
+Department stores always have sales.	百货商场总是有打折。
+
+*强调成分*
+
+一些如really和very的副词用于增强形容词或动词。在形容词或动词前用really。very只能用于形容词前。
+
+*Really + 动词*
+
+I really like shopping in the mall!	我真的很喜欢在商场购物！
+
+*Really和very + 形容词*
+
+Small shop are really expensive.	小商店的东西真的很贵。
+
+Small shop are very expensive.	小商店的东西非常昂贵。
+
+*so + 形容词*
+
+另一种加强形容词语气的方法是在形容词前加副词so。
+
+This shirt is so cool!	这衬衫酷毙了！
 
 ## 单元6、食物
 
 ### 1、谈论一顿饭
 
-#### 表达您的欲望
+**表达您的欲望**
 
 请用want+noun来表达某人想要某物。记得在he，she或it之后的want后面加s。
 
@@ -800,7 +1188,7 @@ Pizza's my favorite food.	我最爱吃披萨。
 
 His favorite is chocolate.	他最爱吃巧克力。
 
-#### 可数名词和不可数名词
+**可数名词和不可数名词**
 
 一些名词可数，其他的都是不可数名词。可数的名词（例如apples和hamburgers）称为可数名词。不可数的名词（例如rice或water）称为不可数名词。
 
@@ -826,7 +1214,7 @@ some beef	一些牛肉
 
 ### 2、和朋友们准备一顿饭
 
-#### 食物分组
+**食物分组**
 
 你可以谈论食物组 - 食物类别。看看食物组合它们包括的一些食物。
 
@@ -878,7 +1266,7 @@ rice	米饭
 
 noodles	面条
 
-#### 祈使句
+**祈使句**
 
 使用祈使句发出命令或要求。祈使语气动词与动词原形是相同的。
 
@@ -904,7 +1292,7 @@ Help me, please.	请帮帮我。
 
 ### 3、推荐一家午餐餐厅
 
-#### 描述味道的形容词
+**描述味道的形容词**
 
 食物有不同的味道。学习一些用来描述您所吃的食物的形容词。
 
@@ -946,7 +1334,7 @@ My salad is awful.	我的色拉很难吃。
 
 ### 4、定外卖
 
-#### 量词与不可数名词一起使用
+**量词与不可数名词一起使用**
 
 可数名词有复数形式。它们是可数的。比如说hamburger - hamburgers。
 
@@ -972,7 +1360,8 @@ We want four glasses of  water.	我们想要4杯水。
 
 They have three cups of tea.	它们有三杯茶。
 
-#### 礼貌的请求
+**礼貌的请求**
+
 使用这些疑问句礼貌提出帮助或食物。
 
 Can I help you?	有什么能帮您的吗？

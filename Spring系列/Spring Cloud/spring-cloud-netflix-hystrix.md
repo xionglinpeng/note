@@ -2,6 +2,35 @@
 
 
 
+## Quick Start
+
+
+
+引入Hystrix依赖
+
+```xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
+</dependency>
+```
+
+使用注解`@EnableCircuitBreaker`开启断路器功能
+
+```java
+@EnableCircuitBreaker
+@SpringBootApplication
+public class UserServiceApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(UserServiceApplication.class, args);
+    }
+}
+```
+
+
+
+
+
 
 
 ## 使用用详解

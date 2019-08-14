@@ -174,6 +174,198 @@ Have a nice weekend.	周末愉快。
 
 ### 3、安排会议时间
 
+**工作词汇**
 
+take a coffee break	休息一会儿
+
+hava a meeting 	开会
+
+write a note	写便条
+
+talk to colleagues	与同事交谈
+
+read a report	看报告
+
+give a presentation	发表演讲
+
+make a phone call	打电话
+
+check emails	检查邮件
+
+用于表达请求的Can和cant't
+
+在句首使用单词can表达非正式请求。使用简短的回答Yes, I can表示肯定，使用简短的回答No, I can't表示否定。
+
+肯定：
+
+A：Can you help me?	您能帮我吗？
+
+B：Yes, I can.	使用，我能。
+
+否定：
+
+A：Can you help me?	您能帮我吗？
+
+B：No, I can't.	不，我不能。
+
+回答如果更常更详细，请使用can和can't搭配动词原形。
+
+I can meet at 3 o'clock.	我能三点见面。
+
+I can't eat lunch with you.	我不能和您吃午饭。
+
+拒绝请求时，您应使用短语I‘m sorry, but道歉。
+
+A：Can you come to a meeting at 4:15?	您四点一刻能参加会议吗？
+
+B：I'm sorry, but I cam't.	对不起，但是我不能。
 
 ### 4、谈论生日
+
+月份
+
+| 月份    | 月份      |
+| ------- | --------- |
+| January | July      |
+| Februay | August    |
+| March   | September |
+| April   | October   |
+| May     | November  |
+| June    | December  |
+
+谈论一件事将在特定月份发生时，请使用介词in。
+
+The big meeting is in February.	大型会议的时间在二月。
+
+My birthday is in March.	我的生日在三月。
+
+**序数**
+
+在英语表达日期时，我们使用序数。请看您熟悉的一栏数字和相应的序数。注意大多数数字以th结尾。
+
+|               |                 |                       |                         |
+| ------------- | --------------- | --------------------- | ----------------------- |
+| one - first   | six - sixth     | eleven - eleventh     | sixteen - sixteenth     |
+| two - second  | seven - seventh | twelve - twelfth      | seventeen - seventeenth |
+| three - third | eight - eighth  | thirteen - thirteenth | eighteen - eighteenth   |
+| four - fourth | nine  - ninth   | fourteen - fourteenth | nineteen - nineteenth   |
+| five - fifth  | ten - tenth     | fifteen - fifteenth   | twenty - twentieth      |
+
+在20之后，只用添加从1到10的相应序数。
+
+twenty-two — twenty-second
+
+twenty-six — twenty-sixth
+
+thirty — thirtieth
+
+thirty-one — thirty-first
+
+这些数字可以缩写，请看例子：
+
+first - 1st
+
+second - 2nd
+
+third - 3rd
+
+fourteenth - 14th
+
+thirty-first - 31st
+
+**表达日期**
+
+日期的表达有多种方法。在美国，人们通常先说月份，再说日。日期几乎总用缩写形式——比如，**July 17**或**July 17th**，而不是**July seventeenth**。
+
+July 2nd	7月2日
+
+Feburary 10	2月10日
+
+October 21st	10月21日
+
+在英国，人们表达日期时使用the和of强调日和月份。
+
+the 31st of January	1月31日
+
+the 12th of March	3月12日
+
+the 7th of June	6月7日
+
+表达特定日期，使用介词on。
+
+The meeting is on April 19th.	会议在4月19日举行。
+
+The presentation is on September 13.	演示会在9月13日举行。
+
+------
+
+eat cake	吃蛋糕
+
+play computer games	完电脑游戏
+
+get presents	收到礼物
+
+dance	跳舞，舞蹈
+
+go out	外出
+
+sing	唱歌
+
+meet friends	结识朋友
+
+listen ti music	听音乐
+
+**生日**
+
+在英语国家，人们庆祝生日常常赠送礼物，举办聚会。庆祝可能包括一个蛋糕，有时上面插上蜡烛，代表过生日的人的年龄。如果你知道今天是某人的生日，可以说：
+
+Happy birthday!	生日快乐！
+
+如果未受到邀请参加某人的生日派对，您通常不必送礼物给他。人们用彩纸包裹生日礼物。年龄较大的人可能对他们的年龄比较敏感，所以等他们告诉您他们的年龄。对年龄小的人来说，这通常不是问题。
+
+询问他人的生日：
+
+A：When's your birthday?	您的生日是那一天？
+
+B：It's September 21st.	9月21日
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

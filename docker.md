@@ -331,8 +331,6 @@ REPOSITORY          TAG                 IMAGE ID            CREATED             
 
    选项
 
-   阿萨德
-
    ```shell
    [root@localhost ~]# docker images
    REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
@@ -364,13 +362,25 @@ REPOSITORY          TAG                 IMAGE ID            CREATED             
 
 
 
+
+
 导出镜像
 
+语法
+
 ```shell
-$ docker save -o centos-latest.jar centos:latest
+$ docker save [OPTIONS] IMAGE [IMAGE...]
 ```
 
+> IMAGE可以`IMAGE[:tag]`和`IMAGE_ID`。
 
+选项
+
+- `-o, --output string`： 写入文件，而不是STDOUT。
+
+  `string`是导出镜像文件的文件名，例如`-o java,jar`。
+
+Help
 
 ```shell
 Usage:	docker save [OPTIONS] IMAGE [IMAGE...]
@@ -379,6 +389,13 @@ Save one or more images to a tar archive (streamed to STDOUT by default)
 
 Options:
   -o, --output string   Write to a file, instead of STDOUT
+```
+
+Example
+
+```shell
+$ docker save -o java.jar java:latest
+$ docker save -o java.jar 719cd2e3ed04
 ```
 
 
@@ -409,6 +426,36 @@ Options:
 
 
 ### 上传镜像
+
+
+
+### 镜像标签名称设置
+
+Tag语法
+
+```shell
+docker tag SOURCE_IMAGE[:TAG] TARGET_IMAGE[:TAG]
+```
+
+`SOURCE_IMAGE[:TAG]`：源镜像名称[:标签]
+
+`TARGET_IMAGE[:TAG]`：目标镜像名称[:标签]
+
+> `SOURCE_IMAGE[:TAG]`可以指定为镜像的ID，例如：
+>
+> ```shell
+> docker tag 33f2 register-center:latest
+> ```
+
+help
+
+```shell
+[root@localhost ~]# docker tag --help
+
+Usage:	docker tag SOURCE_IMAGE[:TAG] TARGET_IMAGE[:TAG]
+
+Create a tag TARGET_IMAGE that refers to SOURCE_IMAGE
+```
 
 
 

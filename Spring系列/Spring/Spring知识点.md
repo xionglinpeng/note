@@ -1,6 +1,6 @@
-# `Spring知识点
+# Spring知识点
 
-
+InstantiationAwareB
 
 ## 方法注入
 
@@ -35,6 +35,56 @@ public class UserServiceFactoryBean implements BeanFactoryPostProcessor {
     }
 }
 ```
+
+
+
+## BeanFactoryPostProcessor
+
+
+
+## BeanPostProcessor
+
+
+
+InstantiationAwareBeanPostProcessor
+
+- `Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName)`
+- `boolean postProcessAfterInstantiation(Object bean, String beanName)`
+- `PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName)`
+- ~~`PropertyValues postProcessPropertyValues(PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName)`~~
+
+
+
+
+
+
+
+SmartInstantiationAwareBeanPostProcessor
+
+- `Class<?> predictBeanType(Class<?> beanClass, String beanName)`
+
+- `Constructor<?>[] determineCandidateConstructors(Class<?> beanClass, String beanName)`
+
+  检测Bean的构造器，可以检测出多个候选构造器，再有相应的策略决定使用哪一个，如AutowiredAnnotationBeanPostProcessor实现将自动扫描通过@Autowired/@Value注解的构造器从而可以完成构造器注入
+
+- `Object getEarlyBeanReference(Object bean, String beanName)`
+
+  预测Bean的类型，返回第一个预测成功的Class类型，如果不能预测返回null；当你调用BeanFactory.getType(name)时当通过Bean定义无法得到Bean类型信息时就调用该回调方法来决定类型信息；BeanFactory.isTypeMatch(name, targetType)用于检测给定名字的Bean是否匹配目标类型（如在依赖注入时需要使用）；
+
+  在Spring中默认实现了它的有两个实现类;
+  AbstractAutoProxyCreator
+  InstantiationAwareBeanPostProcessorAdapter；这个只是但是的实现了一下所有接口，但是都是直接返回并没有做什么事情；
+  那我们主要分析一下AbstractAutoProxyCreator做了啥？
+
+  AbstractAutoProxyCreator
+  TODO…涉及到AOP 等下次分析AOP的时候再回来分析
+
+
+
+
+
+
+
 
 
 
@@ -729,3 +779,64 @@ public final class ConversionServiceFactory {
 
 
 
+
+
+# Spring源码版本及命名规则
+
+版本号的格式为X.Y.Z（又称Major.Minor.Patch），
+
+递增的规则：
+
+- X表示主版本号，当API的兼容性变化时，X需递增。
+- Y表示次版本号，当增加功能（不影响API的兼容性），Y需递增。
+- Z表示修订号，当做BUG修复时（不影响API的兼容性），Z需递增。
+
+详细的规则：
+
+- X，Y，Z必须为非负数，且不得包含前导零，必须按数值递增，如1.9.0 -> 1.10.0 ->1.11.0
+- 0.Y.Z的版本号表明软件处于初始开发阶段，意味着API可能不稳定；1.0.0表明版本已有稳定的API。
+- 当API兼容性变化时，X必须递增，Y和Z同时设置为0；当新增功能（不影响API兼容性）或者API被标记为Deprecated时，Y必须递增，同时Z设置为0；当进行BUG修复时，Z必须递增。
+
+版本号：
+
+- 先行版本号（Pre-Release）意味着该版本不稳定，可能存在兼容性问题，其格式为：`X.Y.Z.[a-c][正整数]`，如1.0.0.a1，1.0.0.b99，1.0.0.c100。
+
+- 开发版本号常用于CI-CD，格式为X.Y.Z.dev[正整数]，如1.0.1.dev4。
+
+版本号的排序规则：
+
+- 版本号的排序规则依次主版本号、次版本号和修订号的数值，如1.0.0 < 1.0.0 < 1.1.1 < 2.0.0。
+- 对于先行版本号和开发本版号，有：1.0.0.a100 < 1.0.0，2.1.0.dev3 < 2.1.0。
+- 当存在字母时，以ASCII的排序来比较，如1.0.0.a1 < 1.0.0.b1。
+
+> 注意：版本一经发布，不的修改其内容，新增修改必须在新版本发布！
+>
+> 以下是一些常用的修饰的词：
+>
+> Snapsot：不稳定，尚处于开发中的版本。
+> Alpha：内部版本
+> Dev：开发版本
+> Beta：测试版本
+> Demo：演示版本
+> Enhance：增强版本
+> Free：自由版本
+> Full Version：完成版，即正式版
+> Final：最终版，正式版
+> LTS：长期维护版本（Long Term Support），一般为18个月
+> Pro：专业版（Professional）
+> Plus：加强版
+> Retail：零售版
+> Shareware：共享版
+> SR：修正版，（虽然不会要求注册，但是一般有功能限制）
+> Trial：试用版（Senior）
+> Release：发行版（一般有时间或者功能限制）
+> RC：即将作为正式版发布（Release Candidat）
+> Standard：标准版
+> Ultimate：旗舰版
+> Upgrade：升级版
+
+Spring 版本命名规则：
+
+1. Release：代表稳定的版本。
+2. GA（General Availability）：代表广泛可用的稳定版。
+3. M（Milestone）：代表里程碑版，具有一些全新的功能或具有里程碑意义的版本。

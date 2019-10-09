@@ -331,31 +331,125 @@ B：It's September 21st.	9月21日
 
 
 
+## 单元二、天气和季节
+
+### 2、描述您最喜爱的季节
+
+Spring	春天，春季
+
+summer	夏天，夏季
+
+fall	秋天，秋季
+
+winter	冬天，冬季
+
+Fall和autumn
+
+Fall和autumn可以互换。具体使用视讲话人的国籍或个人喜好而定。在美国和加拿大，两个词都有使用，但Fall用得更多。
+
+My favorite season is fall.	我最爱的季节是秋天。
+
+在英国，澳大利亚和新西兰，人们更喜欢用autumn。
+
+I love the colors of autumn!	我喜爱秋天里的缤纷色彩！
+
+认识这两个词很重要，但使用哪一个由您决定！
 
 
 
 
 
+It's sunny and windy. There are lots of flowers.
+
+风和日丽。繁花盛开。
 
 
 
+喜欢和讨厌
+
+使用like和don't like搭配名词，表达您对天气或任何其他事情的意见。
+
+I like winter.
+
+I don't like hot weather.
+
+You're my friend. I like you.
+
+He isn't nice. I don't like him.
+
+Do you like him?
+
+您也可以使用dislike搭配名词来表达厌恶。
+
+He doesn't like wet weather. He dislike rain.
+
+She's unfriendly. I dislike her.
+
+Does she dislike you?
+
+使用love搭配名词表达强烈的喜欢。使用hate搭配名词表达强烈的厌恶。
+
+I love the summer. It's my favorite season.
+
+I love my family.
+
+Do you love me?
+
+She hates the winter. It's cold wet.
+
+Does she hate me?
+
+I really like winter. I love the snow!
+
+I love summer! It's sunny and beautiful.
+
+I dislike fall. It's cold and windy and I feel sad.
+
+I hate him! He's stupid and horrible!  
+
+### 3、选择度假地点
+
+度假活动
+
+play cards	玩牌；	play golf	打高尔夫；	read a book	读书；	go skiing	去滑雪；	surf the internet	上网；
+
+watch TV	看电视；	go to the beach	去海滩；	eat out	在餐馆等处吃饭（不在家中吃）；	go shopping	购物
+
+go swimming	go to the park	play soccer	play computer games	play basketball
+
+**should和shouldn't**
+
+使用情态动词should提出建议或忠告。使用情态动词否定式shouldn't建议某人不做某事。shouldn't是should和not的缩写形式。
+
+把should和shouldn't放在主语和主要动词之间组句。
+
+主语+should+主要动词
+
+You should go.	您应该去。
+
+We shouldn't go.	我们不应该去。
+
+要组成一般疑问句，请将should至于句首。
+
+Should we go?	我们应该去吗？
+
+要组成特殊疑问句，请先使用疑问词。
+
+What should we do this weekend?	这个周末我们应该做什么？
+
+Where should we go?	我们应该去哪里?
 
 
 
+**假期**
 
+美式英语中，vacation是指离开平日工作或教育学习的时间。英式英语中称为holiday。我们说某人on vacation或on holiday。
 
+James is on vacation in Hawaii for two weeks.	James在写唯一度假两个星期。
 
+美式英语中，holiday是一个多数人不用上班或上学，而且许多店铺关门的特殊日子，比如，元旦就是一个节日。
 
-
-
-
-
-
-
-
-
-
-
+No work or school today. It's a holiday!	今天不用上班，也不用上学，过节了！
 
 
 

@@ -56,9 +56,54 @@ MESI是“modified”，“exclusive”，“shard”，“invalid”首字母�
 
 ### 2、MESI Protocol Message
 
+在上节中描述的各种状态的迁移需要CPU之间的通信，如果所有CPU都是在一个共享的总线上的时候，下面的message就足够了：
+
+1. Read："read"消息用来获取指定物理地址上的cache line数据。
+2. Read Response：该消息携带了read消息请求的数据。read response可能来自memory，也可能来自其他的cache。例如：如果一个cache有read消息请求的数据并且该cache line的状态是modified，那么该cache必须以read response返回这个read消息，因为该cache中保存了最新的数据。
+3. Invalidate：该命令用来将其他CPU缓存中的数据设定为无效。该命令携带物理地址的参数，其他CPU缓存在收到该命令后，必须进行匹配，发现自己的cache line中有该物理地址的数据，那么就将其移出并用Invalidate Acknowledge回应。
+4. Invalidate Acknowledge：收到Invalidate消息的CPU缓存，在移出了其cache line中特定数据之后，必须发生Invalidate Acknowledge消息。
+5. Read Invalidate：该消息中也包括了物理地址这个参数，以便说明其想要读取哪一个cache line中的数据。此外，该消息还同时有Invalidate消息的功效，即其他的cache在收到该命令之后，移除自己cache line中的数据。因此Read Invalidate消息实际上就是Read + Invalidate。发送Read Invalidate之后，cache期望收到一个Read Response以及多个Invalidate Acknowledge。
+6. Writeback：该消息包含两个参数，一个是地址，另外一个是写回的数据。该消息用在modified状态的cache line被驱逐出境（给其他数据腾出地方）的时候发出，该命令用来将最新的数据写回到memory（或者其他CPU缓存中）。
+
+有意思的是基于共享内存的多核系统其底层是基于消息传递的计算机系统。这也就意味着由多个SMP机器组成的共享内存的cluster系统在两个不同的level上使用了消息传递机制，一个是SMP内部消息传递，另外一个是SMP机器之间的。
+
+### 3、MESI State Diagram
+
+根据协议消息的发生和接收情况，cache line会在“modified”，“exclusive”，“shard”和“invalid”这四个状态之间迁移，具体如下图所示：
+
+![](http://www.wowotech.net/content/uploadfile/201512/3920a2eecee145d71aa06155a3640efd20151210110953.gif)
+
+对上图中的状态迁移解释如下：
+
+Transition(a)：cache可以通过writeback事务将一个cache line的数据写回到memory中（或者下一级cache中），这时候，该cache line的状态从Modified迁移到Exclusive状态。对于CPU而言，cache line中的数据仍然是最新的，而且是该CPU独占的，因此可以不通知其他CPU缓存而直接修改。
+
+Transition(b)：在Exclusive状态下，CPU可以直接将数据写入cache line，不需要其他操作。相应的，该cache line状态从Exclusive状态迁移到Modified状态。这个状态迁移过程不涉及BUS上的事务（即无需MESI协议消息的交互）。
+
+Transition(c)：CPU在总线上收到一个Read Invalidate的请求，同时，该请求是针对一个处于Modified状态的cache line，在这种情况下，CPU必须将该cache line状态设置为无效，并且用Read Response和Invalida Acknowledge来回应收到的Read Invalidate的请求，完成整个总线事务。一个完成这个事务，数据被送往其他CPU缓存中，本地的copy已经不存在了。
+
+Transition(d)：CPU需要执行一个原子的read-modify-write操作，并且其cache中没有缓存数据，这时候，CPU就会在总线上发送一个Read Invalidate用来请求数据，同时想独自霸占对该数据的所有权。该CPU的cache可以通过Read Response获取数据并加载cache line，通过，为了确保其独占的权利，必须收集所有其他CPU发来的Invalidate Acknowledge之后（其他CPU没有本底拷贝），完成整个总线事务。
+
+Transition(e)：CPU需要执行一个原子的read-modify-write操作，并且其本地缓存中只读的缓存数据（cache line处于Shard状态），这时候，CPU就会在总线上发送一个Invalidate请求其他CPU清空自己的本地拷贝，以便完成其独自霸占对该数据的所有权的梦想。同样的，该CPU必须收集所有其他CPU发来的Invalidate Acknowledge之后，才算完成整个总线事务。
+
+Transition(f)：在本CPU独自享受独占数据的时候，其他CPU发生Read请求，希望获取数据，这时候，本CPU必须以其本地cache line的数据回应，并以Read Reponse回应之前总线上的Read请求。这时候，本CPU失去了独占权，该cache line状态从Modified状态变成Shard状态（有可能也会进行写回的动作——写回到主内存）。
+
+Transition(g)：这个迁移和f类似，只不过开始cache line的状态是Exclusive，cache line和memory的数据都是最新的，不存在写回的问题。总线上的操作也是在收到Read请求之后，以Read Response回应。
+
+Transition(h)：如果CPU认为自己很快就会启动对处于Shard状态的caceh line的write操作，因此想提前霸占上改数据。因此，该CPU会发送Invalidate敦促其他CPU清空自己的本地拷贝，当收到全部其他CPU的Invalida Acknowledge之后，事务完成，本CPU上对应的cache line从Shard状态切换为Exclusive状态。还有另外一种方法也可以完成这个状态的切换：当所有其他的CPU对其本地拷贝的cache line进行写回操作，通过将cache line中的数据设为无效（主要是为了为新的数据腾些地方），这时候，本CPU坐享其成，直接获得了对该数据的独占权。
+
+Transition(i)：其他的CPU进行一个原子的read-modify-write操作，但是，数据在本CPU的cache line中，因此，其他的那个CPU会发生Read Invalidate，请求该数据以及独占权。本CPU回送Read Reponse和Invalidate Acknowledge，一方面把数据转移到其他CPU的cache中，另一方面，清空自己的cache line。
+
+Transition(j)：CPU想要进行write操作，但是数据不再本地缓存中，因此，该CPU首先发送Read Invalidate启动一次总线事务。在收到Read Response回应拿到数据，并收集到所有其他CPU发来的Invalida Acknowledge之后（确保其他CPU），完成整个总线事务，这时候的状态已经是Exclusive状态了。当write操作完成之后，该cache line的状态会从Exclusive状态迁移到Modified状态。
+
+Transition(k)：本CPU执行读操作，发现本地缓存中没有数据，因此通过Read发生一次总线事务，来自其他的CPU本地缓存或者memory会通过Read Response回应，从而将该cache line从Invalid状态迁移到Shard状态。
+
+Transition(l)：当cache line处于Shard状态的时候，说明在多个CPU的本地缓存中存在副本，因此，这些cache line中的数据都是只读的，一旦其他一个CPU想要执行数据写入的动作，必须先通过Invalidate获取该数据的独占权，而其他CPU会以Invalidate Acknowledge回应，清空数据并将其cache line从shard状态修改成Invalid状态。
+
+### 4、MESI Protocol Example
 
 
 
+## 四、Stores Result in Unnecessary Stalls
 
 
 

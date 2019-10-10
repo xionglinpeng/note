@@ -98,19 +98,70 @@ v. 再次使用；重复使用
 n. 再次使用；重复使用
 ```
 
+state
 
+```
+n. 国家；州；情形
+vt. 规定；声明；陈述
+adj. 国家的；州的；正式的
+n. (State)人名；(罗、瑞典)斯塔特；(英)斯泰特
+过去式 stated过去分词 stated现在分词 stating复数 states第三人称单数 states
+```
 
+license
 
+```
+n. 执照，许可证；特许
+vt. 许可；特许；发许可证给
+过去式 licensed过去分词 licensed现在分词 licensing复数 licenses第三人称单数 licenses
+```
 
+diagram
 
+```
+n. 图表；图解
+vt. 用图解法表示
+过去式 diagramed或diagrammed过去分词 diagramed或diagrammed现在分词 diagraming或diagramming复数 diagrams第三人称单数 diagrams
+```
 
+transaction
 
+```
+n. 交易；事务；办理；会报，学报
+```
 
+acknowledge
 
+```
+vt. 承认；答谢；报偿；告知已收到
+过去式 acknowledged过去分词 acknowledged现在分词 acknowledging第三人称单数 acknowledges
+```
 
+cyclic
 
+```
+adj. 环的；循环的；周期的
+```
 
+scheduled
 
+```
+adj. 预定的；已排程的
+v. 安排（schedule的过去分词）；把…列表；把…列入计划
+```
+
+actuator
+
+```
+n. [自] 执行机构；激励者；促动器
+```
+
+because
+
+```
+conj. 因为，由于
+prep. 因为某人（某事物）
+```
 
 
 

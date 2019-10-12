@@ -451,6 +451,67 @@ James is on vacation in Hawaii for two weeks.	James在写唯一度假两个星�
 
 No work or school today. It's a holiday!	今天不用上班，也不用上学，过节了！
 
+### 4、提出活动建议
+
+**提出建议和应答**
+
+***提出建议***
+
+这里有一些提出建议的方法
+
+*should + 动词*
+
+You should go skiing. There's a lot of new snow.	您应该去滑雪。刚下了一场大雪。
+
+It's raining. We should play cards.	下雨了。我们应该玩玩牌。
+
+*Let's + 动词*
+
+Let's eat out. I want Japanese food.	我们去外面吃吧。我想吃日本菜。
+
+It's a beautiful day. Let's play golf.	天气很好。我们打高尔夫吧。
+
+*How about ...?......如何？*
+
+How about a game of cards?	玩一局牌怎么样？
+
+The weather's terrible.	How about a movie?	天气不好。看电影怎么样？
+
+*What about + 名词？*
+
+I‘m hot. What about a swim?	我好热。去游泳怎么样？
+
+What about a pizza?	I know a great Italian restanrant.	吃比萨怎么样？我知道一家不错的意大利餐厅。
+
+***应答建议***
+
+这里有一些应答建议的方法。
+
+*肯定：*
+
+- That's a great idea!	这注意真棒！
+- That's a good idea.	好主意。
+- Cool!	棒极了
+- OK，let's go!	好的，走吧！
+
+例：
+
+A：How about a movie?	看电影怎么样？
+
+B：That's a good idea!	这主意真棒！
+
+*否定：*
+
+- I don't think so.	我不怎么想。
+- That's a bad idea.	这主意不好。
+- No, thanks.	不了，谢谢。
+- Thanks, but I'm busy.	谢谢，我很忙。
+
+例：
+
+A：We should go out to eat!	我们应该出去吃饭！
+
+B：No, thanks. I'm not hungry.	不了，谢谢。我不饿。
 
 
 
@@ -458,6 +519,9 @@ No work or school today. It's a holiday!	今天不用上班，也不用上学，
 
 
 
+小班面授辅导、在线私人会话课、
+
+小组会话课、研讨练习辅导、生活俱乐部、破冰课
 
 
 

@@ -101,7 +101,11 @@ Transition(l)：当cache line处于Shard状态的时候，说明在多个CPU的�
 
 ### 4、MESI Protocol Example
 
+OK，在理解了各种cache line状态，各种MESI协议消息以及状态迁移的描述之后，我们从cache line数据的角度来看看MESI协议是如何运作的。开始，数据保存在memory的0地址中，随后，该数据会穿行在四个CPU的本地缓存中。为了方便起见，我们让CPU本地缓存使用使用最简单的直接映射（Direct-mapped）的组织形式。具体的过程可以参考下面的图片：
 
+![](http://www.wowotech.net/content/uploadfile/201512/76c88817a500ce79866c31354f00959420151210111005.gif)
+
+第一列
 
 ## 四、Stores Result in Unnecessary Stalls
 

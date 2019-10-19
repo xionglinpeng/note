@@ -101,17 +101,205 @@ Transition(l)：当cache line处于Shard状态的时候，说明在多个CPU的�
 
 ### 4、MESI Protocol Example
 
+OK，在理解了各种cache line状态，各种MESI协议消息以及状态迁移的描述之后，我们从cache line数据的角度来看看MESI协议是如何运作的。开始，数据保存在memory的0地址中，随后，该数据会穿行在四个CPU的本地缓存中。为了方便起见，我们让CPU本地缓存使用使用最简单的直接映射（Direct-mapped）的组织形式。具体的过程可以参考下面的图片：
 
+![](http://www.wowotech.net/content/uploadfile/201512/76c88817a500ce79866c31354f00959420151210111005.gif)
+
+第一列是操作序列号，第二列是执行操作的CPU，第三列是具体执行哪一种操作，第四列描述了各个CPU本地缓存中的cache line状态（用memory address/状态表示），最后一列描述了内存在0地址和8地址的的数据内容的状态：V表示最新的，和缓存一致，I表示不是最新的内容，最新的内容保存在cache中。
+
+sequence 0：最开始的时候（sequence 0），各个CPU缓存中的cache line都是Invalid状态，而Memory中的数据都保存了最新的数据。随后（sequence 1），CPU 0执行了load操作，将address 0的数据加载到寄存器，这个操作使得保存在0地址的数据的那个cache line从Invalid状态迁移到shard状态。
+
+sequence 2：随后（sequence 2），CPU 3也对address 0执行了load操作，导致其本地缓存上对应的cache line也切换到了shard状态。当然，这时候，memory仍然是最新的。
+
+sequence 3：在sequence 3中，CPU 0执行了对address 8的load操作，由于address 0和address 8都是选择同一个cache set，而且，我们之前已经说过，该cache是直接映射（direct-mapped）的（即每个set都只有一个cache line），因此需要首先清空该cache line中的数据（该操作被称为Invalidation），由于cache line的状态是shard，因此不需要通知其他CPU。Invalidation本地缓存上的cache line之后，CPU 0的load操作将该cache line状态修改为shard状态（保存address 8的数据）。
+
+sequence 4：CPU 2也开始执行load操作了（sequence 4），虽然是load操作，但是CPU知道程序随后会修改该值（不是原子操作read-modify-write，否则就是迁移到Modified状态了，也不是单纯的load操作，否则会迁移到Shard状态），因此向BUS发送可Read Invalidate命令，一方面获取该数据（自己的本地缓存中没有address 0的数据），另外，CPU 2向要独占该数据（因为随后要write）。这个操作导致CPU 3的cache line状态迁移到Invalid。当然，这时候，memory仍然是最新的有效数据。
+
+sequence 5：CPU 2的Store操作很快到来（sequence 5），由于准备工作做的比较充分（Exclusive状态，独占该数据），CPU直接修改cache line中的数据（对应address 0），从而将其状态迁移到Modified状态，同时要注意的是：memory中的数据已经失效，不是最新的数据了，任何其他CPU发起对address 0的load操作都不能从memory中读取，而是通过嗅探（snoop）的方式从CPU 2的本地缓存中获取。
+
+sequence 6：在sequence 6中，CPU 1对address 0的数据执行原子的加1操作，这时候CPU 1会发出Read Invalidate命令，将address 0的数据从CPU 2的缓存 line中嗅探得到，同时通过Invalidate其他CPU本地缓存的内容而获得独占的数据访问权。这时候CPU 2中的cahce line状态变成Invalid状态，而CPU 1将从Invalid状态迁移到Modified状态。
+
+sequence 7：最后（sequence 7），CPU 1对address 8进行load操作，由于cache line被address 0占据，因此需要首先将其驱逐出cache，于是执行write back操作将address 0的数据写回到memory，同时发送Read命令，从CPU 0的缓存中获得数据加载其cache line，最后CPU 1的缓存变成了Shard状态（保存address 8的数据）。由于执行了write back操作，memory的address 0的数据又变成最新的有效数据了。
 
 ## 四、Stores Result in Unnecessary Stalls
 
+在上面的现代计算机cache结构图，我们可以看出，针对某些特定地址的数据（在一个cache line中）重复的进行读写，这种结构可以获得很好的性能，不过，对于第一次写，其性能非常差。下面的这个图可以展示为何写性能差：
+
+![](http://www.wowotech.net/content/uploadfile/201512/97abe4d93e6f06397ac1ccd459ca75e920151210111037.gif)
+
+CPU 0发起一次对某个地址的写操作，但是本地缓存没有数据，该数据在CPU 1的本地缓存中，因此，为了完成写操作，CPU 0发出Invalidate命令，Invalidate其他CPU的缓存数据。只有完成了这些总线上的事务之后，CPU 0才能真正发起写的操作，这是一个漫长的等待过程。
+
+但是，其实没必要等待这么长的时间，毕竟，物理CPU 1中的cache line保存有什么样子的数据，其实都没有意义，这个值都会被CPU 0新写入的值覆盖。
+
+### 1、Store Buffers
+
+有一种可以阻止CPU进入无聊等待状态的方法就是在CPU和缓存之间增加store buffer这个HW block，如下图所示：
+
+![](http://www.wowotech.net/content/uploadfile/201512/ba5899824fccba75e192a435fc0e34bf20151210111047.gif)
+
+一旦增加了store buffer，那么CPU 0就无需等待其他CPU的响应操作，只需要将要修改的内容放入store buffer中，然后继续执行就OK了。当cache line完成了总线事务，并更新了cache line的状态后，要修改的数据将从store buffer进入cache line。
+
+这些store buffer对于CPU而言是本地的，如果系统是硬件多线程，那么每一个CPU核心拥有自己私有的store buffer，一个CPU只能访问自己私有的那个store buffer。在上图中，CPU 0不能访问CPU 1的store buffer，反之亦然。之所以做这样的限制是为了模块划分（各个CPU核心模块关心自己的事情，让缓存系统维护自己的操作），让硬件设计变得简单一些。store buffer增加了CPU连续写的性能，同时把各个CPU之间的通信的任务交给维护缓存一致性的协议。即便给每个CPU分配私有的store buffer，仍然引入了一下复杂性，我们将会在下面的两个小节中描述。
+
+### 2、Store Forwarding
+
+上文提到store buffer引入了复杂性，我们先看第一个例子：本地数据不一致的问题。我们先看看下面的代码：
+
+```java
+a = 1;
+b = a + 1;
+assert b == 2;
+```
+
+a和b都是初始化为0，并且变量a在CPU 1的cache line中，变量b在CPU 0的cache line中。
+
+如果CPU执行上述代码，那么第三行的assert不应该失败，不过，如果CPU设计者使用上图中的那个非常简单的store buffer结果，那么你应该会遇到“惊喜”（assert失败了）。具体执行的过程是这样的：
+
+1. CPU 0执行a = 1的赋值操作。
+2. CPU 0遇到cache miss。
+3. CPU 0发送Read Invalidate消息以便从CPU 1那里获得数据，并Invalid其他CPU保存的本地cache line。
+4. CPU 0把要写入的数据“1”放入store buffer。
+5. CPU 1收到Read Invalidate后回应，把本地cache line的数据发送给CPU 0并清空本地缓存中a的数据。
+6. CPU 0执行b = a + 1。
+7. CPU 0收到来自CPU 1的数据，该数据是“0”。
+8. CPU 0从cache line中加载a，获得0值。
+9. CPU 0将store buffer中的值写入cache line，这时候缓存中a的值是“1”。
+10. CPU 0已经在第6步执行了b = a + 1，而当时a还是0，即b的值为实际为1，并已经存储到了cache line中。
+11. `assert b == 2;`执行失败。
+
+导致这个问题的根本原因是我们有两个a值，一个在cache line中，一个在store buffer中。
+
+上面这个出错的例子之所以发生是因为它违背了一个基本的原则，即每个CPU按照其视角来观察自己的行为的时候必须是符合程序顺序的。一旦违背这个原则，会导致一些非常不直观的软件行为，对软件工程师而言就是灾难。还好，有“好心”的硬件工程师帮助我们，修改了CPU的设计如下：
+
+![](http://www.wowotech.net/content/uploadfile/201512/d50fa77d45ffd0d7e634799c7c74269a20151210111059.gif)
+
+这种设计叫做store forwarding，**当CPU执行load操作的时候，不但要看缓存，还要看store buffer中是否有内容，如果store buffer有该数据，那么久采用store buffer中的值**。因此即便Store操作还没有写入cahce line，store forwarding的效果看起来就好像CPU的Store操作被向前传递了一样（后面的load的指令可以感知到这个Store操作）。
+
+有了store forwarding的设计，上面的步骤（8）中就可以在store buffer获取正确的a值是“1”而不是“0”，因此计算得到的b的结果就是2，和我们预期的一致了。
+
+### 3、Store buffers and Memory Barriers
+
+关于store buffer引入的复杂性，我们再来看看第二个例子：
+
+```java
+public void foo(){
+    a = 1;
+    b = 1;
+}
+public void bar(){
+    while(b == 0) {
+        continue;
+    }
+    assert a == 1;
+}
+```
+
+同样的，a和b都是初始化成0。
+
+我们假设CPU 0执行foo函数，CPU 1执行bar函数。我们在进一步假设a变量在CPU 1的缓存中，b在CPU 0的缓存中，执行的额操作序列如下：
+
+1. CPU 0执行a=1的赋值操作，由于a不在本地缓存中，因此，CPU 0将a值放到store buffer中之后，发送了Read Invalidate命令到总线上去。
+2. CPU 1执行` while(b == 0)`循环，由于b不再CPU 1的缓存中，因此，CPU发送一个Read消息到总线上，看看是否可以从其他CPU的本地缓存中或者memory中获取数据。
+3. CPU 0继续执行b==1的赋值语句，由于b就在自己的本地缓存中（cache line处于modified状态或者exclusive状态），因此CPU 0可以直接操作将新的值1写入cache line。
+4. CPU 0收到了Read消息，将最新的b值“1”回送给CPU 1，同时将b所在缓存行的状态迁移为Shard。
+5. CPU 1收到了来自CPU 0的Read Response消息，将变量b的最新值“1”写入自己的cache line，并修改状态为Shard。
+6. 由于b值等于1了，因此CPU 1跳出while循环，继续前行。
+7. CPU 1执行`assert a == 1;`，这时候CPU 1的本地缓存中还是旧的a值，因此断言失败。
+8. CPU 1收到了来自CPU 0的Read Invalidate消息，以a变量的值进行回应，同时清空自己的cache line，但是这时已经太晚了。
+9. CPU 0收到了Read Response和Invalidate Acknowledge的消息之后，将store buffer中a的最新值“1”数据写入cache line，然并卵，CPU 1已经断言失败了。
+
+遇到这样的问题，CPU设计者也不能直接帮什么忙，毕竟CPU并不知道那些变量有相关性，这些变量是如何相关的。不过CPU设计者可以间接提供一些工具让软件工程师来控制这些相关性。这些工具就是memory barrier指令，要想程序正常运行，必须增加一些memory barrier的操作，具体如下：
+
+```java
+public void foo(){
+    a = 1;
+    smp_mb();
+    b = 1;
+}
+public void bar(){
+    while(b == 0) {
+        continue;
+    }
+    assert a == 1;
+}
+```
+
+`smp_mb()`这个内存屏障的操作会在执行后续的store操作之前，首先flush store buffer（也就是将之前的值写入到cache line中）。`smp_mb()`操作主要是为了让数据在本地缓存中的操作顺序是符合程序顺序的，为了达到这个目标有两种方法：方法一就是让CPU stall，直到完成了清空了store buffer（也就是把store buffer中的数据写入cache line了）。方法二是让CPU可以继续运行，不过需要在store buffer中做些文章，也就是要记录store buffer中数据的顺序，在将store buffer中的数据更新到cache line的操作中，即便是后来的store buffer数据对应的cache line已经读取，也不能执行操作，要等前面的store buffer值写到cache line之后才操作。
+
+增加`smp_mb()`之后的操作顺序如下：
+
+1. CPU 0执行a=1的赋值操作，由于a不在本地缓存中，因此，CPU 0将a值放到store buffer中之后，发送了Read Invalidate命令到总线上去。
+2. CPU 1将执行`while(b == 0)`循环，但是，由于b不在CPU 1的缓存中，因此CPU发送一个Read消息到总线上，看看是否可以从其他CPU的本地缓存中或者memory中获取数据。
+3. CPU 0执行`smp_mb()`函数，给目前store buffer中的**所有项**做一个标记（后面我们称之为`marked entries`）。当然，针对我们这个例子，store buffer中只有一个marked entry，那就是“a=1”。
+4. CPU 0继续执行b=1的赋值语句，虽然b就在自己的本地缓存中（cache line处于Modified状态或者Exclusive状态），不过在store buffer中有marked entry，因此CPU 0并没有直接操作将新的值写入cache line，取而代之的是b的新值“1”被写入store buffer，当然是unmarked状态。
+5. CPU 0收到了Read消息，将b值“0”（新值“1”还是store buffer中）回送给CPU 1，同时将b的cache line的状态设定为Shard。
+6. CPU 1收到了来自CPU 0的Read Response消息，将b变量的值（“0”）写入自己的cache line，状态修改为Shard。
+7. 完成了bus事务之后，CPU 1可以load b到寄存器中了（本地cache line中已经有b值了），当然，这时候b仍然等于0，因此循环不断的loop。虽然b值在CPU 0上已经赋值等于1，但是那个新值被安全的隐藏在CPU 0的storebuffer中。
+8. CPU 1收到了来自CPU 0的Read Invalidate消息，以a变量的值进行回应，同时清空自己的cache line。
+9. CPU 0将store buffer中的a值写入cache line，并且将caceh line状态修改为Modified状态。
+10. 由于store buffer只有一项marked entry（对应a=1）,因此完成step 9之后，store buffer的b也可以进入cache line了。不过需要注意的是，当前b对应的cache line的状态是Shard。
+11. CPU 0发送Invalidate消息，请求b数据的独占权。
+12. CPU 1收到Invalidate消息，清空自己的b cache line，并回送Acknowledge给CPU 0。
+13. CPU 1继续执行`while(b == 0)`循环，由于b不再自己的本地缓存中，因此CPU 1发送Read消息，请求获取b的数据。
+14. CPU 0收到Acknowledge消息，将b对应的cache line修改成Exclusive状态，这时候，CPU 0终于可以将b的新值写入cache line。
+15. CPU 0收到Read消息，将b的新值1回送给CPU 1，同时将其本地缓存中b对应的cache line状态修改为Shard。
+16. CPU 1获取来自CPU 0的b的新值，将其放入cache line中。
+17. 由于b值等于1了，因此CPU 1跳出while循环，继续前行。
+18. CPU 1执行`assert a == 1`，不过这时候a值没有在自己的cache line中，因此需要通过缓存一致性协议从CPU 0那里获得，这时候获取的a是最新值，也就是1，因此断言成功。
+
+通过上面的描述，我们可以看到，一个直观上很简单的给a变量赋值的操作，都需要那么长的执行过程，而且每一步都需要芯片参与，最终完成整个复杂的操作过程。
+
+## 五、Store Sequence Result in Unnecessary Stalls
+
+不幸的是：每个CPU的store buffer不能实现的太大，其entry的数据不会太多。当CPU以中等的频率执行store操作的时候（假设所有的store操作导致了cache miss），store buffer会很快的被填满。在这种情况下，CPU只能又进入等待状态，直到caceh line完成Invalidate和Acknowledge的交互之后，可以将store buffer的entry写入cache line，从而为新的store让出空间之后，CPU才可以继续执行。这种情况可能发生在调用了memory barrier指令之后，因此一旦store buffer中的某个entry被标记了，那么随后的store都必须等待这个Invalidate完成，因此不管是否cache miss，这些store都必须进入store buffer。
+
+引入invalidate queues可以缓解这个状况。store buffer之所以很容易被填充满，只要是其他CPU回应Invalidate Acknowledge比较慢，如果能够加快这个过程，让store buffer尽快进入cache line，那么也就不会那么容易被填满了。
+
+### 1、Invalidate Queues
+
+Invalidate Acknowledge不能尽快回复的主要原因是Invalidate cache line的操作没有那么快完成，特别是cache比较繁忙的时候，这时，CPU往往进行密集的loading和Storing的操作，而来自其他CPU的，对本CPU本地cache line的操作需要和本CPU的密集的缓存操作进行竞争，只要完了Invalidate操作之后，本CPU才会发生Invalidate Acknowledge。此外，如果短时间内收到大量的Invalidate消息，CPU有可能跟不上处理，从而导致其他CPU不断的等待。
+
+然而，CPU其实不需要完成Invalidate操作就可以回送acknowledge消息，这样，就不会阻止发送Invalidate请求的那个CPU进入无聊的等待状态。CPU可以buffer这些Invalidate消息（放入Invalidate Queues），然后直接回应Acknowledge，表示自己已经收到请求，随后会慢慢处理。当然，再慢也要有一个度，例如对a变量cache line的Invalidate处理必须在该CPU发送任何关于a变量对应的cache line的操作到bus之前完成。
+
+Invalidate Queue的系统结构图如下图所示：
+
+![](http://www.wowotech.net/content/uploadfile/201512/05c956319c3290854e449a73e711a4b220151211113132.gif)
+
+### 2、Invalidate Queues and Invalidate Acknowledge
+
+有了Invalidate Queue的CPU，在收到Invalidate消息的时候首先把它放入Invalidate Queue，同时立刻回送Acknowledge消息，无需等到该cache line被真正的Invalidate之后再回应。当然，如果本CPU想要针对某个cache line向总线发送Invalidate消息的时候，那么CPU必须首先去Invalidate Queue中看看是否有相关的cache line，如果有，那么不能立刻发送，需要等到Invalidate Queue中的cache line被处理完之后再发送。
+
+一旦将一个Invalidate（例如针对变量a的cache line）消息放入CPU的Invalidate Queue，实际上该CPU就等于作出这样的承诺：在处理完该Invalidate消息之前，不会发送任何相关（即针对变量a的cahce line）的MESI协议消息。只要是对该cache line的竞争不是那么激烈，CPU还是对这样的承诺很有信心的。
+
+然而，缓存了Invalidate消息也会引入其他的memory顺序问题，将在下一节讨论。
+
+### 3、Invalidate Queues and Memory Barriers
+
+我们假设CPU缓存Invalidate消息，在操作cache line之前直接回应Invalidate消息。这样的机制对于发送Invalidate的CPU侧是非常好的事，该CPU的store性能会非常高，但是会是内存屏障指令失效，我们来看看下面的例子：
+
+```java
+public void foo(){
+    a = 1;
+    smp_mb();
+    b = 1;
+}
+public void bar(){
+    while(b == 0) {
+        continue;
+    }
+    assert a == 1;
+}
+```
+
+在上面的代码片段中，我们假设a和b初始值都是0，并且a在CPU 0和CPU 1都有缓存副本，即a变量对应的CPU 0和CPU 1的cache line状态都是Shard状态。b处于Exclusive或者Modified状态，被CPU 0独占。我们假设CPU 0执行foo函数，CPU 1执行bar函数。
+
+具体操作如下：
 
 
 
 
 
-
-
+## 六、Read and Weite Memory Barriers
 
 
 

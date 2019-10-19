@@ -1,0 +1,96 @@
+## Fork/Join框架
+
+“分而治之”一直是一个非常有效地处理大量数据的方法。著名的MapReduce也是采取了分而治之的思想。简单来说，就是如果你要处理1000个数据，但是你并不具备处理100个数据的能力，那么你可以只处理其中的10个，然后，分阶段处理100次，将100次的结果进行合成，那就是最终想要的对原始100个数据的处理结果。
+
+Fork一词的原始含义是吃饭用的叉子，也有分叉的意思。在Linux平台中，函数fork()用来创建子进程，使得系统进程可以多一个执行分支。在Java中也沿用了类似的命名方式。
+
+而join()的含义很Thread的join()含义是相同的，表示等待。也就是使用fork()后系统多了一个执行分支（线程），所以需要等待这个执行分支执行完毕，才有可能得到最终的结果，因此join()就表示等待。
+
+在实际使用中，如果毫无顾忌地使用fork()开启线程进行处理，那么很有可能导致系统开启过多的线程而验证影响性能。所以，Java提供了一个Fork/Join框架，Fork/Join框架是Java7提供的一个用于并行执行任务的框架，是一个把大任务分割成若干个小人物，最终汇总每个小任务的结果后而得到大任务结果的框架。
+
+Fork/Join给出了一个ForkJoinPool线程池，对于fork()方法并不急着开启线程，而是提交给ForkJoinPool线程池进行处理，以节省系统资源。使用Fork/Join进行数据处理时的总体结果图如下所示：
+
+![]()
+
+由于线程池的优化，提交的任务和线程数量并不是一对一的关系。在绝大多数情况下，一个无物理线程实际上是需要处理多个逻辑任务的。因此，每个线程必然需要拥有一个任务队列。因此，在实际执行过程中，可能遇到这么一种情况：线程A已经把自己的任务都执行完了，而线程B还有一堆任务等待处理，此时，线程A就会“帮助”线程B，从线程B的任务队列中拿一个任务过来处理，尽可能地达到平衡。如下图所示：
+
+![]()
+
+注意，当线程试图帮助别人时，总是从任务队列的底部开始拿数据，而线程试图执行自己的任务时，而是从顶部开始拿。因此这种行为十分有利于避免数据竞争。
+
+Fork/Join框架提供了`ForkJoinPool`线程池，通过`submit()`提交任务，而任务的类型是`ForkJoinTask<T>`，任务是有有返回值和无返回值这两种情况，针对这两种情况，Fork/Join提供了两个任务类，它们都是`ForkJoinTask<T>`子类，如下：
+
+1. `public abstract class RecursiveTask<V> extends ForkJoinTask<V>` - 有返回值
+2. `public abstract class RecursiveAction extends ForkJoinTask<Void>` - 无返回值
+
+下面是一个Fork/Join框架的使用案例：
+
+计算1 - 10000000000的总和（为了测试与但单线程的性能对比，所以将数量级设置为100亿）。定义个CountTask任务，它继承了`RecursiveTask`，阀值为1000000，即每阶段任务的数字个数小于1000000时，不再开启子任务，直接进行求和计算，如果大于1000000，则拆分为10个子任务进行计算。
+
+```java
+public class CountTask extends RecursiveTask<Long> {
+
+    private static final long THRESHOLD = 1000000;
+
+    private long start,end;
+
+    public CountTask(long start, long end) {
+        this.start = start;
+        this.end = end;
+    }
+
+    @Override
+    protected Long compute() {
+        long sum = 0;
+        if (end - start <= THRESHOLD) {
+            for (long i = start; i <= end; i++) {
+                sum += i;
+            }
+        } else {
+            List<CountTask> tasks = new ArrayList<>(10);
+            //分成10个小任务
+            long step = (end - start + 1)/10;
+            for (int i = 0; i < 10; i++) {
+                long last = start + step;
+                if (last > end) last = end;
+                CountTask task = new CountTask(start, last);
+                tasks.add(task);
+                task.fork();
+                start += step + 1;
+            }
+            sum = tasks.stream().mapToLong(CountTask::join).sum();
+        }
+        return sum;
+    }
+}
+```
+
+定义main方法，定义`ForkJoinPool`，并向其提交任务，同时，测试并对比单线程时的性能差异。
+
+```java
+public static void main(String[] args) throws Exception {
+    ForkJoinPool forkJoinPool = new ForkJoinPool();
+    long l = System.currentTimeMillis();
+    ForkJoinTask<Long> result = 
+        forkJoinPool.submit(new CountTask(1, 10000000000L));
+    System.out.printf(
+        "结果：%d,消耗时间%dms\n",result.get(),System.currentTimeMillis() - l);
+
+    //测试单线程性能
+    long l1 = System.currentTimeMillis();
+    long n = 0;
+    for (long i = 1; i <= 10000000000L; i++) {
+        n += i;
+    }
+    System.out.printf("结果：%d,消耗时间%dms\n",n,System.currentTimeMillis() - l1);
+}
+```
+
+输出结果如下：
+
+```
+Fork/Join - 结果：-5340232216128654848,消耗时间2070ms
+Singlten Thread - 结果：-5340232216128654848,消耗时间6371ms
+```
+
+从输出结果可以看出，在求和计算数量级达到100亿时，Fork/Join的性能明显优于单线程的情况。

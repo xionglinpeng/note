@@ -515,6 +515,62 @@ B：No, thanks. I'm not hungry.	不了，谢谢。我不饿。
 
 
 
+## 单元三、运动或活动
+
+
+
+### 1、谈论运动和活动
+
+ice skating	滑冰
+
+karate	空手道
+
+soccer	足球
+
+ice hockey	冰球
+
+baseball	棒球
+
+volleyball	排球
+
+badminton	羽毛球
+
+yoga	瑜伽
+
+surfing	冲浪
+
+table tennis	乒乓球
+
+**动词和名词**
+
+在动词like、love、hate and engoy之后，您可以使用动名词。动名词是verb + ing，作用相当于名词。看看一下动名词的例子。
+
+I like playing basketball.	我喜欢打篮球。
+
+I don't like swimming.	我不喜欢游泳。
+
+She loves going to the beach.	她喜欢去海边。
+
+He hates doing yoga.	他讨厌做瑜伽。
+
+They enjoy playing soccer.	他们喜欢踢足球。
+
+I like watching tennis.	我喜欢看网球。
+
+文化点：世界多数国家称为football的运动，美国人称为soccer。在北美洲拥有自己的football运动，与足球大不相同。
+
+
+
+### 2、询问人们参加的运动
+
+
+
+### 3、谈论您的周末活动
+
+
+
+### 4、谈论您所在国家的活动
+
 
 
 

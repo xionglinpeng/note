@@ -625,15 +625,71 @@ Where is my guitar?	我的吉他在哪里？
 
 ### 3、谈论您的周末活动
 
+**'play'、'do'和'go'引导的活动**
 
+使用play、do和go谈论运动和活动。使用play搭配多数运动和游戏。
 
+Can you play tennis?	您会打网球吗？
 
+He plays chess on the weekend.	他周末下国际象棋。
 
+She doesn't like playing basketball.	她不喜欢打篮球。
 
+有些活动使用动词do。没有具体的规则——您只需熟记它们。这里有一些例子：
 
+He does karate after school.	他放学后练习空手道。
 
+Can you do kung  fu?	你会功夫吗？
 
+Doing yoga is good exercise.	做瑜伽是一种很好的锻炼。
 
+使用go搭配以-ing结尾的名词。
+
+Let's go swimming!	我们去游泳吧！
+
+He goes runing every moring.	他每天在上跑步。
+
+Going hiking is readlly good exercise.	远足是一种非常好的锻炼。
+
+**动名词做主语**
+
+She loves swimming.	它爱游泳。
+
+I like cooking for my family.	我喜欢为我的家人做饭。
+
+He enjoys playing soccer.	他喜欢踢足球。
+
+与其他名词一样，动名词也可作句子主语。
+
+Swimming is her favorite activity.	游泳是它最爱的活动。
+
+Cooking for my family is a lot of fun.	为我们家人做饭充满趣味。
+
+Playing soccer is good exercise.	踢足球是一种很好的锻炼。
+
+书写动名词时，请牢记一下拼写规则：
+
+如果动词以元音加辅音结尾，双写辅音再加-ing。
+
+动词				动名词
+
+swim				swimming
+
+run				running
+
+如果动词以-e结尾，去掉-e再加-ing
+
+动词				动名词
+
+live				living
+
+give				giving
+
+动词ski是例外。它的动名词形式双写i。
+
+动词				动名词
+
+ski				skiing
 
 ### 4、谈论您所在国家的活动
 

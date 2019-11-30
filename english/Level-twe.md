@@ -515,6 +515,208 @@ B：No, thanks. I'm not hungry.	不了，谢谢。我不饿。
 
 
 
+## 单元三、运动或活动
+
+
+
+### 1、谈论运动和活动
+
+ice skating	滑冰
+
+karate	空手道
+
+soccer	足球
+
+ice hockey	冰球
+
+baseball	棒球
+
+volleyball	排球
+
+badminton	羽毛球
+
+yoga	瑜伽
+
+surfing	冲浪
+
+table tennis	乒乓球
+
+**动词和名词**
+
+在动词like、love、hate and engoy之后，您可以使用动名词。动名词是verb + ing，作用相当于名词。看看一下动名词的例子。
+
+I like playing basketball.	我喜欢打篮球。
+
+I don't like swimming.	我不喜欢游泳。
+
+She loves going to the beach.	她喜欢去海边。
+
+He hates doing yoga.	他讨厌做瑜伽。
+
+They enjoy playing soccer.	他们喜欢踢足球。
+
+I like watching tennis.	我喜欢看网球。
+
+文化点：世界多数国家称为football的运动，美国人称为soccer。在北美洲拥有自己的football运动，与足球大不相同。
+
+
+
+### 2、询问人们参加的运动
+
+**用Can表达能力**
+
+用Can表达能力。注意后面接动词原形。
+
+I can swim.	我会游泳。
+
+She can skate.	她会滑冰。
+
+Can有两种否定形式：can't和cannot，意思相同，但我们讲话时通常会说can't。
+
+He can't surf.	他不会冲浪。
+
+I cannot cook.	我不会做饭。
+
+要组成疑问句，把can和主要动词的主语调换。
+
+Can you ski?	您会滑雪吗？
+
+Can she play chess?	她会下国际象棋吗？
+
+用can提问的问句的简短回答：
+
+Yes, I can.	是的，我会。
+
+No, she can't.	不，它不会。
+
+**语调**
+
+Intonation是用于传达意义或情感的声音音调。升调是声音在句尾升高，降调是声音在句尾下降或减小。
+
+称述句句尾为降调。
+
+He can skate and play ice hockey.	它会滑冰，而且会打冰上曲棍球。
+
+She can't play the guitar.	她不会谈吉他。
+
+一般与问句句尾通常为升调。
+
+Can you swim?	您会游泳吗？
+
+Do you like playing soccer?	您喜欢踢足球吗？
+
+升调把陈述句编程一般疑问句。
+
+He can do yoga?	他会做瑜伽吗？
+
+You like playing chess?	您喜欢下国际象棋吗？
+
+升调也可以表示惊讶？
+
+You can't swim?	您不会游泳吗？
+
+He doesn't like football?	它不喜欢足球吗？
+
+以what、where、when和how开始的疑问句通常句尾为降调。
+
+What sports do you like?	您喜欢什么运动？
+
+Where is my guitar?	我的吉他在哪里？
+
+### 3、谈论您的周末活动
+
+**'play'、'do'和'go'引导的活动**
+
+使用play、do和go谈论运动和活动。使用play搭配多数运动和游戏。
+
+Can you play tennis?	您会打网球吗？
+
+He plays chess on the weekend.	他周末下国际象棋。
+
+She doesn't like playing basketball.	她不喜欢打篮球。
+
+有些活动使用动词do。没有具体的规则——您只需熟记它们。这里有一些例子：
+
+He does karate after school.	他放学后练习空手道。
+
+Can you do kung  fu?	你会功夫吗？
+
+Doing yoga is good exercise.	做瑜伽是一种很好的锻炼。
+
+使用go搭配以-ing结尾的名词。
+
+Let's go swimming!	我们去游泳吧！
+
+He goes runing every moring.	他每天在上跑步。
+
+Going hiking is readlly good exercise.	远足是一种非常好的锻炼。
+
+**动名词做主语**
+
+She loves swimming.	它爱游泳。
+
+I like cooking for my family.	我喜欢为我的家人做饭。
+
+He enjoys playing soccer.	他喜欢踢足球。
+
+与其他名词一样，动名词也可作句子主语。
+
+Swimming is her favorite activity.	游泳是它最爱的活动。
+
+Cooking for my family is a lot of fun.	为我们家人做饭充满趣味。
+
+Playing soccer is good exercise.	踢足球是一种很好的锻炼。
+
+书写动名词时，请牢记一下拼写规则：
+
+如果动词以元音加辅音结尾，双写辅音再加-ing。
+
+动词				动名词
+
+swim				swimming
+
+run				running
+
+如果动词以-e结尾，去掉-e再加-ing
+
+动词				动名词
+
+live				living
+
+give				giving
+
+动词ski是例外。它的动名词形式双写i。
+
+动词				动名词
+
+ski				skiing
+
+### 4、谈论您所在国家的活动
+
+**量词**
+
+使用数量词表示事物的数量。数量词通常位于所修饰的名词之前。
+
+使用most + 名词表示事物的大多数或几乎全部。
+
+Most people enjoy parties.	大多数人喜欢派对。
+
+使用many和a lot of搭配名词表示事物的很大数量。
+
+Many people like watching sports.	许多人喜欢观看体育运动。
+
+A lot of Canadians love watching ice hockey.	很多加拿大人爱看冰上曲棍球赛。
+
+使用some搭配名词表示事物不确切或模糊的数量。
+
+Some people enjoy playing the guitar.	许多人喜欢弹吉他。
+
+使用few和not many搭配名词表示事物的少量。
+
+Few people hate sports.	讨厌运动的人很少。
+
+Not many people like walking in the rain.	喜欢在雨中漫步的人不多。
+
 
 
 

@@ -295,17 +295,103 @@ public void bar(){
 
 具体操作如下：
 
+1. CPU 0执行a=1的赋值操作，由于a在CPU 0的本地缓存中的cache line处于Shard状态，因此CPU 0将a的新值“1”放入store buffer，并且发送了Invalidate消息去清空CPU 1对应的cahce line。
+2. CPU 1执行`while(b == 0)`，但是b没有在本地缓存中，因此发送Read消息视图获取该值。
+3. CPU 1收到额CPU 0的Invalidate消息，放入Invalidate Queue中，并立刻回送Ack。
+4. CPU 0收到了CPU 1的Invalidate Acknowledge之后，即可以越过程序设定的内存屏障（第四行代码的smp_mb()），这样a的新值从store buffer进入cache line，状态编程Modified。
+5. CPU 0越过内存屏障后继续执行b=1的赋值操作，由于b值在CPU 0的本地缓存中，因此store操作完成并进入cache line。
+6. CPU 0收到了Read消息后将b的最新值“1”回送给CPU 1，并修正该cache line为Shard状态。
+7. CPU 1收到Read Response，将b的最新值“1”加载到本地缓存行。
+8. 对于CPU 1而言，b已经等于1了，因此跳出`while(b == 0)`的循环，继续执行后续代码。
+9. CPU 1执行`assert a == 1`，但是由于这时候CPU 1缓存的a值仍然是旧值0，因此断言失败。
+10. 该来的中会来，Invalidate Queue中针对a cache line的Invalidate消息最终会被CPU 1执行，将a设定为无效，但是，大错已经酿成。
 
+很明显，在上文中的场景中，加速Invalidate Response导致了foo函数中的memory barrier失效了，因此，这时候对Invalidate Response已经没有意义了，毕竟程序逻辑都错了。怎么办？其实我们可以让memory barrier指令和Invalidate Queue进行交互来保证确定的内存顺序。具体做法是这样的：当CPU执行memory barrier指令的时候，对当前Invalidate Queue中的所有entry进行标注，这些被标注的项次被称为marked entries，而随后CPU执行的任何Load操作都需要等到Invalidate Queue中的所有marked entries完成对cache line的操作之后才能进行。因此，要想保证程序逻辑正确，我们需要给bar函数增加内存屏障的操作，具体如下：
 
+```java
+public void foo(){
+    a = 1;
+    smp_mb();
+    b = 1;
+}
+public void bar(){
+    while(b == 0) {
+        continue;
+    }
+    smp_mb();
+    assert a == 1;
+}
+```
 
+程序修改之后，我们再来看看CPU的执行序列：
+
+1. CPU 0执行a=1的赋值操作，由于a在CPU 0本地缓存中的cache line处于Shard状态（Read Only），因此，CPU 0将a的新值“1”放入store buffer，并且发送了Invalidate消息去清空CPU 1对应的cache line。
+2. CPU 1执行`while(b == 0)`，但是b没有在本地缓存中，因此发送Read消息视图获取该值。
+3. CPU 1收到了CPU 0的Invalidate消息，放入Invalidate Queue，并立刻回送Ack。
+4. CPU 0收到了CPU 1的Invalidate Acknowledge消息之后，即可以越过程序设定的内存屏障（第三行代码的smp_mb()），这样a的新值从store buffer进入cache line，状态变成Modified。
+5. CPU 0越过memory barrier后继续执行b=1的赋值操作（这时候该cache line处于Modieied或者Exclusive状态），由于b值在CPU 0的本地缓存中，因此store操作完成并进入cache line。
+6. CPU 0收到了Read消息后将b的最新值“1”回送给CPU 1，并修正该Cache line为Shard状态。
+7. CPU 1收到Read Response，将b的最新值“1”加载到本地cache line。
+8. 对于CPU 1而言，b已经等于1了，因此跳出`while(b == 0)`，继续执行memory barrier的代码。
+9. CPU 1现在不能继续执行代码，只能等待，直到Invalidate Queue中的message被处理完成。
+10. CPU 1处理队列中缓存的Invalidate消息，将a对应的cache line设置为无效。
+11. 由于a变量在本地缓存中无效，因此CPU 1在执行`assert a == 1`的时候需要发送一个Read消息去获取a值。
+12. CPU 0用a的新值1来回应CPU 1的请求。
+13. CPU 1获得了a的心智，并放入cache line，这时候`assert a == 1`就不会失败了。
+
+虽然多了很多MESI写协议的交互，但是最终CPU的执行符合了预期的结果，这一节也说明了为什么CPU设计师一定会非常小心的处理缓存一致性问题。
 
 ## 六、Read and Weite Memory Barriers
 
+在我们上面的例子中，memory barrier指令对store buffer和Invalidate Queue都进行了标注，不过，在实际的代码片段中，foo函数不需要mark invalidate queue，bar函数不需要mark store buffer。
 
 
 
+## 参考资料
 
+下面是摘菜自“知乎”上的一些回答，个人认为这些回答很有参考价值，故记录在此，以供参考印证。
 
+程序时工作在OS，编译器，物理硬件共同营造的虚拟环境中的（在本文中，我们把这和个环境称为“程序运行时环境”），程序运行环境有一定的规则，不同的OS、编译器、CPU等有千万中方法来实现这个规则，但这个规则本身是不变的，我们要看到这个规则，而不是看到实现，规则和实现是交织在一起的，结构眼光就是要从所有的实现中看到不变的部分（承诺规则）和可变部分（实现的规则）。
+
+先看看如下程序序列：
+
+```java
+a=1;
+b=2;
+c=a+b;
+printf("a=%d, b=%d, c=%d\n", a, b, c);
+```
+
+上面这个程序序列，作用域程序运行环境的时候，环境规则能承诺的是，计算c的时候，a肯定等于1，b肯定等于2,。最后打印的时候，c肯定等于3。
+
+但它**没有**承诺的是：
+
+1. a、b、c一定是内存上的地址（也可以是寄存器一类的东西）。
+2. a一定先变成1，然后才是b变成2。
+3. 如果其他设备或者CPU修改这些内存地址，反应是什么。
+4. 等等。
+
+所以，编译器和CPU在满足前面的规则的时候，总是玩各种小九九，在满足前面“承诺”的规则的前提下，（非有意）破坏没有承诺额规则。
+
+这种破坏不但出现在cache上，还常常出现在如下位置上：
+
+1. 编译器：编译器通过重排序指令的顺序，额可以充分利用寄存器和流水线，所以，编译器有可能把b=2排到a=1前面。
+2. 指令调度器：指令调度器可以对指令执行的步骤进行重排，甚至可以随意修改寄存器的索引名，这回引起指令生效时候的改变。
+3. 指令发射器：多Issue的CPU，可以同步发出多条没有依赖的指令，这些指令的先后顺序受CPU执行影响，不一定和软件输入一致。
+4. Cache系统：即使保证了指令的发射依赖，Cache达到内存的时候，也受Cache的多级调度算法影响。
+5. 等等。
+
+但是，程序只有一个，程序不能为你考虑编译器的问题，不能为你考虑指令发射的问题。程序如果每下去一个操作都要想想这个操作会在cache上形成怎样的执行序列，编译器又会怎样进行编排，程序就不用写了。所以，在SMP系统中，Linux增加了`smp_mb()`系列操作，这些操作，在不同平台上有不同的实现，但无论是那个实现，必须遵守新的规则：
+
+当`smp_mb()`极速后，对被CPU来说，运行环境一定可以保证`smp_mb()`之前的内存操作已经完成，并反应到对应的内存子系统中。同时，内存子系统中所有的未竟操作，在`smp_mb()`之后，必须对本CPU生效。
+
+基于这两条规则，我们很容易理解例子中的那个案例，为什么在第一个线程已经使用`smp_mb()`的情况下，第二个线程还需要使用一次`smp_mb()`，因为第一个线程只保证了这种依赖对本CPU和内存子系统生效，并不保证对第二个CPU（那个CPU有自己的Cache等运行环境系统）也生效。如果那个CPU不做`smp_mb()`操作，外界的这种变化就不会反应到这个CPU上。
+
+`mb()`系列调用和这个类似，不过面对的是系统的CPU和IO，而不是CPU与CPU而已。
+
+而原文举的那些Cache系统实现的各种问题，并非软件逻辑的根本原因。更大的问题是，实际上现在CPU的模型远远不是这里描述的样子，如果你用这个简单模型去决定如何写程序，只会什么都写不出来，这就是为什么认为那个文件缺乏软件架构思维的原因。
+
+> 引用：https://www.zhihu.com/question/47990356
 
 
 

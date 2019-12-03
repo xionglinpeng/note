@@ -144,23 +144,192 @@ ClientRegistration clientRegistration =
 
 作为替代方案，你可以使用`ClientRegistrations.fromOidcIssuerLocation()`只查询OpenID Connect提供者的配置端点。
 
-**ClientRegistrationRespository**
+**ClientRegistrationRepository**
+
+`ClientRegistrationRepository`是作为OAuth2.0/OpenID Connect 1.0 `ClientRegistration`(s)的存储库。
+
+> ![](https://docs.spring.io/spring-security/site/docs/5.2.2.BUILD-SNAPSHOT/reference/htmlsingle/images/tip.png)客户端注册信息最终由关联性的授权服务器存储和拥有。这个存储库提供了检索主要客户端注册信息子集的能力，这些信息存储在授权服务器中。
+
+Spring Boot 2.x自动配置将`spring.security.oauth2.client.registration.[registrationId]`下的每个属性绑定到`ClientRegistration`实例，然后在`ClientRegistrationRepository`中组合每个`ClientRegistration`实例。
+
+> ![](https://docs.spring.io/spring-security/site/docs/5.2.2.BUILD-SNAPSHOT/reference/htmlsingle/images/tip.png)`ClientRegistrationRespository`的默认实现是`InMemoryClientRegistrationRepository`。
+
+自动配置还在`ApplicationContext`中将`ClientRegistrationRepository`注册为`@Bean`，以便在应用程序需要时，可以对其进行依赖注入。
+
+下面的清单列举了一个例子：
+
+```java
+@Controller
+public class OAuth2ClientController {
+
+    @Autowired
+    private ClientRegistrationRepository clientRegistrationRepository;
+
+    @GetMapping("/")
+    public String index() {
+        ClientRegistration oktaRegistration =
+            this.clientRegistrationRepository.findByRegistrationId("okta");
+        ...
+        return "index";
+    }
+}
+```
+
+
 
 **OAuth2AuthorizedClient**
 
+`OAuth2AuthorizedClient`是一个授权客户端的表示。当最终用户（资源所有者）授予客户端访问其受保护资源的权限时，客户端被视为已授权。
+
+`OAuth2AuthorizedClient`的作用是将`OAuth2AccessToken`（可选`OAuth2RefreshToken`）与`ClientRegistration`（client）和资源所有者（授予授权的主要最终用户）相关联。
+
 **OAuth2AuthorizedClientRepository / OAuth2AuthorizedClientService**
+
+`OAuth2AuthorizedClientRepository`负责的是在Web请求之间持久化`OAuth2AuthorizedClient`(s)。然而，`OAuth2AuthorizedClientService`的主要作用是在应用程序级管理`OAuth2AuthorizedClient`(s)。
+
+从开发人员的角度来看，`OAuth2AuthorizedClientRepository`或`OAuth2AuthorizedClientService`提供了查找与客户端关联的`OAuth2AccessToken`的功能，以便可以使用它来发起受保护资源的请求。
+
+下面的清单显示了一个例子：
+
+```java
+@Controller
+public class OAuth2ClientController {
+
+    @Autowired
+    private OAuth2AuthorizedClientService authorizedClientService;
+
+    @GetMapping("/")
+    public String index(Authentication authentication) {
+        OAuth2AuthorizedClient authorizedClient =
+            this.authorizedClientService.loadAuthorizedClient("okta", authentication.getName());
+
+        OAuth2AccessToken accessToken = authorizedClient.getAccessToken();
+
+        ...
+
+        return "index";
+    }
+}
+```
+
+> ![](https://docs.spring.io/spring-security/site/docs/5.2.2.BUILD-SNAPSHOT/reference/htmlsingle/images/tip.png)Spring Boot 2.x自动配置在`ApplicationContext`中注册一个`OAuth2AuthorizedClientRepository`和/或`OAuth2AuthorizedClientService` `@Bean`。但是，应用程序可以选择覆盖和注册自定义`OAuth2AuthorizedClientRepository`或`OAuth2AuthorizedClientService` `@Bean`。
 
 **OAuth2AuthorizedClientManager / OAuth2AuthorizedClientProvider**
 
+`OAuth2AuthorizedClientManager`负责的是全面管理`OAth2AuthorizedClient`(s)。
+
+主要负责包括：
+
+- 使用`OAuth2AuthorizedClientProvider`授权（或重新授权）OAuth2.0客户端。
+- 通过使用委派的方式持久化`OAuth2AuthorizedClient`，通常委派对象使用`OAuth2AuthorizedClientService`或`OAuth2AuthorizedClientRepository`。
+
+`OAuth2AuthorizedClientProvider`实现了OAuth 2.0客户端授权（或重新授权）策略。通常实现的授予授权类型：`authorization_code`,`refresh_token`,`client_credentials`和`password`等。
+
+`OAuth2AuthorizedClientManager`的默认实现是`DefaultOAuth2AuthorizedClientManager`，它与一个`OAuth2AuthorizedClientProvider`相关联，这个`OAuth2AuthorizedClientProvider`可以使用委派组合模式支持多个授权授予类型。可以使用`OAuth2AuthorizedClientProviderBilder`配置和构建委派组合模式。
+
+下面的代码展示了一个如何配置和构建`OAuth2AuthorizedClientProvider`组合的示例，该组合支持`authorization_code`,`refresh_token`,`client_credentials`和`password`授予授权类型。
+
+```java
+@Bean
+public OAuth2AuthorizedClientManager authorizedClientManager(
+        ClientRegistrationRepository clientRegistrationRepository,
+        OAuth2AuthorizedClientRepository authorizedClientRepository) {
+
+    OAuth2AuthorizedClientProvider authorizedClientProvider =
+            OAuth2AuthorizedClientProviderBuilder.builder()
+                    .authorizationCode()
+                    .refreshToken()
+                    .clientCredentials()
+                    .password()
+                    .build();
+
+    DefaultOAuth2AuthorizedClientManager authorizedClientManager =
+            new DefaultOAuth2AuthorizedClientManager(
+                    clientRegistrationRepository, authorizedClientRepository);
+    authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
+
+    return authorizedClientManager;
+}
+```
+
+`DefaultOAuth2AuthorizedClientManager` 还与类型为`Function<OAuth2AuthorizeRequest, Map<String, Object>>`的`contextAttributesMapper`相关联，后者负责将`OAuth2AuthorizeRequest`中的属性映射到与`OAuth2AuthorizationContext`中相关联的`Map`属性。当您需要为`OAuth2AuthorizedClientProvider`提供所需要的属性（支持的属性）时，这可能很有用，例如，`PasswordOAuth2AuthorizedClientProvider`要求资源所有者的`username`和`passwword`可以在`OAuth2AuthorizationContext.getAttributes()`中获得。
+
+下面的代码展示了一个`contextAttributesMapper`的一个示例：
+
+```java
+@Bean
+public OAuth2AuthorizedClientManager authorizedClientManager(
+        ClientRegistrationRepository clientRegistrationRepository,
+        OAuth2AuthorizedClientRepository authorizedClientRepository) {
+
+    OAuth2AuthorizedClientProvider authorizedClientProvider =
+            OAuth2AuthorizedClientProviderBuilder.builder()
+                    .password()
+                    .refreshToken()
+                    .build();
+
+    DefaultOAuth2AuthorizedClientManager authorizedClientManager =
+            new DefaultOAuth2AuthorizedClientManager(
+                    clientRegistrationRepository, authorizedClientRepository);
+    authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
+
+    // Assuming the `username` and `password` are supplied as `HttpServletRequest` parameters,
+    // map the `HttpServletRequest` parameters to `OAuth2AuthorizationContext.getAttributes()`
+    authorizedClientManager.setContextAttributesMapper(contextAttributesMapper());
+
+    return authorizedClientManager;
+}
+
+private Function<OAuth2AuthorizeRequest, Map<String, Object>> contextAttributesMapper() {
+    return authorizeRequest -> {
+        Map<String, Object> contextAttributes = Collections.emptyMap();
+        HttpServletRequest servletRequest = authorizeRequest.getAttribute(HttpServletRequest.class.getName());
+        String username = servletRequest.getParameter(OAuth2ParameterNames.USERNAME);
+        String password = servletRequest.getParameter(OAuth2ParameterNames.PASSWORD);
+        if (StringUtils.hasText(username) && StringUtils.hasText(password)) {
+            contextAttributes = new HashMap<>();
+
+            // `PasswordOAuth2AuthorizedClientProvider` requires both attributes
+            contextAttributes.put(OAuth2AuthorizationContext.USERNAME_ATTRIBUTE_NAME, username);
+            contextAttributes.put(OAuth2AuthorizationContext.PASSWORD_ATTRIBUTE_NAME, password);
+        }
+        return contextAttributes;
+    };
+}
+```
+
 #### 12.2.2. Authorization Grant Support
 
+**Initiating theAuthorization Request**
+
+`OAuth2AuthorizationRequestRedirectFilter`使用`OAuth2AuthorizationRequestResolver`解析`OAuth2AuthorizationRequest`，通过将最终用户的用户代理重定向到授权服务器的授权端点来启动授权代码授予流。
 
 
 
+#### 12.2.3. Additional Features
 
+**Resloving an Authorized Client**
 
+`@RegisterdOAuth2AuthorizedClient`注解提供了将方法参数解析为`OAuth2AuthorizedClient`类型的参数值的功能。与使用`OAuth2AuthorizedClientManager` 或`OAuth2AuthorizedClientService`访问`OAuthAuthorizedClient`相比，这是一种方便的替代方法。
 
+```java
+@Controller
+public class OAuth2ClientController {
 
+    @GetMapping("/")
+    public String index(@RegisteredOAuth2AuthorizedClient("okta") OAuth2AuthorizedClient authorizedClient) {
+        OAuth2AccessToken accessToken = authorizedClient.getAccessToken();
+
+        ...
+
+        return "index";
+    }
+}
+```
+
+`@RegisterdOAuth2AuthorizedClient`注解使用`OAuthAuthorizedClientArgumentResolver`处理。它直接使用`OAuth2AuthorizedClientManager`，因此继承了它的功能。
+
+#### 12.2.4. WebClient integration for Servlet Environments
 
 
 

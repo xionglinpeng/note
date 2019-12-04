@@ -300,9 +300,210 @@ private Function<OAuth2AuthorizeRequest, Map<String, Object>> contextAttributesM
 
 #### 12.2.2. Authorization Grant Support
 
-**Initiating theAuthorization Request**
+##### Authorization Code
+
+**Initiating the Authorization Request**
 
 `OAuth2AuthorizationRequestRedirectFilter`使用`OAuth2AuthorizationRequestResolver`解析`OAuth2AuthorizationRequest`，通过将最终用户的用户代理重定向到授权服务器的授权端点来启动授权代码授予流。
+
+`OAuth2AuthorizationRequestResolver`的主要作用是解析从web请求中提供`OAuth2AuthorizationRequest`。默认实现`DefaultOAuth2AuthorizationRequestResolver`提取`registrationId`匹配（默认）路径`/oauth2/authorization/{registrationId}`并使用它为相关的`ClientRegistration`构建`OAuth2AuthorizationRequest`。
+
+为OAuth 2.0客户端注册Spring Boot 2.x提供了以下属性：
+
+```yaml
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          okta:
+            client-id: okta-client-id
+            client-secret: okta-client-secret
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/authorized/okta"
+            scope: read, write
+        provider:
+          okta:
+            authorization-uri: https://dev-1234.oktapreview.com/oauth2/v1/authorize
+            token-uri: https://dev-1234.oktapreview.com/oauth2/v1/token
+```
+
+使用基本路径`/`的请求将启动由`OAuth2AuthorizationRequestRegirectFilter`重定向的授权请求，并最终启动授权代码授予流。
+
+如果OAuth 2.0客户端是公共客户端，则按一下方式配置OAuth 2.0客户端注册：
+
+```yaml
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          okta:
+            client-id: okta-client-id
+            client-authentication-method: none
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/authorized/okta"
+            ...
+```
+
+公共客户端支持使用Proof Key for Code Exchange（PKCE）。如果客户端允许在不受信任的环境中，因此无法保证其凭证的机密性，则当以下条件满足时，将自动使用PKCE：
+
+1. `client-secret`缺省（或为空）
+2. `client-authentication-method`被设置为`none`（`ClientAuthenticationMethod.NONE`）
+
+`DefaultOAuth2AuthorizationRequestResolver`还支持使用`UriComponentBuilder`解析`regirect-uri`的`URI`模板变量。
+
+下面的配置使用所有受支持的`URI`模板变量：
+
+```yaml
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          okta:
+            ...
+            redirect-uri: "{baseScheme}://{baseHost}{basePort}{basePath}/authorized/{registrationId}"
+            ...
+```
+
+> `{baseUrl}`解析为`{baseScheme}://{baseHost}{basePort}{basePath}`
+
+当OAuth 2.0客户端运行在代理服务器后面时，使用`URI`模板变量配置`regirect-uri`特别有用。这确保在展开`redirect-uri`时使用`X-Forwarded-*`头。
+
+**Customizing the Authorization Request**
+
+`OAuth2AuthorizationRequestResolver`可以实现的主要用例之一是能够使用OAuth 2.0授权框架中定义的标准参数之外的其他参数自定义授权请求。
+
+例如，OpenID Connect为Authorization Code Flow定义了附加的OAuth 2.0请求参数，这些请求参数扩展了OAuth 2.0授权框架定义的标准参数。其中一个扩展参数是`prompt`。
+
+> 可选. 空格分隔符，区分大小写的ACII字符串值列表，用于指定授权服务器是否提示最终用户进行重新认证和同意。定义的值是：none，login，consent，select_account
+
+下面的例子显示了如何实现一个`OAuth2AuthorizationRequestResolver`，它为`oauth2Login()`自定义了授权请求，包含的请求参数`prompt=consent`。
+
+```java
+@EnableWebSecurity
+public class OAuth2LoginSecurityConfig extends WebSecurityConfigurerAdapter {
+
+    @Autowired
+    private ClientRegistrationRepository clientRegistrationRepository;
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+            .authorizeRequests(authorizeRequests ->
+                authorizeRequests
+                    .anyRequest().authenticated()
+            )
+            .oauth2Login(oauth2Login ->
+                oauth2Login
+                    .authorizationEndpoint(authorizationEndpoint ->
+                        authorizationEndpoint
+                            .authorizationRequestResolver(
+                                new CustomAuthorizationRequestResolver(
+                                        this.clientRegistrationRepository))    ①
+                    )
+            );
+    }
+}
+
+public class CustomAuthorizationRequestResolver implements OAuth2AuthorizationRequestResolver {
+    private final OAuth2AuthorizationRequestResolver defaultAuthorizationRequestResolver;
+
+    public CustomAuthorizationRequestResolver(
+            ClientRegistrationRepository clientRegistrationRepository) {
+
+        this.defaultAuthorizationRequestResolver =
+                new DefaultOAuth2AuthorizationRequestResolver(
+                        clientRegistrationRepository, "/oauth2/authorization");
+    }
+
+    @Override
+    public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
+        OAuth2AuthorizationRequest authorizationRequest =
+                this.defaultAuthorizationRequestResolver.resolve(request);  ②
+
+        return authorizationRequest != null ?   ③
+                customAuthorizationRequest(authorizationRequest) :
+                null;
+    }
+
+    @Override
+    public OAuth2AuthorizationRequest resolve(
+            HttpServletRequest request, String clientRegistrationId) {
+
+        OAuth2AuthorizationRequest authorizationRequest =
+                this.defaultAuthorizationRequestResolver.resolve(
+                    request, clientRegistrationId);    ④
+
+        return authorizationRequest != null ?   ⑤
+                customAuthorizationRequest(authorizationRequest) :
+                null;
+    }
+
+    private OAuth2AuthorizationRequest customAuthorizationRequest(
+            OAuth2AuthorizationRequest authorizationRequest) {
+
+        Map<String, Object> additionalParameters =
+                new LinkedHashMap<>(authorizationRequest.getAdditionalParameters());
+        additionalParameters.put("prompt", "consent");  ⑥
+
+        return OAuth2AuthorizationRequest.from(authorizationRequest)    ⑦
+                .additionalParameters(additionalParameters) ⑧
+                .build();
+    }
+}
+```
+
+①、配置自定义`OAuth2AuthorizationRequestResolver`
+
+②④、使用`DefaultOAuth2AuthorizationRequestResolver`尝试解析`OAuth2AuthorizationRequest`
+
+③⑤、如果`OAuth2AuthorizationRequest`已经解析，则返回自定义版本，否则返回`null`
+
+⑥、将自定义参数添加到已有的`OAuth2AuthorizationRequest.additionalParameters`中
+
+⑦、创建`OAuth2AuthorizationRequest`的默认副本，它将返回`OAuth2AuthorizationRequest.Builder`，以作进一步修改。
+
+⑧、重写默认的`additionalParameters`
+
+> 
+
+对于简单的用例，附加的请求参数对于特定的提供者始终是相同的，可以直接将其添加到`authoruzation_uri`中。
+
+例如，如果提供者`okta`的请求参数`prompt`的值始终是`consent`，那么简单的配置如下：
+
+```yaml
+spring:
+  security:
+    oauth2:
+      client:
+        provider:
+          okta:
+            authorization-uri: https://dev-1234.oktapreview.com/oauth2/v1/authorize?prompt=consent
+```
+
+前面的示例展示了在标准参数之上添加自定义参数的常见用例。或者，如果你的要求更高级，那么只需要覆盖`OAuth2AuthorizationRequest.authorizationRequestUri`属性就可以完全控制构建授权请求URI。
+
+下面的示例显示了`customAuthorizationRequest()`方法与前面示例不同的形式，而是覆盖了`OAuth2AuthorizationRequest.authorizationRequestUri`属性。
+
+```java
+private OAuth2AuthorizationRequest customAuthorizationRequest(
+        OAuth2AuthorizationRequest authorizationRequest) {
+
+    String customAuthorizationRequestUri = UriComponentsBuilder
+            .fromUriString(authorizationRequest.getAuthorizationRequestUri())
+            .queryParam("prompt", "consent")
+            .build(true)
+            .toUriString();
+
+    return OAuth2AuthorizationRequest.from(authorizationRequest)
+            .authorizationRequestUri(customAuthorizationRequestUri)
+            .build();
+}
+```
+
+**Storing the Authorization Request**
 
 
 
@@ -328,6 +529,10 @@ public class OAuth2ClientController {
 ```
 
 `@RegisterdOAuth2AuthorizedClient`注解使用`OAuthAuthorizedClientArgumentResolver`处理。它直接使用`OAuth2AuthorizedClientManager`，因此继承了它的功能。
+
+
+
+
 
 #### 12.2.4. WebClient integration for Servlet Environments
 

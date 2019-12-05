@@ -505,6 +505,43 @@ private OAuth2AuthorizationRequest customAuthorizationRequest(
 
 **Storing the Authorization Request**
 
+`AuthorizationRequestRepository`负责从发起授权请求到收到授权响应之间`OAuth2AuthorizationRequest`的持久化。
+
+> `OAuth2AuthorizationRequest`用于关联和验证授权响应。
+
+`AuthorizationRequestRepository`的默认实现是`HttpSessionOAuth2AuthorizationRequestRepository`，它将`OAth2AuthorizationRequest`存储在`HttpSeesion`。
+
+如果你想实现自定义的`AuthorizationRequestRepository`，你可以根据如下示例配置：
+
+```java
+@EnableWebSecurity
+public class OAuth2ClientSecurityConfig extends WebSecurityConfigurerAdapter {
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+            .oauth2Client(oauth2Client ->
+                oauth2Client
+                    .authorizationCodeGrant(authorizationCodeGrant ->
+                        authorizationCodeGrant
+.authorizationRequestRepository(this.authorizationRequestRepository())
+                            ...
+                    )
+            );
+    }
+}
+```
+
+**Requesting an Access Token**
+
+
+
+
+
+
+
+
+
 
 
 #### 12.2.3. Additional Features

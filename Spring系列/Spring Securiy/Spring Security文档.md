@@ -109,7 +109,7 @@ public final class ClientRegistration {
 
 ④. `clientAuthenticationMethod`：用于向提供者验证客户端的方法。支持的值是**basic**，**post**和**none**。
 
-⑤. `authorizationGrantType`：OAuth2.0授权框架定义了四种认证授权类型。支持的值是`autjorization_code`，`client_credentials`，`password`和`implicit`。
+⑤. `authorizationGrantType`：OAuth2.0授权框架定义了四种认证授权类型。支持的值是`authorization_code`，`client_credentials`，`password`和`implicit`。
 
 ⑥. `redirectUriTemplate`：客户端注册的重定向URI，在终端用户对客户端进行身份验证和授权访问之后，授权服务器最终用户的用户代理重定向到该URI。
 
@@ -534,7 +534,74 @@ public class OAuth2ClientSecurityConfig extends WebSecurityConfigurerAdapter {
 
 **Requesting an Access Token**
 
+Authorization Code授予的`OAuth2AccessTokenResponseClient`的默认实现是`DefaultAuthorizationCodeTokenResponseClient`，它使用`RestOperations`通过授权服务令牌端点为访问令牌交换授权码。
 
+`DefaultAuthorizationCodeTokenResponseClient`非常灵活，因为它允许您自定义令牌请求的预处理和/或令牌响应的后处理。
+
+**Customizing the Access Token Request**
+
+如果你需要自定义令牌请求的预处理，你可以自定义一个`Converter<OAUth2AuthorizationCodeGrantRequest,RequestEntity<?>>`提供`DefaultAuthorizationCodeTokenResponseClient.setRequestEntityConverter()`。默认实现`OAuth2AuthorizationCodeGrantRequestEntityConverter`是构建标准OAuth 2.0访问令牌请求`RequestEntity`的表示。但是，提供自定义`Converter`，将允许扩展标准令牌请求并添加自定义参数。
+
+> ![](https://docs.spring.io/spring-security/site/docs/5.2.2.BUILD-SNAPSHOT/reference/htmlsingle/images/important.png)**重要**
+>
+> ​			自定义`Converter`必须返回OAuth 2.0访问令牌请求的有效`RequestEntity`表示，该请求可被预期的OAuth 			2.0提供者理解。
+
+**Customizing the Access Token Response**
+
+另一方面，如果你需要自定义Token响应的后处理，你将需要使用自定义配置的`RestOperation`提供`DefaultAuthorizationCodeTokenResponseClient.setRestOperations()`。默认的`RestOperations`配置如下：
+
+```java
+RestTemplate restTemplate = new RestTemplate(Arrays.asList(
+        new FormHttpMessageConverter(),
+        new OAuth2AccessTokenResponseHttpMessageConverter()));
+
+restTemplate.setErrorHandler(new OAuth2ErrorResponseErrorHandler());
+```
+
+> ![](https://docs.spring.io/spring-security/site/docs/5.2.2.BUILD-SNAPSHOT/reference/htmlsingle/images/tip.png)Spring MVC`FormHttpMessageConverter`是必须得，因为它是在OAuth 2.0发送访问令牌请求时使用的。
+
+`OAuth2AccessTokenResponseHttpMessageConverter`是一个用于OAuth 2.0访问令牌响应的`HttpMessageConverter`。你可以自定义一个`Converter<Map<String,String>,OAuth2AccessTokenResponse>`提供`OAuth2AccessTokenResponseHttpMessageConverter.setTokenResponseConverter()`，它用于将OAuth 2.0访问令牌响应参数转换为`OAuth2AccessTokenResponse`。
+
+`OAuth2ErrorResponseErrorHandler`是一个可以处理OAuth 2.0错误的`ResponseErrorHandler`，例如. 400 Bad Request。它使用`OAuth2ErrorHeepMessageConverter`将OAuth 2.0错误参数转换为`OAuth2Error`。
+
+无论你是自定义`DefaultAuthorizationCodeTokenResponseClient`，还是提供你自己的`OAuth2AccessTokenResponseClient`的实现，你都需要按如下示例进行配置：
+
+```java
+@EnableWebSecurity
+public class OAuth2ClientSecurityConfig extends WebSecurityConfigurerAdapter {
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+            .oauth2Client(oauth2Client ->
+                oauth2Client
+                    .authorizationCodeGrant(authorizationCodeGrant ->
+                        authorizationCodeGrant
+                            .accessTokenResponseClient(this.accessTokenResponseClient())
+                            ...
+                     )
+            );
+    }
+}
+```
+
+##### Refresh Token
+
+Refreshing an Access Token
+
+Customizing the Access Token Request
+
+Customizing the Access Token Response
+
+##### Client Credentials
+
+Requesting an Access Token
+
+Customizing the Access Token Request
+
+Customizing the Access Token Response
+
+Using the Access Token
 
 
 

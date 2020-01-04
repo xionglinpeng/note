@@ -330,7 +330,7 @@ spring:
 
 使用基本路径`/`的请求将启动由`OAuth2AuthorizationRequestRegirectFilter`重定向的授权请求，并最终启动授权代码授予流。
 
-如果OAuth 2.0客户端是公共客户端，则按一下方式配置OAuth 2.0客户端注册：
+如果OAuth 2.0客户端是公共客户端，则按以下方式配置OAuth 2.0客户端注册：
 
 ```yaml
 spring:

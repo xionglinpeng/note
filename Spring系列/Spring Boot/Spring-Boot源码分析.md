@@ -125,3 +125,11 @@ public ConfigurableApplicationContext run(String... args) {
 }
 ```
 
+
+
+
+
+### 类型推断
+
+
+

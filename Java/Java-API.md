@@ -342,6 +342,30 @@ interface com.jusdascm.test.ClassTest$Time
 
 
 
+## isAnonymousClass
+
+
+
+
+
+## isAssignableFrom
+
+```java
+public boolean isAssignableFrom(Class<?> cls)
+```
+
+Javadoc描述如下：
+
+> 判定此Class对象所表示的类或接口与指定的Class参数所表示的类或接口是否相同，或是否是其超类或超接口。如果是则返回true；否则返回false。如果该Class表示一个基本类型，且指定的Class参数正是该Class对象，则该方法返回true；否则返回false。
+>
+> 特别：此方法能测试指定的Class参数所表示的类型能否转换为此Class对象所表示的类型。
+
+例如`A.isAssignableFrom(B)`，简单的说就是`isAssignableFrom`方法可以判断A类是否是B类的超类或是B类的超接口，再或者是A类与B类相等。A类是调用方，B类是参数。
+
+代码示例
+
+
+
 
 
 
@@ -354,9 +378,9 @@ interface com.jusdascm.test.ClassTest$Time
 
 确定指定的类对象是否为基本类型。
 
-有9个预定于Class对象，是8个基本类型和void。它们是由Java虚拟机创建，即boolean、byte、char、short、int、long、float、double。
+有9个预定于Class对象，是8个基本类型和`void`。它们是由Java虚拟机创建，即`boolean`、`byte`、`char`、`short`、`int`、`long`、`float`、`double`。
 
-这些对象只能通过以下公共静态final变量访问，并且是次方法返回true的唯一类对象。
+这些对象只能通过以下公共静态`final`变量访问，并且是次方法返回`true`的唯一类对象。
 
 `Boolean.TYPE`、`Byte.TYPE`、`Character.TYPE`、`Short.TYPE`、`Integer.TYPE`、`Long.TYPE`、`Float.TYPE`、`Double.TYPE`
 
@@ -442,7 +466,7 @@ ClassUtils Double = true
 
 `public Class<?> getComponentType()`
 
-返回表示数组组件类型的Class。如果此类不表示数组类，则此方法返回null。
+返回表示数组组件类型的Class。如果此类不表示数组类，则此方法返回`null`。
 
 示例：
 

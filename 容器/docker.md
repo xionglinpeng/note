@@ -1,10 +1,177 @@
-# `Docker
+# Docker
 
 docker官方文档地址：https://docs.docker.com/
 
-1
+
 
 ## Docker安装
+
+
+
+### Windows Docker安装
+
+Windows下进行docker安装有两种方式，分别是*Docker Toolbox*和*Docker for Windows*。
+
+对于Windows 10以下的用户，推荐使用*Docker Toolbox*
+
+Windows安装文件：<http://mirrors.aliyun.com/docker-toolbox/windows/docker-toolbox/>
+
+对于Windows 10以上的用户，推荐使用*Docker for Windows*
+
+Windows安装文件：[http://mirrors.aliyun.com/docker-toolbox/windows/docker-for-windows/](http://mirrors.aliyun.com/docker-toolbox/windows/docker-for-windows/?spm=5176.8351553.0.0.79331991fXl18F)
+
+> 上述两个安装文件的地址由阿里云提供。
+
+#### 一、安装Docker Toolbox
+
+#### 二、安装Docker for Windows
+
+在window10上安装Docker for Windows，需要开启Hyper-V和容器。
+
+##### 1. 开启Hyper-V和容器
+
+在Windows10上安装Docker for Windows需要开启***Hyper-V***和***容器***。
+
+1. 右键Windows图标—>应用和功能(F)
+
+   ![img](./docker-images/install-hyper-V-1.png)
+
+2. 拉到最底部，点击*程序和功能*。
+
+   ![img](./docker-images/install-hyper-V-2.png)
+
+3. 点击*启用或关闭Windows功能*。
+
+   ![img](./docker-images/install-hyper-V-3.png)
+
+4. 找到*Hyper-V*和*容器*并勾选。
+
+   ![img](./docker-images/install-hyper-V-4.png)![img](./docker-images/install-hyper-V-5.png)
+
+5. 最后点击*确定*，即完成Hyper-V和容器的开启。
+
+##### 2. 安装Docker for Windows Installer.exe
+
+直接一路下一步即可。
+
+其实可以直接略过第一步（开启Hyper-V和容器），直接进行第二步的Docker for Windows Installer.exe的安装，可以正常安装成功，但是因为没有启用*Hyper-V*和*容器*，所以将会提示如下两个错误信息：
+
+![](./docker-images/installer.exe-1.png)
+
+![](./docker-images/installer.exe-2.png)
+
+译文如下：
+
+```
+必须的特性没有启动：Hyper-V和Containers。
+Docker将退出。
+```
+
+```
+Hyper-V和Containers特性没有启动。
+你想启动它们而让Docker能够正常工作吗?
+你的电脑将自动重启。
+```
+
+大体的意思是，没有启动Hyper-V和containers功能，docker想帮助我启动。所以点击Ok，重启系统即可。
+
+**点击Ok重启系统**
+
+在重启系统之后启动docker，报如下错误：
+
+```shell
+Unable to start: 已停止该运行的命令，因为首选项变量“ErrorActionPreference”或通用参数设置为 Stop: “MobyLinuxVM”无法启动。
+
+启动虚拟机“MobyLinuxVM”失败，因为一个 Hyper-V 组件未运行。
+
+“MobyLinuxVM”无法启动。(虚拟机 ID 983B9BB2-9F39-4856-8F32-5D30F74F02FA)
+
+虚拟机管理服务无法启动虚拟机“MobyLinuxVM”，因为一个 Hyper-V 组件尚未运行。(虚拟机 ID 983B9BB2-9F39-4856-8F32-5D30F74F02FA)。
+......
+......
+```
+
+docker没有启动成功，右下角的小鲸鱼是红色的。解决方式是右键右下角的小鲸鱼，点击*Switch to windows containers...*。
+
+<div style="color:green">原因：Docker for windows有两种运行模式，一种运行Window相关容器，一种允许传统的Linux容器。同一时间只能选择一种模式运行。</div>
+
+##### 3. Docker Desktop设置
+
+在系统右下角托盘图标内右键菜单选择 *Settings*，打开配置窗口后左侧导航菜单选择 Docker Daemon。勾选Expermental并设置镜像仓库地址。然后点击Apply应用配置。
+
+![img](./docker-images/settings-1.png)
+
+> **注意：**
+>
+> 必须勾选勾选Expermental。如果不勾选在拉取镜像时将会有如下错误信息：
+>
+> ```shell
+> C:\Users\administrator>docker pull hello-world
+> Using default tag: latest
+> latest: Pulling from library/hello-world
+> latest: Pulling from library/hello-world
+> no matching manifest for unknown in the manifest list entries
+> ```
+>
+> 需要设置一个有效的镜像仓库地址。因为“墙”的原因，docker官方镜像地址不能被访问，所以需要手动配置一个有效的镜像仓库地址，如果不设置，将会有如下错误信息：
+>
+> ```shell
+> C:\Users\administratorg>docker pull hello-world
+> Using default tag: latest
+> error during connect: Post http://%2F%2F.%2Fpipe%2Fdocker_engine/v1.39/images/create?fromImage=hello-world&tag=latest: open //./pipe/docker_engine: The system cannot find the file specified. In the default daemon configuration on Windows, the docker client must be run elevated to connect. This error may also indicate that the docker daemon is not running.
+> ```
+
+#### 测试docker安装结果
+
+打开cmd窗口，执行docker命令测试。
+
+```bash
+C:\Users\administrato>docker version
+Client: Docker Engine - Community
+ ......
+
+Server: Docker Engine - Community
+ Engine:
+  ......
+
+C:\Users\administrato>docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+hello-world         latest              fce289e99eb9        12 months ago       62kB
+
+C:\Users\administrato>docker pull hello-world
+Using default tag: latest
+latest: Pulling from library/hello-world
+Digest: sha256:d1668a9a1f5b42ed3f46b70b9cb7c88fd8bdc8a2d73509bb0041cf436018fbf5
+Status: Image is up to date for hello-world:latest
+```
+
+安装成功。
+
+
+
+
+
+<http://mirrors.aliyun.com/docker-toolbox/>
+
+
+
+<http://mirrors.aliyun.com/docker-toolbox/windows/docker-toolbox/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -73,8 +240,9 @@ docker文档地址：https://docs.docker.com
 ## moby、docker-ce和docker-ee的区别
 最早的时候docker就是一个开源项目，主要是由docker公司维护。
 2017年初，docker公司将原先的docker项目改名为moby，并创建了docker-ce和docker-ee。
+
 - moby是继承了原先的docker的项目，是社区维护的开源项目，谁都可以在moby的基础打造自己的容器产品。
-- docker-ce是docker公司维护的开源项目，是一个基础moby项目的免费的容器产品。
+- docker-ce是docker公司维护的开源项目，是一个基于moby项目的免费的容器产品。
 - docker-ee是docker公司维护的闭源产品，是docker公司的商业产品（简单的说，就是要付钱的）。
 
 
@@ -458,6 +626,21 @@ Create a tag TARGET_IMAGE that refers to SOURCE_IMAGE
 ```
 
 
+
+## Commands
+
+### run
+
+在新容器中运行命令。
+
+
+
+|                  |                          |      |
+| ---------------- | ------------------------ | ---- |
+| `-d`, `--detach` | 后台运行容器并打印容器ID |      |
+|                  |                          |      |
+| `-p`             |                          |      |
+| `-P`             |                          |      |
 
 
 
@@ -1173,7 +1356,7 @@ CMD指令用来指定启动容器时默认执行的命令。它支持三种格�
 
 
 
-LABEL
+### LABEL
 
 LABEL指令用来指定生成镜像的元数据标签信息。
 
@@ -1185,7 +1368,7 @@ LABEL <key>=<value> <key>=<value> <key>=<value>...
 
 
 
-## EXPOSE
+### EXPOSE
 
 声明镜像内服务所监听的端口。
 
@@ -1209,7 +1392,7 @@ EXPOSE <port> [<port>...]
 
 ### WORKDIR
 
-为后续的RUN、CMD和ENTRYPOINT指令配置工作目录。
+为后续的`RUN`、`CMD`和`ENTRYPOINT`指令配置工作目录。
 
 格式
 
@@ -1251,9 +1434,9 @@ expose 8761
 
 
 
+## Appendix
 
-
-## docker error
+### Docker error
 
 error 1
 
@@ -1278,5 +1461,72 @@ $ vi /etc/resolv.conf
 重启网络服务
 
 ```shell
-`systemctl restart network`
+systemctl restart network
 ```
+
+### 阿里云镜像仓库
+
+由于“墙”的原因，docker的官方仓库地址不能访问。但是阿里云提供了容器镜像服务，所以可以使用阿里云的。
+
+配置方式如下：
+
+1. 首先访问阿里云官方网站：<https://www.aliyun.com/>。
+
+2. 登录之后点击*控制台*。
+
+   ![](./docker-images/aliyun-1.png)
+
+3. 点击*左上角图标*，选择*产品与服务*，搜索*容器镜像*关键字，最后进入容器镜像服务。
+
+   ![](./docker-images/aliyun-2.png)
+
+4. 选择镜像加速器，即可看到相应的加速器地址，并且描述了Ubuntu、CentOs、Mac和Windows环境的安装和配置方式。
+
+   ![](./docker-images/aliyun-3.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

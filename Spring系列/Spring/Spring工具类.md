@@ -36,6 +36,10 @@ public static boolean isPresent(String className, @Nullable ClassLoader classLoa
 public static Class<?> forName(String name, @Nullable ClassLoader classLoader)
 ```
 
+### isCacheSafe
+
+## ValidationUtils
+
 
 
 ## PropertiesLoaderUtils

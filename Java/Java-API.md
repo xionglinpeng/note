@@ -1,5 +1,9 @@
 git config --system --unset credential.helper
 
+JAVA 6 API : <http://www.cjsdn.net/Doc/JDK60/>
+
+JAVA 8 API : <https://docs.oracle.com/javase/8/docs/api/>
+
 # AnnotatedElement
 
 表示目前正在此VM中运行的程序的一个已注释的元素
@@ -340,15 +344,17 @@ interface com.jusdascm.test.ClassTest$Day
 interface com.jusdascm.test.ClassTest$Time
 ```
 
+## -isAnnotation
+
+## -isAnnotationPresent
+
+## -isAnonymousClass
+
+## -isArray
 
 
-## isAnonymousClass
 
-
-
-
-
-## isAssignableFrom
+## -isAssignableFrom
 
 ```java
 public boolean isAssignableFrom(Class<?> cls)
@@ -366,13 +372,17 @@ Javadoc描述如下：
 
 
 
+## -isEnum
+
+## -isInstance(Object obj)
+
+## -isInterface()
+
+## -isLocalClass()
 
 
 
-
-
-
-## isMemberClass
+## -isMemberClass
 
 ## isPrimitive
 
@@ -460,7 +470,11 @@ ClassUtils Float = true
 ClassUtils Double = true
 ```
 
-## isSynthetic
+## -isSynthetic
+
+## -newInstance()
+
+## -toGenericString()
 
 ## getComponentType
 

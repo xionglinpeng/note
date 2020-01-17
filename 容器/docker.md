@@ -2,7 +2,13 @@
 
 docker官方文档地址：https://docs.docker.com/
 
+docker官方镜像仓库：<https://hub.docker.com/>
 
+其他资源
+
+runoob docker教程：<https://www.runoob.com/docker/docker-tutorial.html>
+
+docker中文：<http://www.docker.org.cn/index.html>
 
 ## Docker安装
 
@@ -635,12 +641,13 @@ Create a tag TARGET_IMAGE that refers to SOURCE_IMAGE
 
 
 
-|                  |                          |      |
-| ---------------- | ------------------------ | ---- |
-| `-d`, `--detach` | 后台运行容器并打印容器ID |      |
-|                  |                          |      |
-| `-p`             |                          |      |
-| `-P`             |                          |      |
+|                                        |                          |      |
+| -------------------------------------- | ------------------------ | ---- |
+| `-d`, `--detach`                       | 后台运行容器并打印容器ID |      |
+|                                        |                          |      |
+| `-p <ip>:<host-port>:<container-port>` |                          |      |
+| `-P`                                   |                          |      |
+| `--name <string>`                      | 访问容器的名称           |      |
 
 
 

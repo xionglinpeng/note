@@ -1,10 +1,26 @@
 # Spring Boot源码分析
 
-## 起步依赖
+## 起步依赖starter
 
 
 
-## 自动转配
+## 自动配置autoconfigure
+
+
+
+SpringApplication
+
+
+
+由不可枚举的Spring PropertySource或受限制的EnumerablePropertySource实现支持的ConfigurationPropertySource(例如受安全限制的systemEnvironment源代码)。PropertySource在PropertyMapper的帮助下进行了调整，后者为各个属性提供了映射规则。每个getConfigurationProperty调用都试图将ConfigurationPropertyName映射到一个或多个基于字符串的名称。这允许对格式良好的属性源进行快速的属性解析。
+
+如果可能的话，SpringIterableConfigurationPropertySource将优先用于此实现，因为它支持完全“relaxed”样式的解析。
+
+
+
+
+
+详细说明了PropertySource项和ConfigurationPropertySource项之间的映射。
 
 
 
@@ -12,15 +28,11 @@
 
 
 
-starter
+## actuator
 
-autoconfigure
+## configuration-processor
 
-actuator
-
-configuration-processor
-
-dev-tool
+## dev-tool
 
 
 

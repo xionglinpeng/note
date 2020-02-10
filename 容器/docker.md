@@ -1,4 +1,4 @@
-# Docker
+Docker
 
 docker官方文档地址：https://docs.docker.com/
 
@@ -9,6 +9,20 @@ docker官方镜像仓库：<https://hub.docker.com/>
 runoob docker教程：<https://www.runoob.com/docker/docker-tutorial.html>
 
 docker中文：<http://www.docker.org.cn/index.html>
+
+
+
+## Docker服务命令
+
+启动docker服务：`ststemctl start docker`
+
+关闭docker服务：`systemctl stop docker`
+
+重启docker服务：`systemctl restart docker`
+
+自启动docker服务：`systemctl enable docker`
+
+systemctl daemon-reload
 
 ## Docker安装
 
@@ -100,7 +114,6 @@ Unable to start: 已停止该运行的命令，因为首选项变量“ErrorActi
 docker没有启动成功，右下角的小鲸鱼是红色的。解决方式是右键右下角的小鲸鱼，点击*Switch to windows containers...*。
 
 <div style="color:green">原因：Docker for windows有两种运行模式，一种运行Window相关容器，一种允许传统的Linux容器。同一时间只能选择一种模式运行。</div>
-
 ##### 3. Docker Desktop设置
 
 在系统右下角托盘图标内右键菜单选择 *Settings*，打开配置窗口后左侧导航菜单选择 Docker Daemon。勾选Expermental并设置镜像仓库地址。然后点击Apply应用配置。
@@ -952,37 +965,28 @@ Options:
 
 
 
-|                                |                                             |
-| ------------------------------ | ------------------------------------------- |
-|                                |                                             |
-| `-d,--detach=true|false`       | 在后台运行容器，并打印容器ID，默认为false。 |
-|                                |                                             |
-| `-p, --publish list`           | 将容器的端口发布到主机                      |
-| `-P, --publish-all`            | 将所有公开的端口发布到随机端口              |
-|                                |                                             |
-| `-i, --interactive=true|false` | 保持标准输入打开，默认为false。             |
-| `-t, --tty=true|false`         | 是否分配一个伪终端，默认为false。           |
-|                                |                                             |
-|                                |                                             |
-|                                |                                             |
-|                                |                                             |
-|                                |                                             |
-|                                |                                             |
-|                                |                                             |
-|                                |                                             |
-|                                |                                             |
-|                                |                                             |
+|                                |                                                           |
+| ------------------------------ | --------------------------------------------------------- |
+|                                |                                                           |
+| `-d,--detach=true|false`       | 在后台运行容器，并打印容器ID，默认为false。               |
+|                                |                                                           |
+| `-p, --publish list`           | 将容器的端口发布到主机                                    |
+| `-P, --publish-all`            | 将所有公开的端口发布到随机端口                            |
+|                                |                                                           |
+| `-i, --interactive=true|false` | 保持标准输入打开，默认为false。                           |
+| `-t, --tty=true|false`         | 是否分配一个伪终端，默认为false。                         |
+|                                |                                                           |
+|                                |                                                           |
+| --name string                  | 为容器分配一个名称，即容器的别名。                        |
+| --link list                    | 添加链接到另一个容器，例如`--link [<name or id>:alias]`。 |
+|                                |                                                           |
+|                                |                                                           |
+|                                |                                                           |
+|                                |                                                           |
+|                                |                                                           |
+|                                |                                                           |
 
 
-
-
-
-|               |                                                           |
-| ------------- | --------------------------------------------------------- |
-| --name string | 为容器分配一个名称，即容器的别名。                        |
-| --link list   | 添加链接到另一个容器，例如`--link [<name or id>:alias]`。 |
-|               |                                                           |
-|               |                                                           |
 
 
 
@@ -1013,6 +1017,10 @@ exit
 ```shell
 $ docker run -d ubuntu /bin/sh
 ```
+
+### -运行容器
+
+
 
 ### 查看容器
 
@@ -1057,7 +1065,11 @@ Options:
 
 
 
-### 启动-终止-重启容器
+### -启动容器
+
+### -停止容器
+
+### -重启容器
 
 语法
 
@@ -1067,7 +1079,7 @@ $ docker start [OPTIONS] CONTAINER [CONTAINER...]
 # termination container
 $ docker stop [OPTIONS] CONTAINER [CONTAINER...]
 $ docker kill [OPTIONS] CONTAINER [CONTAINER...]
-# restart container
+# restart ,
 $ docker restart [OPTIONS] CONTAINER [CONTAINER...]
 ```
 - docker start --help 
@@ -1110,6 +1122,46 @@ $ docker restart [OPTIONS] CONTAINER [CONTAINER...]
   >
   > Options:
   >   `-t`, --time int   Seconds to wait for stop before killing the container (default 10)
+
+### -删除容器
+
+删除一个或多个容器
+
+**语法**
+
+```shell
+$ docker rm [OPTIONS] CONTAINER [CONTAINER...]
+```
+
+**选项**
+
+| 选项          | 说明                                |
+| ------------- | ----------------------------------- |
+| -f, --force   | 强制移除正在运行的容器(使用SIGKILL) |
+| -l, --link    | 删除指定链接                        |
+| -v, --volumes | 删除与容器关联的卷                  |
+
+
+
+```shell
+[root@localhost sss]# docker rm 21bf43d3a168
+Error response from daemon: You cannot remove a running container 21bf43d3a168232722894067af1670b9933e829947a5f9587807ab55ca518d8c. Stop the container before attempting removal or force remove
+[root@localhost sss]# docker rm -f 21bf43d3a168
+21bf43d3a168
+```
+
+示例：
+
+```shell
+# 根据容器ID删除
+$ docker rm e5143771c24f
+
+# 根据部分容器ID删除
+$ docker rm b77
+
+# 根据容器ID（部分）删除多个容器
+$ docker rm 6b 58
+```
 
 
 
@@ -1206,44 +1258,7 @@ Options:
 
 
 
-### delete container
 
-删除一个或多个容器
-
-**语法**
-
-```shell
-$ docker rm [OPTIONS] CONTAINER [CONTAINER...]
-```
-
-**选项**
-
-| 选项          | 说明                                |
-| ------------- | ----------------------------------- |
-| -f, --force   | 强制移除正在运行的容器(使用SIGKILL) |
-| -l, --link    | 删除指定链接                        |
-| -v, --volumes | 删除与容器关联的卷                  |
-
-
-
-```shell
-[root@localhost sss]# docker rm 21bf43d3a168
-Error response from daemon: You cannot remove a running container 21bf43d3a168232722894067af1670b9933e829947a5f9587807ab55ca518d8c. Stop the container before attempting removal or force remove
-[root@localhost sss]# docker rm -f 21bf43d3a168
-21bf43d3a168
-```
-
-
-
-
-
-
-
-docker rm e5143771c24f
-
-docker rm b77
-
-docker rm 6b 58
 
 ### import and export container
 
@@ -1433,9 +1448,71 @@ expose 8761
 
 
 
+## 数据卷
+
+
+
+
+
 
 
 ## 端口映射与容器互联
+
+
+
+
+
+
+
+```shell
+[root@localhost ~]# cat /usr/lib/systemd/system/docker.service | grep ExecStart
+ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
+[root@localhost ~]# vim /usr/lib/systemd/system/docker.service
+[root@localhost ~]# cat /usr/lib/systemd/system/docker.service | grep ExecStart
+ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock -H tcp://0.0.0.0:2375
+```
+
+
+
+```shell
+[root@localhost ~]# docker info
+......
+
+WARNING: API is accessible on http://0.0.0.0:2375 without encryption.
+         Access to the remote API is equivalent to root access on the host. Refer
+         to the 'Docker daemon attack surface' section in the documentation for
+         more information: https://docs.docker.com/engine/security/security/#docker-daemon-attack-surface
+```
+
+
+
+
+
+
+
+## 13、Open-source projects
+
+### 13.1、Docker Registry
+
+#### 13.1.1、Docker overview
+
+#### 13.1.2、Understand the Registry
+
+#### 13.1.3、Deploy a registry server
+
+#### 13.1.4、Configure a registry
+
+#### 13.1.5、Work with notifications
+
+#### 13.1.6、Recipes
+
+#### 13.1.7、Deprecated features
+
+#### 13.1.8、Compatibility
+
+#### 13.1.9、Getting help
+
+
 
 
 
@@ -1445,7 +1522,7 @@ expose 8761
 
 ### Docker error
 
-error 1
+#### Error 1
 
 ```
 Error response from daemon: Get https://index.docker.io/v1/search...
@@ -1470,6 +1547,70 @@ $ vi /etc/resolv.conf
 ```shell
 systemctl restart network
 ```
+
+#### Error 2、Cannot link to /xxx, as it does not belong to
+
+容器通信时使用`--link`选项，但是报错`Cannot link to /xxx, as it does not belong to`。这是因为与链接的容器不在同一个网络。
+
+使用命令`docker inspect <containerID|containerName>`查询看被连接容器的网络
+
+```shell
+[root@localhost ~]# docker inspect 5ba0fe65f1ef
+.......
+		"NetworkSettings": {
+			.......
+            "Networks": {
+                "example_default": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": [
+                        "nacos",
+                        "5ba0fe65f1ef"
+                    ],
+					.......
+                }
+            }
+        }
+    }
+]
+
+```
+
+使用命令`docker network ls`查看所有容器的networks信息
+
+```shell
+[root@localhost ~]# docker network ls
+NETWORK ID          NAME                DRIVER              SCOPE
+8fe6dbeabd5a        bridge              bridge              local
+61abd3228a94        example_default     bridge              local
+f19f59594fd8        host                host                local
+7770f79de323        none                null                local
+```
+
+在启动容器时使用`--net <networkName>`指定容器使用的网络，例如：
+
+```shell
+$ docker run \
+	-p 8080:8080 \
+    --name <container-name> \
+    --link <network-name>:<alias> \
+    --net example_defaul \
+    <image-name> 
+```
+
+
+
+### Docker镜像仓库源站
+
+Docker官方中国区（目前不可用）：https://registry.docker-cn.com
+
+网易：http://hub-mirror.c.163.com
+
+中国科技大学：https://docker.mirrors.ustc.edu.cn
+
+阿里云：参考[阿里云镜像仓库](#阿里云镜像仓库)
+
+
 
 ### 阿里云镜像仓库
 

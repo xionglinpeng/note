@@ -140,7 +140,31 @@ docker没有启动成功，右下角的小鲸鱼是红色的。解决方式是�
 > error during connect: Post http://%2F%2F.%2Fpipe%2Fdocker_engine/v1.39/images/create?fromImage=hello-world&tag=latest: open //./pipe/docker_engine: The system cannot find the file specified. In the default daemon configuration on Windows, the docker client must be run elevated to connect. This error may also indicate that the docker daemon is not running.
 > ```
 
-#### 测试docker安装结果
+### CentOS Docker安装
+
+
+
+
+
+
+
+```shell
+$ yum install -y yum-utils device-mapper-persistent-data lvm2
+```
+
+
+
+```shell
+sudo yum-config-manager \
+    --add-repo \
+    https://download.docker.com/linux/centos/docker-ce.repo
+```
+
+
+
+
+
+### 测试docker安装结果
 
 打开cmd窗口，执行docker命令测试。
 
@@ -1494,23 +1518,78 @@ WARNING: API is accessible on http://0.0.0.0:2375 without encryption.
 
 ### 13.1、Docker Registry
 
-#### 13.1.1、Docker overview
+registry是一个无状态的，高度可扩展的服务器端应用程序，它用于存储并分发Docker镜像。简单的说：registry是由Docker官方提供的可以搭建私有镜像仓库的应用程序。
 
-#### 13.1.2、Understand the Registry
+因为registry具有无状态，高度可扩展的特性，所以可以很容易的搭建registry的集群。虽然在一般的开发情形当中，registry集群是一个比较鸡肋的特性，但是一旦与k8s集成之后，有必要使用集群保证高可用性。
 
-#### 13.1.3、Deploy a registry server
+因为registry是由Golang语言编写，并且Docker官方以及提供的registry的镜像，所以这里将不在介绍源码编译的安装方式。
 
-#### 13.1.4、Configure a registry
+**基于容器的方式运行**
 
-#### 13.1.5、Work with notifications
+```shell
+$ docker run -d -p 5000:5000 --restart always --name registry registry:2
+```
 
-#### 13.1.6、Recipes
+**registry容器内侦听端口**
 
-#### 13.1.7、Deprecated features
+registry在容器内侦听的端口默认为`5000`，所以上面的映射为`-p [port]:5000`。其默认侦听端口可以通过环境变量`REGISTRY_HTTP_ADDR`进行更改。
 
-#### 13.1.8、Compatibility
+```shell
+docker run -d \
+	-p 5000:5100 \
+	-e REGISTRY_HTTP_ADDR=0.0.0.0:5100 \
+	--restart always \
+	--name registry registry:2
+```
 
-#### 13.1.9、Getting help
+**挂载仓库存储路径**
+
+registry的仓库存储路径默认为`/var/lib/registry`。以下例子挂载到本地系统文件目录`/opt/docker/registry/lib`。
+
+```shell
+$ docker run -d \
+	-p 5000:5100 \
+	-e REGISTRY_HTTP_ADDR=0.0.0.0:5100 \
+	-v /opt/docker/registry/lib:/var/lib/registry \
+	--restart always \
+	--name registry \
+	registry:2
+```
+
+**推送镜像到本地仓库**
+
+假设本地已经存在镜像`ubuntu:16.04`。
+
+首先需要为其添加新的标签，需要注意的是，其镜像标签命名有规则限制，命名格式为`[REGISTRY_HOST[:REGISTRY_PORT]/]REPOSITORY[:TAG]`
+
+```shell
+$ docker tag ubuntu:16.04 localhost:5000/ubuntu:16.04
+```
+
+推送
+
+```shell
+$ docker push localhost:5000/ubuntu:16.04
+```
+
+查看上传的镜像
+
+```shell
+$ curl http://localhost:5000/v2/_catalog
+{"repositories":["ubuntu"]}
+```
+
+> 当标记的第一部分是host和port时，Docker会将其解析为registry的地址。
+
+**从本地仓库拉取镜像**
+
+```shell
+$ docker pull localhost:5000/ubuntu
+```
+
+
+
+
 
 
 

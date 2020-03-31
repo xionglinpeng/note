@@ -82,6 +82,24 @@ public static AsyncWebRequest createAsyncWebRequest(HttpServletRequest request, 
 
 
 
+## ResolvableType
+
+获取指定类的泛型
+
+```java
+ResolvableType.forClass(getClass()).getGeneric().resolve();
+```
+
+获取指定类父类的泛型
+
+```java
+ResolvableType.forClass(getClass()).getSuperType().getGeneric().resolve();
+```
+
+
+
+
+
 ## GenericTypeResolver
 
 ### resolveTypeArgument
@@ -98,3 +116,6 @@ public static Class<?> resolveTypeArgument(Class<?> clazz, Class<?> genericIfc)
 
 
 
+## StringDecoder
+
+`org.springframework.core.codec.StringDecoder`

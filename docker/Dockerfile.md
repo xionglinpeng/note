@@ -1,6 +1,12 @@
 # Dockerfile
 
+## FROM
 
+格式：`FROM <image>`或者`FROM <image>:<tag>`
+
+FROM指令的功能是为后面的指令提供基础镜像，因此Dockerfile必须以FROM指令作为第一条非注释指令。从公共镜像库中拉取镜像很容易，基础镜像可以选择任何有效的镜像。
+
+在一个Dockerfile中FROM指令可以出现多次，这样会构建多个镜像。tag的默认值是latest，如果参数image或者tag指定的镜像不存在，则返回错误。
 
 
 

@@ -4,6 +4,72 @@
 
 
 
+
+
+## Seagull
+
+Githup：<https://github.com/tobegit3hub/seagull>
+
+**介绍**
+
+Seagull是友好的Web UI，用于管理和监控docker。
+
+- 易于在docker容器中安装和卸载。
+- 一键启动/停止/删除容器和镜像。
+- 超快（<10ms）— 搜索和过滤。
+- 支持i18n国际化，包括英语、中文、德语和法语。
+
+**安装**
+
+```shell
+$ docker run -d -p 10086:10086 -v /var/run/docker.sock:/var/run/docker.sock tobegit3hub/seagull
+```
+
+或者运行`docker-compose up -d`。
+
+**多主机**
+
+Seagull支持监控多个服务器。
+
+```shell
+$ docker -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock -api-enable-cors=true -d
+```
+
+## UI-for-docker
+
+Githup：<https://github.com/kevana/ui-for-docker>
+
+**介绍**
+
+Docker的web接口，以前称为DockerUI。这个repo未得到维护。
+
+> UI-for-docker已经被废弃，最新维护的是[portainer](https://github.com/portainer/portainer)。
+
+**快速开始**
+
+1. 运行：
+
+   ```shell
+   $ docker run -d -p 9000:9000 --privileged -v /var/run/docker.sock:/var/run/docker.sock uifd/ui-for-docker
+   ```
+
+2. 打开浏览器：`http://<dockerd-host-ip>:9000`。
+
+**以指定的套接字连接到Docker守护进程**
+
+默认情况下，UI-For-Docker使用`/var/run/docker.sock`来连接到Docker守护进程。因此，您需要使用`-v /var/run/docker.sock:/var/run/docker.sock`将unix套接字绑定到容器中。
+
+可以使用`-H`标签来更改此套接字：
+
+```shell
+# 连接到tcp套接字
+$ docker run -d -p 9000:9000 --privileged uifd/ui-for-docker -H tcp://127.0.0.1:2375
+```
+
+有关更多信息，请查看Githup。
+
+
+
 ## 数据库应用
 
 

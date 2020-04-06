@@ -14,7 +14,7 @@ docker中文：<http://www.docker.org.cn/index.html>
 
 ## Docker服务命令
 
-启动docker服务：`ststemctl start docker`
+启动docker服务：`systemctl start docker`
 
 关闭docker服务：`systemctl stop docker`
 

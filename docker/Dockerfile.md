@@ -1,5 +1,19 @@
 # Dockerfile
 
+Dockerfile是Docker用来构建镜像的文本文件，包括自定义的指令和格式。可以通过`docker build`命令从Dockerfile中构建镜像。用户可以通过统一的语法命令来根据需求进行配置，通过这份统一的配置文件，在不同的系统上进行分发，需要使用时就可以根据配置文件进行自动化构建，这解决了开发人员构建镜像的复杂过程。
+
+Dockerfile描述了组装对象的步骤，其中每条指令都是单独运行的。除了`FROM`指令，其他每条命令都会在上一条指令所生成镜像的基础上执行，执行完后会生成一个新的镜像层，新的镜像层覆盖在原来的镜像之上，从而形成了新的镜像。Dockerfile所生成的最终镜像就是基础镜像上面叠加一层层的镜像层组建的。
+
+**Docker指令**
+
+在Dockerfile中，指令不区分大小写，但是为了与参数区分，推荐大写。
+
+Docker会顺序执行Dockerfile中的指令，第一条指令必须是`FROM`指令，它用于指定构建镜像的基础镜像。在Dockerfile中以`#`开头的行是注释，而在其他位置出现的`#`会被当成参数。
+
+Dockerfile中的指令有`FROM`、`MAINTAINER`、`USER`、`LABEL`、`ARG`、`WORKDIR`、`ENV`、`RUN`、`ADD`、`COPY`、`EXPOSE`、`VOLUME`、`CMD`、`ENTRYPOINT`、`ONBUILD`、`HEALTHCHECK`、`SHELL`、`STOPSIGNAL`，错误的指令会被忽略。
+
+
+
 ## FROM
 
 格式：`FROM <image>`或者`FROM <image>:<tag>`
@@ -7,6 +21,20 @@
 `FROM`指令的功能是为后面的指令提供基础镜像，因此Dockerfile必须以FROM指令作为第一条非注释指令。从公共镜像库中拉取镜像很容易，基础镜像可以选择任何有效的镜像。
 
 在一个Dockerfile中FROM指令可以出现多次，这样会构建多个镜像。`tag`的默认值是`latest`，如果参数image或者tag指定的镜像不存在，则返回错误。
+
+## MAINTAINER？？
+
+
+
+## LABEL??
+
+
+
+## ARG??
+
+
+
+
 
 ## ENV
 
@@ -73,6 +101,8 @@ RUN pwd
 ```
 
 输出结果是：/a/b/c。
+
+## VOLUME？？
 
 ## RUN
 
@@ -213,4 +243,126 @@ ff02::1	ip6-allnodes
 ff02::2	ip6-allrouters
 172.17.0.3	eb43593a3324
 ```
+
+## ONBUILD？？
+
+## SHELL??
+
+## HEALTHCHECK??
+
+## STOPSIGNAL??
+
+# Dockerfile实践指南
+
+## 使用标签
+
+给镜像打上标签，有利于帮助了解镜像的功能。
+
+## 选择基础镜像
+
+容器的镜像越小，越有利于迁移，而这跟选择的基础镜像有一定关系，不同的镜像大小不同，目前Linux镜像的大小有如下关系：
+
+`busybox < alpine < debian < centos < ubuntu`
+
+同时在构建自己的Docker镜像时，只安装和更新必要的包。对于基础的容器环境镜像，推荐使用alpine镜像，因为它非常轻量级（目前其大小只有5M左右），并且有其独有的apk包管理工具。
+
+## 充分利用缓存
+
+Docker deamon会顺序执行Dockerfile中的指令，而且一旦缓存失效，后续命令将不能使用缓存。为了有效地利用缓存，需要保证指令的连续性，尽量将所有Dockerfile文件相同的部分都放在前面，而将不同的部分放到后面。
+
+## 正确使用`ADD`与`COPY`命令
+
+当在Dockerfile中的不同部分需要用到不同的文件时，不要一次性将这些文件都添加到镜像中去。而是在需要时添加，这样也有利于重复利用docker缓存。
+
+另外考虑到镜像大小问题，使用ADD指令去获取远程URL中的压缩包不是推荐的做法。应该使用`RUN wget`或`RUN curl`代替。这个样可以删除解压后不再需要的文件，并且不需要在镜像中添加一层。
+
+错误做法：
+
+```dockerfile
+ADD http://example.com/big.tar.xz /usr/src/things/
+RUN tar -xJf /usr/src/things/big.tar.xz -C /usr/src/things
+RUN make -C /usr/src/things all
+```
+
+正确做法：
+
+```dockerfile
+RUN mkdir -p /usr/src/things \   
+    && curl -SL http://example.com/big.tar.xz \    
+    | tar -xJC /usr/src/things \    
+    && make -C /usr/src/things all
+```
+
+## RUN指令
+
+RUN指令指定的命令较长时可以使用反斜杠`\`分隔多行。
+
+ubuntu系统下的包管理工具是apt-get，在该场景下有以下几点需要注意：
+
+1. 
+
+
+
+
+
+
+
+## `CMD`和`ENTRYPOINT`命令
+
+`CMD`和`ENTRYPOINT`指令指定了容器运行的默认命令，推荐二者结合使用。使用`exec`格式的`ENTRYPOINT`指令设置固定的默认命令和参数，然后使用`CMD`指令设置可变的参数。
+
+Dockerfile中的`CMD`和`ENTRYPOINT`指令顺序不重要（`CMD`写在`ENTRYPOINT`前后都可以）。
+
+## 不要在Dockerfile中做端口映射
+
+使用Dockerfile的`EXPOSE`指令，虽然可以将容器端口映射在主机端口上，但会破坏Dockerfile的可移植性，且这样的镜像在一台主机上只能启动一个容器。所以端口映射应在`docker run`命令中使用`-p`参数指定。
+
+```dockerfile
+# 不要在Dockerfile中做如下映射
+EXPOSE 80:8080
+# 仅暴露80端口，需要另做映射
+EXPOSE 80
+```
+
+
+
+
+
+> 主要内容引用：<https://juejin.im/post/5e60745d518825492e4965ed#heading-13>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

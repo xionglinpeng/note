@@ -229,7 +229,21 @@ services:
 
 
 
+## docker-registry-web
 
+docker-registry-web是私有的Docker Registry v2的web UI。
+
+
+
+
+
+
+
+
+
+Githup：<https://github.com/mkuchin/docker-registry-web>
+
+Docker Hup：<https://hub.docker.com/r/hyper/docker-registry-web/>
 
 ### Harbor
 
@@ -247,15 +261,64 @@ Demo：https://demo.goharbor.io
 
 
 
-### Portainer
 
 
+## Portainer
 
+Portainer是一个用于构建，管理和维护Docker环境的UI工具，Portainer可以为软件开发人员和IT操作人员提供直观的界面。Portainer提供了对Docker环境的详细概述，并可以管理容器，镜像，网络和数据卷。Portainer易于部署——仅需要一个Docker命令即可以在任何地方运行Portainer。
+Portainer是免费的，它有一些扩展功能，例如Portainer Registry Manager，只不过这些扩展功能是需要收费的。
 
+此外，Portainer官方还提供了Windows容器主机的部署方式，但是我们一般都是使用的Linux容器主机，所以这里不做介绍，如想要了解，请参考官方[安装指南](https://www.portainer.io/installation/)。
 
 Official：https://www.portainer.io/
 
+Official Document：<https://portainer.readthedocs.io/en/stable/>
+
 Githup：https://github.com/portainer
+
+### Docker安装Portainer
+
+Portainer由两个元素组成——Portainer服务和Portainer代理。这两个元素都作为Docker容器在Docker中运行。由于Docker的特性，存在多种部署方案，下面将介绍最常用的部署方案（如果以下部署方案没有您所需要的，请参考portainer.readthedocs.io以获取其他选项）。
+
+请注意，使用Docker Swarm模式时，推荐使用Portainer代理。
+
+**单机Linux Docker主机部署**
+
+使用以下Docker命令部署Portainer服务器；请注意，在单机Docker主机上不需要代理。
+
+```shell
+$ docker volume create protainer_data
+$ docker run -d -p 8000:8000 -p 9000:9000 --name=portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer
+```
+
+部署完成之后访问9000端口即可。
+
+>  注意：`-v /var/run/docker.sock:/var/run/docker.sock`选项只能在Linux环境使用。
+
+**Docker Swarm集群部署**
+
+Swarm集群部署需要部署Portainer服务和Portainer Agent代理，Portainer官方提供了相应的stack.yml文件，直接下载部署即可，如下：
+
+```shell
+$ curl -L https://downloads.portainer.io/portainer-agent-stack.yml -o portainer-agent-stack.yml
+$ docker stack deploy --compose-file=portainer-agent-stack.yml portainer
+```
+
+部署完成之后访问9000端口即可。
+
+> 注意：Portainer Agent将作为全局服务部署在集群的每个节点上。
+
+**只部署Portainer Agent**
+
+在远程Linux Swarm集群部署Protainer Agent集群服务，在远程集群的管理节点上运行以下命令：
+
+```shell
+$ docker service create --name portainer_agent --network portainer_agent_network --publish mode=host,target=9001,published=9001 -e AGENT_CLUSTER_ADDR=tasks.portainer_agent --mode global --mount type=bind,src=//var/run/docker.sock,dst=/var/run/docker.sock --mount type=bind,src=//var/lib/docker/volumes,dst=/var/lib/docker/volumes –-mount type=bind,src=/,dst=/host portainer/agent
+```
+
+
+
+
 
 
 

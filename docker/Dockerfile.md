@@ -297,15 +297,10 @@ RUN mkdir -p /usr/src/things \   
 
 RUN指令指定的命令较长时可以使用反斜杠`\`分隔多行。
 
-ubuntu系统下的包管理工具是apt-get，在该场景下有以下几点需要注意：
+ubuntu系统下的包管理工具是`apt-get`，在该场景下有以下几点需要注意：
 
-1. 
-
-
-
-
-
-
+1. 不要在一行中单独使用指令`RUN apt-get update`。因为当软件源更新后，这样做会引起缓存问题，导致`RUN apt-get install`指令运行失败，所以`RUN apt-get update`和`RUN apt-get install`应该写在同一行。比如`RUN apt-get update && RUN apt-get install package-1 package-2 package-3`。
+2. 避免使用指令`RUN apt-get upgrade和RUN apt-get dist-upgrade`。因为在一个无特权的容器中，一些必要的包会更新失败。如果需要更新一个包，直接使用命令`RUN apt-get install -y package`。
 
 ## `CMD`和`ENTRYPOINT`命令
 

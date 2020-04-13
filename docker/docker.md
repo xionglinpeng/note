@@ -1713,6 +1713,15 @@ Docker官方中国区（目前不可用）：https://registry.docker-cn.com
 
 
 
+```shell
+$ sudo mkdir -p /etc/docker
+$ sudo tee /etc/docker/daemon.json <<-'EOF'
+{
+  "registry-mirrors": ["https://wk4vahax.mirror.aliyuncs.com"]
+}
+EOF
+```
+
 
 
 

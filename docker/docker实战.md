@@ -233,17 +233,89 @@ services:
 
 docker-registry-web是私有的Docker Registry v2的web UI。
 
+特性：
 
-
-
-
-
-
-
+- 在docker registry v2中浏览repositories, tags和images。
+- Optional token based authentication provider with role-based permissions。
+- Docker registry通知记录和审核。
 
 Githup：<https://github.com/mkuchin/docker-registry-web>
 
 Docker Hup：<https://hub.docker.com/r/hyper/docker-registry-web/>
+
+**Docker拉取命令**
+
+```shell
+$ docker pull hyper/docker-registry-web
+```
+
+**如何运行**
+
+**Qucik start（使用环境变量进行配置，无身份认证）**
+
+```shell
+# 首先运行registry:2容器
+$ docker run -d -p 5000:5000 --name registry-srv registry:2
+# 再运行docker-registry-web
+$ docker run -it \
+	-p 8080:8080 \
+	--name registry-web \
+	--link registry-srv \
+	-e REGISTRY_URL=http://registry-srv:5000/v2 \
+	-e REGISTRY_NAME=localhost:5000 \
+	hyper/docker-registry-web 
+```
+
+> 不要使用`registry`作为registry容器的名称，否则会破坏`REGISTRY_NAME`环境变量。
+
+使用基本身份认证和自签名证书连接到docker registry。
+
+```shell
+$ docker run -it -p 8080:8080 --name registry-web --link registry-srv \
+           -e REGISTRY_URL=https://registry-srv:5000/v2 \
+           -e REGISTRY_TRUST_ANY_SSL=true \
+           -e REGISTRY_BASIC_AUTH="YWRtaW46Y2hhbmdlbWU=" \
+           -e REGISTRY_NAME=localhost:5000 \
+           hyper/docker-registry-web
+```
+
+**无身份认证，使用配置文件**
+
+1. 创建配置文件`config.yml`
+
+   ```yaml
+   registry:
+     # Docker registry url
+     url: http://registry-srv:5000/v2
+     name: localhost:5000
+     # 运行镜像删除，应该是false
+     readonly: false
+     auth:
+     	# 禁用身份认证
+       enabled: false
+   ```
+
+   > 此配置中的所有属性都可以被环境变量覆盖。例如`registry.auth.enabled`将被环境变量`REGISTRY_AUTH_ENABLED`覆盖。
+
+2. 运行docker
+
+   ```shell
+   $ docker run -d -p 5000:5000 --name registry-srv registry:2
+   $ docker run -it \
+   	-p 8080:8080 \
+   	--name registry-web \
+   	--link registry-srv \
+   	-v $(pwd)/config.yml:/conf/config.yml:ro \
+   	hyper/docker-registry-web
+   ```
+
+3. `http://localhost:8080`访问Web UI。
+
+**启用身份认证**
+
+
+
+
 
 ### Harbor
 

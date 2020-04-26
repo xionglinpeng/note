@@ -160,7 +160,7 @@ To see the stack trace of this error execute with --v=5 or higher
 7. 提示`/proc/sys/net/ipv4/ip_forward`内容没有设置为`1`，所以将其设置为`1`即可，
 
    ```shell
-   # 先查看/proc/sys/net/ipv4/ip_forward
+   calico# 先查看/proc/sys/net/ipv4/ip_forward
    $ cat /proc/sys/net/ipv4/ip_forward
    0
    
@@ -740,6 +740,77 @@ work1                   Ready    <none>   2m15s   v1.18.1
 
 依次类推，在将另一个节点也添加到集群中。
 
+## 6、安装calico网络
+
+```shell
+$ kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+configmap/calico-config created
+customresourcedefinition.apiextensions.k8s.io/bgpconfigurations.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/bgppeers.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/blockaffinities.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/clusterinformations.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/felixconfigurations.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/globalnetworkpolicies.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/globalnetworksets.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/hostendpoints.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/ipamblocks.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/ipamconfigs.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/ipamhandles.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/ippools.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/networkpolicies.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/networksets.crd.projectcalico.org created
+clusterrole.rbac.authorization.k8s.io/calico-kube-controllers created
+clusterrolebinding.rbac.authorization.k8s.io/calico-kube-controllers created
+clusterrole.rbac.authorization.k8s.io/calico-node created
+clusterrolebinding.rbac.authorization.k8s.io/calico-node created
+daemonset.apps/calico-node created
+serviceaccount/calico-node created
+deployment.apps/calico-kube-controllers created
+serviceaccount/calico-kube-controllers create
+```
+
+
+
+**calico网络插件报错：**
+
+Number of node(s) with BGP peering established = 1
+
+查看到日志报错：
+
+bird: BGP: Unexpected connect from unknown address 10.0.0.7
+
+解决方案：
+
+在calico.yaml文件中添加如下内容
+
+```yaml
+# Specify interface
+- name: IP_AUTODETECTION_METHOD
+value: "interface=enp0s8"
+```
+
+添加位置参考如下上下文：
+
+```yaml
+......
+
+# Cluster type to identify the deployment type
+- name: CLUSTER_TYPE
+value: "k8s,bgp"
+# Specify interface
+- name: IP_AUTODETECTION_METHOD
+value: "interface=enp0s8"
+# Auto-detect the BGP IP address.
+- name: IP
+value: "autodetect"
+
+......
+```
+
+
+
+
+
 ## 6、集群测试
 
 kuberentes集群虽然搭建成功了，但是还是不能确定是否能够成功的部署服务，所以测试一下：
@@ -896,12 +967,46 @@ master节点
 3. 设置docker自启动
 4. 启动docker
 5. 设置主机名
-6. 关闭swap分区
-7. 添加镜像源
-8. 安装kubelet kubeadm kubectl
-9. 设置kubelet自启动
-10. 启动kubelet
-11. 添加节点到集群
+6. 编辑/etc/hosts，添加主机名映射
+7. 关闭swap分区
+8. 添加镜像源
+9. 安装kubelet kubeadm kubectl
+10. 设置kubelet自启动
+11. 启动kubelet
+12. /proc/sys/net/bridge/bridge-nf-call-iptables设置为1
+13. 添加节点到集群
+
+
+
+没有编辑/etc/hosts，添加主机名映射的情况
+
+```shell
+[root@localhost ~]# kubeadm join 10.0.2.7:6443 --token 7gd349.kwh3ehctgh9eyvks     --discovery-token-ca-cert-hash sha256:d8cd38193124955199443851777de51b47902ede1f7b1e13890922871519e23d
+W0419 12:16:21.984081    2767 join.go:346] [preflight] WARNING: JoinControlPane.controlPlane settings will be ignored when control-plane flag is not set.
+[preflight] Running pre-flight checks
+	[WARNING Hostname]: hostname "work2" could not be reached
+	[WARNING Hostname]: hostname "work2": lookup work2 on 211.162.130.33:53: no such host
+```
+
+
+
+
+
+token是有有效期的，如果已经过期，情况如下
+
+```shell
+[root@localhost ~]# kubeadm join 10.0.2.7:6443 --token 7gd349.kwh3ehctgh9eyvks     --discovery-token-ca-cert-hash sha256:d8cd38193124955199443851777de51b47902ede1f7b1e13890922871519e23d
+W0419 12:21:21.126486    3208 join.go:346] [preflight] WARNING: JoinControlPane.controlPlane settings will be ignored when control-plane flag is not set.
+[preflight] Running pre-flight checks
+error execution phase preflight: couldn't validate the identity of the API Server: could not find a JWS signature in the cluster-info ConfigMap for token ID "7gd349"
+To see the stack trace of this error execute with --v=5 or higher
+```
+
+如果使节点加入集群的命令失效，执行如下命令重新获取
+
+```shell
+$ kubeadm token create --print-join-command
+```
 
 
 

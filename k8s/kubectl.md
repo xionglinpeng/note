@@ -92,7 +92,27 @@ Use "kubectl options" for a list of global command-line options (applies to all 
 
 ### get
 
+```shell
+$ kubectl get replicaSet
+$ kubectl get rs
+$ kubectl get deployment -o wide
+$ kubectl get pods -o wide
+$ kubectl get svc -o wide
+```
+
+
+
+
+
 ### delete
+
+删除资源
+
+```shell
+$ kubectl delete -f  mysql-service.yaml
+```
+
+
 
 
 
@@ -108,11 +128,31 @@ Use "kubectl options" for a list of global command-line options (applies to all 
 
 ### exec
 
+
+
+```shell
+$ kubectl exec -it database-mysql-6cc6bdf95d-2wdk4 /bin/sh
+```
+
+
+
+
+
 ## Advanced Commands:
 
 
 
 ### apply
+
+
+
+```shell
+$ kubectl apply -f  mysql-service.yaml
+```
+
+
+
+
 
 ## Settings Commands:
 

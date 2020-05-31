@@ -8,7 +8,13 @@
 
 Pod资源通过`spec.containers.imagePullPolicy`来设置其镜像的拉取策略，可选值如下：
 
+- `Always`：总是拉取镜像，无论宿主机上对应的镜像是否存在。
 
+- `Never`：从不拉取镜像。
+
+- `IfNotPresent`：如果镜像不存在，则拉取。
+
+如果镜像指定了`:latest`标签，则默认为`Always`，否则为`IfNotPresent`。不能被更新。
 
 下面是一个pod示例，通过`imagePullPolicy`来设置镜像的拉取策略：
 

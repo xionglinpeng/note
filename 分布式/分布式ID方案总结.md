@@ -41,11 +41,7 @@ Snowflake是twitter开源的分布式ID生成算法，是一种算法，所以�
 - 工作机器id占10bit，这里比较灵活，比如，可以使用前5位作为数据中心机房标识，后5位作为单机房机器标识，可以部署1024个结点。
 - 序列号部分占12bit，支持同一毫秒内同一个结点可以生成4096个ID。
 
-
-
-
-
-java实现：
+### java实现
 
 ```java
 /**
@@ -78,17 +74,17 @@ public class Snowflake {
     private final long startTimestamp;
 
     /**
-     *
+     * 机器ID
      */
     private final long machineId;
 
     /**
-     *
+     * 数据中心ID
      */
     private final long dataCenterId;
 
     /**
-     *
+     * 序列号
      */
     private long sequenceNumber = 0L;
 
@@ -109,7 +105,7 @@ public class Snowflake {
         this.dataCenterId = dataCenterId;
     }
 
-    public long nextId() throws Exception {
+    public synchronized long nextId() {
         long currentTimestamp = System.currentTimeMillis();
         //处理时间回溯的情况
         if (currentTimestamp < lastTimestamp) {
@@ -117,7 +113,7 @@ public class Snowflake {
         }
         if (currentTimestamp == lastTimestamp) {
             //同一毫秒内，序列号自增
-            sequenceNumber = sequenceNumber++ & MAX_SEQUENCE_VALUE;
+            sequenceNumber = (sequenceNumber + 1) & MAX_SEQUENCE_VALUE;
             //序列号到达最大值（当前毫秒内的序列号已经用完），等待至下一毫秒
             if (sequenceNumber == 0L) {
                 currentTimestamp = getNextTimestamp();
@@ -135,7 +131,7 @@ public class Snowflake {
     }
 
     /**
-     * 获取上一次时间戳之后时间搓，只有当当前时间大于上一次时间，参会返回。
+     * 获取上一次时间戳之后时间戳，只有当当前时间大于上一次时间，就会返回。
      *
      * @return 时间搓
      */
@@ -148,6 +144,50 @@ public class Snowflake {
     }
 }
 ```
+
+### nextId()方法执行缓慢
+
+注意`nextId()`方法中，同一毫秒内，序列号自增时，一定不能写`sequenceNumber++`，如果这样写的话将会发现`nextId()`执行特别缓慢，差不多一千多毫秒生成一千条左右的ID。
+
+这里因为java中++操作的原因，如下例子：
+
+```java
+int i = 0;
+System.out.println(i++); //输出 0
+int i = 0;
+System.out.println(++i); //输出 1
+```
+
+如果写成`sequenceNumber++`：
+
+```java
+sequenceNumber = (sequenceNumber++) & MAX_SEQUENCE_VALUE;
+```
+
+将会导致如下情形：
+
+- 第一次sequenceNumber等于0， 执行`sequenceNumber++`返回0，`0 & MAX_SEQUENCE_VALUE`还是0，最后将0赋值给sequenceNumber。
+- 第二次sequenceNumber还是等于0， 执行`sequenceNumber++`返回0，`0 & MAX_SEQUENCE_VALUE`还是0，最后将0赋值给sequenceNumber。
+- 第三次......
+- ......
+
+看出来了吗，在同一毫秒内，sequenceNumber始终等于0，没有起作用。而且会导致后续代码始终执行。后续代码如下：
+
+```java
+if (sequenceNumber == 0L) {
+    currentTimestamp = getNextTimestamp();
+}
+```
+
+也就说在同一毫秒内获取的每一个ID，都会执行`getNextTimestamp()`方法，从而不得不等待至少1毫秒。这就是效率低下的根源。
+
+可以更改为如下方式：
+
+```java
+sequenceNumber = (sequenceNumber + 1) & MAX_SEQUENCE_VALUE;
+```
+
+不推荐使用`++sequenceNumber`，因为`++sequenceNumber`会改变sequenceNumber本身的值。
 
 
 

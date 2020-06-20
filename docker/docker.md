@@ -1486,7 +1486,7 @@ expose 8761
 
 
 
-
+1. 修改配置，添加`-H tcp://0.0.0.0:2375`
 
 ```shell
 [root@localhost ~]# cat /usr/lib/systemd/system/docker.service | grep ExecStart
@@ -1497,6 +1497,29 @@ ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
 ```
 
 
+
+2. 重新加载docker.service服务单元
+
+```shell
+$ systemctl daemon-reload
+```
+
+如果不，直接重启docker会报如下警告信息
+
+```
+docker.service changed on disk. Run 'systemctl daemon-reload' to reload units.
+```
+
+最终的结果是配置没有生效
+
+3. 重启docker
+
+```shell
+$ systemctl restart docker
+
+```
+
+4. 使用docker info命令查看是否配置成功
 
 ```shell
 [root@localhost ~]# docker info

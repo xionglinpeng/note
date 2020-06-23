@@ -311,9 +311,9 @@ SQL Mapper配置
 - `flushCache`：用于控制是否刷新缓存。如果将其设置为true，则任何时候只要语句被调用，都会导致本地缓存和二级缓存被清空，默认值为false。
 - `useCache`：是否使用二级缓存。如果将其设置为true，则会导致本条语句的结果被缓存在Mybatis的二级缓存中，对应`<select>`标签，该属性的默认值为true。
 - `timeout`：驱动程序等待数据库返回请求结果的秒数，超时将会抛出异常。
-- `fetchSize`：用于设置JDBC中的Statement对象的fetchSize属性，该属性用于指定SQL执行后返回的最大行数。
+- `fetchSize`：用于设置JDBC中的Statement对象的`fetchSize`属性，该属性用于指定SQL执行后返回的最大行数。
 - `statementType`：参数可选值为`STATEMENT`、`PREPARED`或`CALLABLE`，这会让Mybatis分别使用`Statement`、`PreparedStatement`或`CallableStatement`与数据库交互，默认值为`PREPARED`。
-- `resultSetType`：参数可选值为`FORWARD_ONLY`、`SCROLL_SENSITIVE`或`SCROLL_INSENSITIVE`，用于设置ResultSet对象的特征，具体可参考？？。默认未设置，由JDBC驱动决定。
+- `resultSetType`：参数可选值为`FORWARD_ONLY`、`SCROLL_SENSITIVE`或`SCROLL_INSENSITIVE`，用于设置ResultSet对象的特征，具体可参考JDBC规范相关的内容。默认未设置，由JDBC驱动决定。
 - `databaseId`：如果配置了databaseIdProvider，Mybatis会加载所有不带databaseId或匹配当前databaseId的语句。
 - `resultOrdered`：这个设置仅针对嵌套结果select语句适用，如果为true，就是假定嵌套结果包含在一起或分组在一起，这样的话，当返回一个主结果行的时候，就不会发生对前面结果集引用的情况。这就使得在获得嵌套结果集的时候不至于导致内存不够用，默认值为false。
 - `resultSets`：这个设置仅对多结果集的情况适用，它将列出语句执行后返回的结果集并将每个结果集给一个名称，名称使用逗号分隔。

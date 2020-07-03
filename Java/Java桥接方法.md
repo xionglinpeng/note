@@ -10,6 +10,25 @@ Java中的桥接方法是一种合成方法，在实现某些Java语言特性的
 
 **泛型擦除**
 
+看以下的例子
+
+```java
+public class Foo<T> {
+
+    public T get(){
+        return null;
+    }
+}
+
+public class Bar extends Foo<string> {
+
+    @Override
+    public String get() {
+        return null;
+    }
+}
+```
+
 如果你知道泛型擦除，那么就应该知道，泛型是在JDK1.5引入，它只在编译期起作用，所以上面的代码在泛型擦除之后，预期会变成这样：
 
 ```java

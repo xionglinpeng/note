@@ -2,11 +2,229 @@
 
 
 
+## 1. Mysql数据类型
+
+MySQL支持多种数据类型，主要有数值类型，日期/时间类型和字符串类型。
+
+1. 数值类型：
+
+   整数类型：TINYINT、SMALLINT、MEDIUMINT、INT、BIGINT。
+
+   浮点小数类型：FLOAT、DOUBLE。
+
+   定点小数类型：DECIMAL。
+
+2. 日期/时间类型：YEAR、TIME、DATE、DATETIME、TIMESTAMP。
+
+3. 字符串类型：
+
+   文本字符串类型：CHAR、VARCHAR、TEXT、ENUM、SET
+
+   二进制字符串类型：BINAYY、VARBINARY、BLOB
+
+### 1.1.1、整数类型
+
+数值数据类型主要用来存储数字，MySQL提供了多种数值数据类型，不同的数据类型根据不同的取值范围，可以存储的值范围越大，其所需要的存储空间也会越大。MySQL主要提供的整数类型有TINYINT、SMALLINT、MEDIUMINT、INT、BIGINT。整数类型的属性字段可以添加`AUTO_INCREMENT`自增约束条件。
+
+*MySQL中的整数数据类型*
+
+| 类型名称  | 说明           | 存储需求 |
+| --------- | -------------- | -------- |
+| TINYINT   | 很小的整数     | 1字节    |
+| SMALLINT  | 小的整数       | 2字节    |
+| MEDIUMINT | 中等大小的整数 | 3字节    |
+| INT       | 普通大小的整数 | 4字节    |
+| BIGINT    | 大整数         | 8字节    |
+
+不同整数类型的取值范围
+
+| 类型名称  | 有符号                                   | 无符号                 |
+| --------- | ---------------------------------------- | ---------------------- |
+| TINYINT   | -128~127                                 | 0~255                  |
+| SMALLINT  | 32768~32767                              | 0-65535                |
+| MEDIUMINT | -8388608~8388607                         | 0~16777215             |
+| INT       | 普通大小的整数                           | 0~4294967295           |
+| BIGINT    | -9223372036854775808~9223372036854775807 | 0~18446744073709551615 |
+
+不同的整数类型有不同的取值范围，并且需要不同的存储空间，因此应该根据实际需要选择最合适的类型，这样有利于提高查询的效率和节省存储空间。
+
+示例：
+
+```mysql
+CREATE TABLE temp (
+   x TINYINT,
+   y SMALLINT,
+   z MEDIUMINT,
+   m INT,
+   n BIGINT
+);
+```
+
+### 1.1.2、浮点数类型和定点数类型
+
+MySQL使用浮点数和顶点数来表示小数。
+
+浮点数类型有两种：
+
+1. 单精度浮点型（FLOAT）
+2. 双精度浮点型（DOUBLE）
+
+定点数类型有一种：
+
+1. DECIMAL
+
+浮点数类型和顶点数类型都可以用（M,N）来表示。
+
+- M称为精度，表示**总共**的位数；
+- N称为标度，表示小数的位数；
+
+> 注意：
+>
+> M称为精度，表示**总共**的位数。例如（5,1），即整数位只能有4位，小数位只能有1位，即它们总共有5位。
+
+*MySQL中的小数类型*
+
+| 类型名称           | 说明               | 存储需求 |
+| ------------------ | ------------------ | -------- |
+| FLOAT              | 单精度浮点数       | 4字节    |
+| DOUBLE             | 双精度浮点数       | 8字节    |
+| DECIMAL(M,D) , DEC | 压缩的“严格”定点数 | M+2字节  |
+
+**浮点数取值范围**
+
+- FLOAT类型的取值范围如下：
+  - 有符号的取值范围：-3.402823466E+38 ~ -1.175494351E-38
+  - 无符号的取值范围：0和1.175494351E-38 ~ 3.402823466E+38
+- DOUBLE类型的取值范围如下：
+  - 有符号的取值范围：-1.797693148623157E+308 ~ -2.2250738585072014E-308
+  - 无符号的取值范围：0和2.2250738585072014E-308 ~ 1.797693148623157E+308
+
+**浮点数和定点数特性**
+
+1. 无论是定点数还是浮点数类型，如果指定的精度超出精度范围，则会四色五入。
+
+2. FLOAT和DOUBLE在不指定精度时，默认会按照实际的精度（由计算机硬件和操作系统决定）。
+
+3. DECIMAL若不指定精度，则默认为(10,0)。
+
+4. 浮点数相对于定点数的优点是在长度一定的情况下，浮点数能够表示更大的数据范围；它的缺点是会引起精度问题。
+
+   > 浮点数在进行加减法和比较运算时容易出问题，所以在使用浮点数时需要注意，并尽量避免做浮点数比较。
+
+5. 定点数以字符串形式存储，在对精度要求比较高的时候（如货币，科学数据等）使用DECIMAL的类型比较好。
+
+**测试验证**
+
+创建表
+
+```mysql
+CREATE TABLE tmp(
+ a DOUBLE(5,1),
+ b FLOAT(5,1),
+ c DECIMAL(5,1)
+)
+```
+
+然后插入数据
+
+```mysql
+INSERT INTO tmp VALUES(5.16,5.15,5.163);
+Query OK, 1 row affected, 1 warning (0.14 sec)
+```
+
+插入后的数据如下：
+
+```mysql
+mysql> select * from tmp;
++------+------+------+
+| a    | b    | c    |
++------+------+------+
+|  5.2 |  5.2 |  5.2 |
++------+------+------+
+```
+
+可以看到，a、b、c都进行了四舍五入。
+
+插入数据的时候，提示了一个警告信息，使用`SHOW WARNINGSC`查看
+
+```mysql
+mysql> SHOW WARNINGS;
++-------+------+----------------------------------------+
+| Level | Code | Message                                |
++-------+------+----------------------------------------+
+| Note  | 1265 | Data truncated for column 'c' at row 1 |
++-------+------+----------------------------------------+
+```
+
+可以看到仅仅字段c提示了被截断的警告信息。
+
+现在，去掉精度设置，重新创建表，如下：
+
+```mysql
+CREATE TABLE tmp(
+    a DOUBLE,
+    b FLOAT,
+    c DECIMAL
+)
+```
+
+使用`DESC table_name`查看表信息，如下：
+
+```mysql
+mysql> DESC tmp;
++-------+---------------+------+-----+---------+-------+
+| Field | Type          | Null | Key | Default | Extra |
++-------+---------------+------+-----+---------+-------+
+| a     | double        | YES  |     | NULL    |       |
+| b     | float         | YES  |     | NULL    |       |
+| c     | decimal(10,0) | YES  |     | NULL    |       |
++-------+---------------+------+-----+---------+-------+
+```
+
+可以看到DECIMAL的默认精度为(10,0)。
+
+### 1.1.3、日期与实践类型
+
+日期与时间数据类型
+
+| 类型名称  | 日期格式            | 日期范围                                        | 存储需求 |
+| --------- | ------------------- | ----------------------------------------------- | -------- |
+| YEAR      | YYYY                | 1901~2155                                       | 1字节    |
+| TIME      | HH:MM:SS            | -838:59:59~838:59:59                            | 3字节    |
+| DATE      | YYYY-MM-DD          | 1000-01-01~999-12-31                            | 3字节    |
+| DATETIME  | YYYY-MM-DD HH:MM:SS | 1000-01-01 00:00:00~999-12-31 23:59:59          | 8字节    |
+| TIMESTAMP | YYYY-MM-DD HH:MM:SS | 1970-01-01 00:00:01 UTC~2038-01-19 03:14:07 UTC | 4字节    |
+
+#### YEAR
+
+YEAR类型是一个单字节类型，用于表示年，在存储时只需要1字节。
+
+1. 以4位字符串或者4位数字格式表示YEAR，范围为'1901'~'2155'。输入格式为'YYYY'或者YYYY。
+2. 以2位字符串格式表示YEAR，范围为'00'到'99'。'00'~'69'和'70'~'99'范围的值分别被转换为2000~2069和1970~1999范围的YEAR值。'0'与'00'的作用相同。插入超过取值范围的值将会报错。
+3. 以2位数字表示的YEAR，范围1-99。1~69和70~99范围的值分别被转换为2001~2069和1970~1999范围的YEAR值。注意：在这里0值将被转换为0000。而不是2000。
+
+> 提示
+>
+> 两位整数范围与两位字符串范围稍有不同。例如：插入2000年，读者可以会使用数字格式0表示YEAR，实际上，插入数据库的值为0000，而不是所希望的2000。只有使用字符串格式的'0'或'00'，才可以被正确地解释为2000。非法YEAR值将被转换为0000。
+
+#### TIME
+
+TIME类型用在只需要时间信息的值，在存储时需要3直接，格式为'HH:MM:SS'。其中HH表示小时，MM表示分钟，SS表示秒。TIME类型的取值范围为-838:59:59~838:59:59。小时部分会如此大的原因是TIME类型不仅可以用于表示一天的时间（必须小于24小时），还可能使某个时间过去的时间或两个时间之间的时间间隔（可以大于24小时，或者甚至为负）。
+
+可以使用各种格式指定TIME值：
+
+1. 'D HH:MM:SS'格式的字符串。可以使用下面任何一种“非严格”的语法：'HH:MM:SS'，'HH:MM'，'D HH:MM'，'D HH'或'SS'。这里D表示日，可以取0~34之间的值。在插入数据库时，D被转换为小时保存，格式为“D*24+HH”。
+2. 'HHMMSS'格式的、没有间隔符的字符串或者HHMMSS格式的数值，假定是有意义的时间。例如：'101112'被理解为'10:11:12'，但'109712'是不合法的（他有一个没有意义的分支部分），存储时将报错。
+
+> 提示
+>
+> 为TIME列分配简写值时应注意：如果没有冒号，MySQL解释值时，最右边的两位表示秒。（MySQL解释TIME值为过去的时间而不是当天的时间。）例如，读者可能认为'1112'和1112表示11:12:00（11点12分），但MySQL将他们解释为00:11:12（11分12秒）。同样'12'和12被解析为00:00:12。相反，TIME值中如果使用冒号则肯定被看作当前的时间。也就是说，'11:12'表示11:12:00，而不是00:11:12。
 
 
-## Mysql数据类型
 
-
+> 提示
+>
+> 在使用'D HH'格式时，小时一定要使用双位数值，如果是小于10的小时数，应在前面加0。
 
 #### DATE
 
@@ -45,9 +263,40 @@ DATETIME类型用于需要同时包含日期和时间信息的值，在存储时
 
 TIMESTAMP显示的格式与DATETIME相同，显示宽度固定在19个字符，日期格式为YYYY-MM-DD HH:MM:SS，在存储时需要4字节。TIMESTAMP列的取值范围小于DATATIME的取值范围，为'1970-01-01 00:00:01' UTC ~ '2038-01-19 01:14:07' UTC。其中，UTC（Corrdinated Universal Time）为世界标准时间，因此在插入数据时，需要保证在合法的取值范围。
 
+TIMESTAMP与DATETIME除了存储字节和支持的范围不同之外，还有一个最大的区别就是：DATETIMT在存储日期数据时，按实际输入的格式存储，即输入什么就存储什么，与时区无关；而TIMESTAMP值的存储是以UTC（世界标准时间）格式保存的，存储时对当前时区进行转换，检索时再转换回当前时区。查询时，不同时区显示的时间值是不同的。
 
+示例：
 
-### 文本字符串类型
+```mysql
+-- 创建表
+CREATE TABLE temp (
+   ts TIMESTAMP
+);
+-- 插入数据
+INSERT INTO temp VALUES (NOW());
+-- 查询数据
+SELECT * FROM temp;
++---------------------+
+| ts                  |
++---------------------+
+| 2020-07-08 20:07:57 |
++---------------------+
+-- 设置时区
+SET time_zone='+10:00';
+-- 再次查询数据
+mysql> SELECT * FROM temp;
++---------------------+
+| ts                  |
++---------------------+
+| 2020-07-08 22:07:57 |
++---------------------+
+```
+
+> 提示：
+>
+> 如果为一个DATATIME或TIMESTAMP对象分配一个DATE值，那么结果值的时间部分将被设置为'00:00:00'，因为DATE值未包含时间信息。如果为一个DATE对象分配一个DATETIME或TIMESTAMP值，那么结果值的时间部分被删除，因为DATE值为包含时间信息。
+
+### 1.1.4、文本字符串类型
 
 字符串类型用来存储字符串数据，除了可以存储字符串数据之外，还可以存储其他数据，比如图片和声音的二进制数据。MySQL支持两类字符型数据：文本字符串和二进制字符串。文本字符串可以进行区分或者不区分大小写的串比较，还可以进行模式匹配查找。在MySQL中，文本字符串类型是指CHAR、VARCHAR、TEXT、ENUM和SET。
 
@@ -64,7 +313,7 @@ TIMESTAMP显示的格式与DATETIME相同，显示宽度固定在19个字符，�
 | ENUM       | 枚举类型，只能有一个枚举字符串值            | 1或2字节，取决于枚举值的数目（最大值为65535）           |
 | SET        | 一个设置，字符串对象可以有零个或多个SET成员 | 1、2、3、4或8字节，取决于集合成员的数量（最多为个成员） |
 
-#### 1. CHAR和VARCHAR类型
+#### 1. CHAR和VARCHAR
 
 CHAR(M)为固定长度字符串，在定义时指定字符串列长。当保存时在右侧填充空格，以达到指定的长度。M表示列长度，M的范围是0~255个字符。例如，CHAR(4)定义了一个固定长度的字符串列，其包含的字符个数最大为4。当检索到CHAR值时，尾部的空格将被删除。
 
@@ -84,432 +333,350 @@ VARCHAR(M)是长度可变的字符串，M表示最大列长度。M的范围是0~
 
 
 
-#### 2. TEXT类型
+#### 2. TEXT
 
-#### 3. ENUM类型
+TEXT列保存非二进制字符串，如文章内容、评论等。当保存或查询TEXT列的值时，不删除尾部空格。
 
-#### 4. SET类型
+TEXT类型分为4中：TINYTEXT、TEXT、MEDIUMTEXT和LONGTEXT。
 
-# MySQL权限与安全管理
+不同类型的TEXT类型的存储空间和数据长度不同：
 
-## 权限表
-
-MySQL服务通过权限表来控制用户对数据库的访问，权限表存放在MySQL数据库中，由MySQL_install_db脚本初始化。
-
-存储账户权限信息的表主要有`user`、`db`、`host`、`tables_priv`、`columns_priv`和`procs_priv`。
-
-### user表
-
-user表是MySQL中最重要的一个权限表，记录允许连接到服务器的账号信息，里面的权限是全局的。
-
-MySQL 8.0中user表有42个字段，这些字段可以分为4类，分别是用户列、权限列、安全列和资源控制列。
-
-user表结构
-
-| 字段名 | 数据类型 | 默认 |
-| --------------------- | ------------- | ---- |
-| `Host`                | `char(60)`    | `''` |
-| `User`                | `char(32)`   | `''` |
-| `Select_priv`         | `enum('N','Y')` | `N` |
-| `Insert_priv`         | `enum('N','Y')` | `N` |
-| `Update_priv`         | `enum('N','Y')` | `N` |
-| `Delete_priv`         | `enum('N','Y')` | `N` |
-| `Create_priv`         | `enum('N','Y')` | `N` |
-| `Drop_priv`           | `enum('N','Y')` | `N` |
-| `Reload_priv`         | `enum('N','Y')` | `N` |
-| `Shutdown_priv`       | `enum('N','Y')` | `N` |
-| `Process_priv`        | `enum('N','Y')` | `N` |
-| `File_priv`           | `enum('N','Y')` | `N` |
-| `Grant_priv`          | `enum('N','Y')` | `N` |
-| `References_priv`     | `enum('N','Y')` | `N` |
-| `Index_priv`          | `enum('N','Y')` | `N` |
-| `Alter_priv`          | `enum('N','Y')` | `N` |
-| `Show_db_priv`        | `enum('N','Y')` | `N` |
-| `Super_priv`          | `enum('N','Y')` | `N` |
-| `Create_tmp_table_priv` | `enum('N','Y')` | `N` |
-| `Lock_tables_priv`    | `enum('N','Y')` | `N` |
-| `Execute_priv`        | `enum('N','Y')` | `N` |
-| `Repl_slave_priv`     | `enum('N','Y')` | `N` |
-| `Repl_client_priv`    | `enum('N','Y')` | `N` |
-| `Create_view_priv`    | `enum('N','Y')` | `N` |
-| `Show_view_priv`      | `enum('N','Y')` | `N` |
-| `Create_routine_priv` | `enum('N','Y')` | `N` |
-| `Alter_routine_priv`  | `enum('N','Y')` | `N` |
-| `Create_user_priv`    | `enum('N','Y')` | `N` |
-| `Event_priv`          | `enum('N','Y')` | `N` |
-| `Trigger_priv` | `enum('N','Y')` | `N` |
-| `Create_tablespace_priv` | `enum('N','Y')` | `N` |
-| `ssl_type` | `enum('','ANY','X509','SPECIFIED')` | `''` |
-| `ssl_cipher` | `blob` |  |
-| `x509_issuer` | `blob` |  |
-| `x509_subject` | `blob` |  |
-| `max_questions` | `int(11) unsigned` | `0` |
-| `max_updates` | `int(11) unsigned` | `0` |
-| `max_connections` | `int(11) unsigned` | `0` |
-| `max_user_connections` | `int(11) unsigned` | `0` |
-| `plugin` | `char(64)` | `mysql_native_password` |
-| `authentication_string` | `text` | `NULL` |
-| `password_expired` | `enum('N','Y')` | `N` |
-| `password_last_changed` | `timestamp` | `NULL` |
-| `password_lifetime` | `smallint(5)` | `NULL` |
-| `account_locked` | `enum('N','Y')` | `N` |
-
-#### 用户列
-
-user表的用户列包括Host、User、authentication_string，分别表示如下：
-
-- `Host`：主机名
-- `User`：用户名
-- `authentication_string`：密码
-
-User和Host为User表的联合主键。
-
-当用户与服务器之间建立连接时，输入的账户信息中的用户名称、主机名和密码必须完全匹配，才允许建立连接。
-
-这3个字段的值就是创建账户时保存的账户信息。
-
-修改密码时，实际就是修改user表的`authentication_string`字段的值。
-
-#### 权限列
-
-权限列的字段决定了用户的权限，描述了在全局范围内允许对数据和数据库进行的操作。
-
-包括查询权限、修改权限等普通权限，还包括了关闭服务器、超级权限和加载用户等高级权限。普通权限用户操作数据库；高级权限用户数据库管理。
-
-user表中对应的权限是针对所有用户数据库的。这些字段值的类型为`ENUM`，可以取得值只能为`Y`和`N`，`Y`表示该用户有对应的权限；`N`表示用户没有对应的权限。查询user表的结构可以看到，这些字段的值默认都是`N`。如果要修改权限，可以使用`GRANT`语句或`UPDATE`语句更改user表的这些字段来修改用户对应的权限。
-
-#### 安全列
-
-安全列只有6个字段，其中两个是ssl相关的，两个时x509相关的，另外两个是授权插件相关的。
-
-- ssl用户加密；
-- x509标准可用于标识用户；
-- Plugin字段标识可以用于验证用户身份的插件，如果该字段为空，服务器使用内建授权验证机制验证用户身份。
-
-可以通过`SHOW VARIABLES LIKE 'have_openssl;'`语句来查询服务器是否支持ssl功能。
-
-#### 资源控制列
-
-资源控制列的字段用来限制用户使用的资源，包含4个字段，分别为：
-
-- `max_questions`：用户每小时允许执行的查询操作次数。
-- `max_updates`：用户每小时允许执行的更新操作次数。
-- `max_connections`：用户每小时允许执行的连接操作次数。
-- `max_user_connections`：用户允许同时建立的连接次数。
-
-一个小时内用户查询或者连接数量超过资源控制的限制，用户将被锁定，直到下一个小时，才可以执行的对应的操作。
-
-可以使用`GRANT`语句更新这些字段的值。
-
-### db表
-
-db表示MySQL数据库中非常重要的权限表。db表中存储了用户对某个数据库的操作权限，决定用户能从哪个主机存取哪个数据库。
-
-db表比较常用。
-
-*db表结构如下：*
-
-| 字段名                  | 数据类型        | 默认 |
-| ----------------------- | --------------- | ---- |
-| `Host`                  | char(60)        | ''   |
-| `Db`                    | char(64)        | ''   |
-| `User`                  | char(32)        | ''   |
-| `Select_priv`           | `enum('N','Y')` | `N`  |
-| `Insert_priv`           | `enum('N','Y')` | `N`  |
-| `Update_priv`           | `enum('N','Y')` | `N`  |
-| `Delete_priv`           | `enum('N','Y')` | `N`  |
-| `Create_priv`           | `enum('N','Y')` | `N`  |
-| `Drop_priv`             | `enum('N','Y')` | `N`  |
-| `Grant_priv`            | `enum('N','Y')` | `N`  |
-| `References_priv`       | `enum('N','Y')` | `N`  |
-| `Index_priv`            | `enum('N','Y')` | `N`  |
-| `Alter_priv`            | `enum('N','Y')` | `N`  |
-| `Create_tmp_table_priv` | `enum('N','Y')` | `N`  |
-| `Lock_tables_priv`      | `enum('N','Y')` | `N`  |
-| `Create_view_priv`      | `enum('N','Y')` | `N`  |
-| `Show_view_priv`        | `enum('N','Y')` | `N`  |
-| `Create_routine_priv`   | `enum('N','Y')` | `N`  |
-| `Alter_routine_priv`    | `enum('N','Y')` | `N`  |
-| `Execute_priv`          | `enum('N','Y')` | `N`  |
-| `Execute_priv`          | `enum('N','Y')` | `N`  |
-| `Trigger_priv`          | `enum('N','Y')` | `N`  |
-
-#### 用户列
-
-db表用户列有3个字段，分别是Host、User、Db，标识从某个主机连接某个用户对某个数据库的操作权限，这个3个字段的组合构成了db表的主键。
-
-host表不存储用户名称，用户列，只有2个字段，分别Host和Db，表示从某个主机连接的用户对某个数据库的操作权限，其主键包括Host个Db两个字段。host很少用到，一般情况下db表就可以满足权限控制需要求。
-
-#### 权限列
-
-db表中`Create_routine_priv`、`Alter_routine_priv`这两个字段表名用户是否有创建和修改存储过程的权限。
-
-user表中的权限是针对所有数据库的，如果希望用户只对某个数据库有操作权限，那么需要将user表中对应的权限设置为N，然后在db表中设置对应数据库的操作权限。
-
-### tables_priv表和columns_priv表
-
-- tables_priv表用来对表设置操作权。
-- columns_priv表用来对表的某一列设置权限。
-
-*tables_priv表结构如下：*
-
-| 字段名        | 数据类型                                                     | 默认值              |
-| ------------- | ------------------------------------------------------------ | ------------------- |
-| `Host`        | `char(60)`                                                   | ''                  |
-| `Db`          | `char(64)`                                                   | ''                  |
-| `User`        | `char(32)`                                                   | ''                  |
-| `Table_name`  | `char(64)`                                                   | ''                  |
-| `Grantor`     | `char(93)`                                                   | ''                  |
-| `Timestamp`   | `timestamp`                                                  | `CURRENT_TIMESTAMP` |
-| `Table_priv`  | `set('Select','Insert','Update','Delete','Create','Drop','Grant','References','Index','Alter','Create View','Show view','Trigger')` | ''                  |
-| `Column_priv` | `set('Select','Insert','Update','References')`               | ''                  |
-
-*columns_priv表结构如下：*
-
-| 字段名        | 数据类型                                       | 默认值              |
-| ------------- | ---------------------------------------------- | ------------------- |
-| `Host`        | `char(60)`                                     | ''                  |
-| `Db`          | `char(64)`                                     | ''                  |
-| `User`        | `char(32)`                                     | ''                  |
-| `Table_name`  | `char(64)`                                     | ''                  |
-| `Column_name` | `char(64)`                                     | ''                  |
-| `Timestamp`   | `timestamp`                                    | `CURRENT_TIMESTAMP` |
-| `Column_priv` | `set('Select','Insert','Update','References')` | ''                  |
-
-tables_priv表有8个字段，分别是Host、Db、User、Table_name、Grantor、Timestamp、Table_priv和Column_priv。
-
-各字段说明如下：
-
-1. Host、Db、User、Table_name4个字段分别表示主机名、数据库名、用户名和表名。
-2. Grantor表示修改该记录的用户。
-3. Timestamp字段表示修改该记录的时间。
-4. Table_priv表示对表的操作权限，包括`Select`,`Insert`,`Update`,`Delete`,`Create`,`Drop`,`Grant`,`References`,`Index`,`Alter`,`Create View`,`Show view`,`Trigger`。
-5. Column_priv字段标识对表中的列的操作权限，包括`Select`,`Insert`,`Update`,`References`。
-
-columns_priv表只有7个字段，其中`Column_name`用来指定对那些数据列具有操作权限。
-
-### procs_priv表
-
-procs_priv表可以对存储过程和存储函数设置操作权限。
-
-*procos_priv表结构如下：*
-
-| 字段名         | 数据类型                               | 默认值            |
-| -------------- | -------------------------------------- | ----------------- |
-| `Host`         | char(60)                               | ''                |
-| `Db`           | char(64)                               | ''                |
-| `User`         | char(32)                               | ''                |
-| `Routine_name` | char(64)                               | ''                |
-| `Routine_type` | enum('FUNCTION','PROCEDURE')           | NOT NULL          |
-| `Grantor`      | char(93)                               | ''                |
-| `Proc_priv`    | set('Execute','Alter Routine','Grant') | ''                |
-| `Timestamp`    | timestamp                              | CURRENT_TIMESTAMP |
-
-procs_priv表包含8个字段，各字段说明如下：
-
-1. Host、Db和User字段分别表示主机名，数据库名和用户名。
-2. Routine_name表示存储过程或函数的名称。
-3. Routine_type表示存储过程或函数的类型。Routine_type字段有两个值，分别是`FUNCTION`,`PROCEDURE`。
-   1. `FUNCTION`：表示这是一个函数。
-   2. `PROCEDURE`：表示这是一个存储过程。
-4. Grantor是插入或修改记录的用户。
-5. Proc_priv表示拥有的权限，包括`Execute`,`Alter Routine`,`Grant`3种。
-6. Timestamp表示更新记录的时间。
-
-## 账户管理
-
-
-
-### 登录和登出MySQL服务器
-
-可以通过MySQL --help命令查看MySQL命令的帮助信息。
-
-MySQL命令的常用参数如下：
-
-1. `-h`：主机名，可以使用该参数指定主机名或ip，如果不指定，默认是localhost。
-2. `-u`：用户名，可以使用该参数指定用户名。
-3. `-p`：密码，可以使用该参数指定登录密码。如果该参数后面有一段字符串，则该段字符串将作为用户的密码直接登录。如果后面没有内容，则登录的时候会提示输入密码。**注意：该参数后面的字符串和-p之间不能有空格**。
-4. `-P`：端口号，该参数后面接MySQL服务器的端口号，默认为3306。
-5. `数据库名`：可以在命令的最后指定数据库名。
-6. `-e`：执行SQL语句，如果指定了该参数，将在登录后执行-e后面的命令或SQL语句并退出。
-
-示例：使用root用户登录到本地MySQL服务器的MySQL数据库中。
-
-```shell
-$ mysql -h localhost -u root -p mysql
-Enter password: *********
-Welcome to the MySQL monitor.  Commands end with ; or \g.
-Your MySQL connection id is 26
-Server version: 5.7.20 MySQL Community Server (GPL)
-
-Copyright (c) 2000, 2017, Oracle and/or its affiliates. All rights reserved.
-
-Oracle is a registered trademark of Oracle Corporation and/or its
-affiliates. Other names may be trademarks of their respective
-owners.
-
-Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-```
-
-执行命令时，会提示Enter password:，如果没有设置密码，可以直接按Enter键。如果设置了，密码正确就可以直接登录到服务器下面的mysql数据库中。
-
-### 新建普通用户
-
-#### 1. 使用CREATE USER语句创建新用户
-
-执行CREATE USER或GRANT语句时，服务器会修改相应的用户授权表，添加或者修改用户及其权限。
-
-CREATE USER语法格式：
-
-```mysql
-CREATE USER user_specification [,user_specification] ...
-```
-
-```mysql
-user_specification: 
-	user@host [
-        IDENTIFIED BY [PASSWORD] 'password'
-      | IDENTIFIED WITH auth_plugin [BY|AS 'auth_string']
-    ]
-```
-
-- `user`：表示创建的用户的名称。
-- `host`：表示允许登录的用户主机名。
-- `IDENTIFIED BY`：表示用来设置用户密码。
-- `[PASSWORD]`：表示使用哈希值设置密码，该参数可选。
-- `'password'`：表示用户登录时使用的普通明文密码。
-- `IDENTIFIED WITH`：用于为用户指定一个身份认证插件。
-- `auth_plugin`：插件的名称，插件的名称可以是一个带单引号的字符串或者带双引号的字符串。
-- `auth_string`：是可选的字符串参数，前面可以选择对应的关键字BY和AS。
-  - 如果前面的关键字为BY，则会将该参数将传递给身份验证插件，由插件解释该参数的含义。
-  - 如果前面的关键字是AS，则会将该参数原封不动的插入到表中。
-
-CREATE USER语句会添加一个新的MySQL账户。使用CREATE USER语句，用户必须有全局的CREATE USER权限或者MySQL数据库的INSERT权限。每添加一个用户，CREATE USER语句会在MySQL.user表中添加一条新记录，但是新创建的账户没有任何权限。如果添加的账户已经存在，CREATE USER语句会返回一个错误。
-
-示例：创建一个用户，用户名是jeffrey，密码是mypass，主机名是localhost。
-
-```mysql
-CREATE USER 'jeffrey'@'localhost' IDENTIFIED BY 'mypass';
-CREATE USER 'jeffrey'@'localhost' IDENTIFIED WITH mysql_native_password BY 'mypass';
-```
-
-如果只指定了用户名部分'jeffrey'，则主机名部分默认为'%'，表示对所有的主机开放权限。
-
-```mysql
-CREATE USER 'jeffrey'
-```
-
-user_specification告诉MySQL服务器当用户登录时怎么验证用户的登录授权，如果指定用户登录不需要密码，则可以省略IDENTIFIED BY部分：
-
-```mysql
-CREATE USER 'jeffrey'@'localhost'
-```
-
-> MySQL的某些版本中会引入授权表的结构变化，添加新的特权或功能。每当更新MySQL到一个新的版本时，应该更新授权表，以确保它们有最新的结构，确认可以使用任何新功能。
-
-#### 2. 直接操作MySQL.user表
-
-使用CREATE USER创建新用户时，实际上都是在user表中添加一条新的记录，因此，可以使用INSERT语句向user表中直接插入一条记录来创建一个新的用户。使用INSERT语句，必须拥有对mysql.user表的INSERT权限。
-
-使用INSERT语句创建新用户的基本语法格式如下：
-
-```mysql
-INSERT INTO mysql.user (`Host`,`User`,`authentication_string`,ssl_cipher,x509_issuer,x509_subject) VALUES ('host','username',PASSWORD('password'),'','','');
-```
-
-`ssl_cipher`、`x509_issuer`、`x509_subject`三个字段是NOT NULL，必须设值，所以这里设置为空。
-
-### 删除普通用户
-
-#### 1. 使用DROP USER语句删除用户
-
-DROP USER语法格式：
-
-```mysql
-DROP USER user [, user];
-```
-
-DROP USER语句用于删除一个或多个MySQL账户。要使用DROP USER，必须拥有MySQL数据库全局DROP    USER权限或者DELETE权限。使用与GRANT或REVOKE相同的格式为每个账户命名。例如，"'jeffrey'@'localhost'"账户名称的用户和主机部分与用户表记录的User和Host列值相对应。
-
-使用DROP USER，可以删除一个账户和其权限，操作如下：
-
-```mysql
-DROP USER 'user'@'localhost';
-DROP USER;
-```
-
-上述两个语句的作用如下：
-
-1. 第1条语句可以删除user在本地登录权限。
-2. 第2条语句可以删除来自所有授权表的账户权限记录。
-
-> **提示**
->
-> DROP USER不能自动关闭任何打开的用户对话。而且，如果用户有打开的对话，此时取消用户，命令则不会生效，直到用户对话被关闭后才能生效。一对话被关闭，用户也被取消，此用户再次视图登录时将会失败。
-
-#### 2. 使用DELETE语句删除用户
-
-DELETE删除用户语法格式：
-
-```mysql
-DELETE FROM mysql.user WHERE `User`='username' AND `Host`='host';
-```
-
-### root用户修改自己的密码
-
-通过UPDATE语句修改mysql.user表的authentication_string字段，修改用户密码：
-
-```mysql
-UPDATE mysql.user SET authentication_string=PASSWORD('mypass') WHERE `User`='jeffrey' AND `Host`='localhost';
-
-FLUSH PRIVILEGES;
-```
-
-`PASSWORD()`函数用来加密用户密码。执行UPDATE语句之后，需要执行`FLUSH PRIVILEGES`重新加载用户权限。
-
-### root用户修改普通用户的密码
-
-#### 1. 使用SET语句修改普通用户的密码
-
-语法格式如下：
-
-```mysql
-SET PASSWORD FOR 'user'[@'host']='password';
-```
+1. TINYINTEXT最大长度为255（2^8-1）字符的TEXT列。
+2. TEXT最大长度为65535（2^16-1）字符的TEXT列。
+3. MEDIUMTEXT最大长度为16777215（2^24-1）字符的TEXT列。
+4. LONGTEXT最大长度为4294967295（2^32-1）字符的TEXT列。
 
 示例：
 
 ```mysql
-SET PASSWORD FOR 'jeffrey'@'localhost'='mypass';
+CREATE TABLE temp(
+    a TINYTEXT,
+    b TEXT,
+    c MEDIUMTEXT,
+    d LONGTEXT
+);
 ```
 
-#### 2. 使用UPDATE语句修改普通用户的密码
+#### 3. ENUM
+
+ENUM类型就是枚举类型，有如下特性：
+
+1. ENUM类型的字段在取值时，只能值指定的枚举列表中取。
+2. 从枚举列表中只能取一个值。
+3. 创建的成员中有空格时，其尾部的空格将自动被删除。
+4. ENUM值在内部用整数表示，并且每个枚举值均有一个索引值。
+5. 列表值所允许的成员值从1开始编号，MySQL存储的就是这个索引编号。
+6. 枚举最多可以有65536个元素。
+
+ENUM值依照列索引顺序排列，并且空字符串排在非空字符串前，NULL值排在其他所有的枚举值前。如下表所示：
+
+| 值     | 索引 |
+| ------ | ---- |
+| NULL   | NULL |
+| ''     | 0    |
+| first  | 1    |
+| second | 2    |
+| third  | 3    |
+
+示例：
 
 ```mysql
-UPDATE mysql.user SET authentication_string=PASSWORD('mypass') WHERE `User`='jeffrey' AND `Host`='localhost';
-
-FLUSH PRIVILEGES;
+CREATE TABLE temp (
+  e ENUM('first','second','third')
+)
 ```
 
-`PASSWORD()`函数用来加密用户密码。执行UPDATE语句之后，需要执行`FLUSH PRIVILEGES`重新加载用户权限。
-
-
-
-
-
-
+插入数据
 
 ```mysql
-ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY '597646251';
+INSERT INTO temp VALUES ('first'),('second'),('third'),(NULL);
 ```
 
+前面已经说过，ENUM值在内部用整数表示，并且每个枚举值均有一个索引值。所以除了插入枚举之外，还可以直接插入索引，如下：
 
+```mysql
+INSERT INTO temp VALUES (1),(2),(3),(NULL);
+```
 
+#### 4. SET
 
+SET类型就是集合类型，可以多选，有如下特性：
 
+1. SET是一个字符串对象集合，可以有零或多个值。
+2. SET列最多可以有64个成员，其值为表创建时规定的一列值。
+3. 指定多个SET成员列值时，各成员之间用逗号(,)隔开。
+4. 与ENUM类型相同，SET值在内部用整数表示。
+5. 列表中每一个值都有一个索引编号。
+6. 创建的成员中有空格时，其尾部的空格将自动被删除。
+7. 如果插入SET字段中列值有重复，则MySQL自动删除重复的值。
+8. 插入SET字段的值的顺序并不重要，MySQL会在存入数据库时按照定义的顺序显示。
+9. 如果插入了不正确的值，默认情况下，MySQL将忽视这些值，并给出错误信息。
+10. 与ENUM一样可以通过索引插入，但是每次只能插入一个值。
+11. 索引0代表空字符串，索引NULL代表NULL。
 
+示例：
 
+```mysql
+CREATE TABLE temp (
+  s SET('a','b','c','d','e')
+)
+```
 
+插入数据
 
+```mysql
+INSERT INTO temp VALUES ('a'),('a,b'),('a,b,c'),('e,c,a'),('e,e,e');
+```
 
+查询
 
+```mysql
+mysql> select * from temp;
++-------+
+| s     |
++-------+
+| a     |
+| a,b   |
+| a,b,c |
+| a,c,e |
+| e     |
++-------+
+```
+
+可以看到，第4条数据按定义的顺序显示的。第5条数据去除了重复，只有一个e。
+
+测试插入不存在的值
+
+```mysql
+mysql> INSERT INTO temp VALUES ('n');
+ERROR 1265 (01000): Data truncated for column 's' at row 1
+```
+
+给出了错误信息。
+
+与ENUM一样，也可以插入索引
+
+```mysql
+mysql> INSERT INTO temp VALUES (0),(1);
+Query OK, 2 rows affected (0.11 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+```
+
+需要注意的是，通过索引的方式插入，每次只能插入一个元素。
+
+如果插入多个元素：
+
+```mysql
+mysql> INSERT INTO temp VALUES (1,2);
+ERROR 1136 (21S01): Column count doesn't match value count at row 1
+```
+
+### 1.1.5、二进制字符串类型
+
+#### 1.3.1、BIT类型
+
+BIT类型是位字段类型。有如下特性：
+
+1. M表示每个值的位数，范围为1~64。
+
+2. 如果M被省略，默认为1。
+3. 如果BIT(M)列分配的值的长度小于M位，就在值的左边用0填充。
+
+示例：
+
+```mysql
+CREATE TABLE temp (
+  b BIT(4)
+)
+```
+
+插入值：
+
+```mysql
+INSERT INTO temp VALUES (2),(9),(15)
+```
+
+查看十六进制（命令行显示的16进制）：
+
+```mysql
+mysql> SELECT b FROM temp;
++------------+
+| b          |
++------------+
+| 0x02       |
+| 0x09       |
+| 0x0F       |
++------------+
+```
+
+查看十进制（+0显示十进制）：
+
+```mysql
+mysql> SELECT b+0 FROM temp;
++------+
+| b+0  |
++------+
+|    2 |
+|    9 |
+|   15 |
++------+
+```
+
+查看二进制（SQLyag工具显示的是二进制）：
+
+```mysql
+SELECT b FROM temp;
++------------+
+| b          |
++------------+
+| b'10'      |
+| b'1001'    |
+| b'1111'    |
++------------+
+```
+
+> 提示
+>
+> 默认情况下，MySQL不可以插入超出该列允许范围的值，因而插入的数据要确保插入的值在指定的范围内。
+
+#### 1.3.2、BINARY和VARBINARY类型
+
+BINARY和VARBINAR类型类似于CHAR和VARCHAR，不同的是他们包含二进制直接字符串。
+
+BINARY类型的长度是固定的，指定长度之后，不足最大长度的，将在它们右边填充'\0'补齐以达到指定长度。例如：指定列数据类型为BINARY(3)，当插入'a'时，存储的内容实际为'a\0\0'，当插入'ab'时，实际存储的内容为'ab\0'，不管存储的内容是否达到指定的长度，其存储空间均为指定的值M。
+
+VARBINARY类型的长度是可变的，指定好长度之后，其长度可以在0到最大值之间。例如指定数据类型为VARBINARY(20)，如果插入的值的长度只有10，则实际存储空间为10加1，即实际占用的空间为字符串的实际长度加1。
+
+示例：
+
+创建表
+
+```mysql
+CREATE TABLE temp (
+    b BINARY(3),
+    vb VARBINARY(3)
+);
+```
+
+插入数据
+
+```mysql
+INSERT INTO temp VALUE (5,5);
+```
+
+查看其占用长度
+
+```mysql
+mysql> SELECT LENGTH(b),LENGTH(vb) FROM temp;
++-----------+------------+
+| LENGTH(b) | LENGTH(vb) |
++-----------+------------+
+|         3 |          1 |
++-----------+------------+
+```
+
+查看实际值
+
+```mysql
+mysql> SELECT b,vb,b='5',b='5\0\0',vb='5',vb='5\0\0' FROM temp;
++----------+--------+-------+-----------+--------+------------+
+| b        | vb     | b='5' | b='5\0\0' | vb='5' | vb='5\0\0' |
++----------+--------+-------+-----------+--------+------------+
+| 0x350000 | 0x35   |     0 |         1 |      1 |          0 |
++----------+--------+-------+-----------+--------+------------+
+```
+
+#### 1.3.3、BLOB类型
+
+BLOB是一个二进制大对象，用来存储可变数量的数据。BLOB类型费为4种：`TINYBLOB`、`BLOB`、`MEDIUMBLOB`、`LONGBLOB`。它们可容纳值的最大长度不同。
+
+| 数据类型   | 存储范围                         |
+| ---------- | -------------------------------- |
+| TINYBLOB   | 最大长度255(2^8-1)B              |
+| BLOB       | 最大长度65535(2^16-1)B           |
+| MEDIUMBLOB | 最大长度16777215(2^24)-1         |
+| LONGBLOB   | 最大长度4294967295(2^32)-1B或4GB |
+
+BLOB列存储的是二进制字符串（字节字符串），TEXT列存储的是非二进制字符串（字符字符串）。BLOB列没有字符串，并且排序和比较基于列字节的数值；TEXT列有一个字符串集，并且根据字符串对值进行排序和比较。
+
+## 2、如何选择数据类型
+
+MySQL提供了大量的数据类型，为了优化存储，提高数据库性能，在任何情况下均应使用最精确的类型，即在所有可以表示该列值的类型种，该类型使用的存储最少。
+
+### 2.1、整数和浮点数
+
+1. 如果不需要小数部分，就使用整数类保存数据。
+2. 如果需要表示小数部分，就使用浮点数类型。
+3. 对于浮点数据列，存储的数值会对该列定义的小数位进行四舍五入。
+4. 例如，假设列的值的范围为1~99999，若使用整数，则MEDIUMINT UNSIGNED是最好的类型。
+5. 若需要存储小数，则使用FLOAT类型。
+6. 浮点数类型包括FLOAT和DOUBLE类型。DOUBLE类型经度比FLOAT类型高，因此要求存储精度较高时应选择DOUBLE类型。
+
+### 2.2、浮点数和定点数
+
+1. 浮点数FLOAT、DOUBLE相对于定点数DECIMAL的优势是：在长度一定的情况下，浮点数能表示更大的数据范围。
+2. 由于浮点数容易产生误差，因此对精度要求比较高时，建议使用DECIMAL来存储。
+3. DECIMAL在MySQL中是以字符串存储的，用于定义货币等对精度要求较高的数据。
+4. 在数据迁移中，float(M,D)是非标准SQL定义，数据库迁移可能会出现问题，最好不要这样使用。
+5. 浮点数进行减法和比较运算时也容易出现问题，因此在进行计算的时候，一定要小心
+6. 进行数值比较时，最好使用DECIMAL类型。
+
+### 2.3、日期与世间类型
+
+1. 如果只需要记录年份，则使用YEAR类型即可。
+2. 如果只记录时间，则使用TIME类型。
+3. 如果同时需要记录日期和时间，则可以使用TIMESTAMP和DATATIIME类型。
+4. 由于TIMESTAMP类型的取值范围小于DATETIME类型，因此在存储范围较大的情况下最好使用DATETIME。
+5. TIMESTAMP有一个DATETIME不具备的属性。默认情况下，当插入一条记录但并没有指定TIMESTAMP这个列值时，MySQL会把TIMESTAMP列设为当前系统时间。因此当需要插入记录的同时插入当前时间，使用TIMESTAMP最好。
+6. TIMESTAMP在空间上比DATETIME更有效。
+
+### 3.4、CHAR与VARCHAR之间的特点与选择
+
+CHAR和VARCHAR的区别如下：
+
+- CHAR是固定长度字符，VARCHAR是可变长度字符。
+- CHAR会自动删除插入数据的尾部空格，VARCHAR不会删除尾部空格。
+
+CHAR是固定长度，多以它的处理速度比VARCHAR的速度更快，但是它的缺点是浪费存储空间，所以对存储不大但在速度上有要求的可以使用CHAR类型，反之可以使用VARCHAR类型来实现。
+
+存储引擎对于选择CHAR和VARCHAR的影响：
+
+- 对于MyISAM存储引擎：最好使用固定长度的数据列代替可变长度的数据列。这样可以使整个表静态化，从而使数据检索更快，用空间换时间。
+- 对于InnoDB存储引擎：使用可变长度的数据里，因此InnoDB数据表的存储格式不分固定长度和可变长度，因此使用CHAR不一定比使用VARCHAR更好，但由于VARCHAR使按照实际的长度存储的，比较节省空间，所以对磁盘I/O和数据存储只总量比较好。
+
+### 3.5、ENUM和SET
+
+1. 需要从多个值上选取一个时，可以使用ENUM，比如性别字段。
+2. 需要取多个值的时候，适合使用SET类型，比如一个人的兴趣爱好。
+
+ENUM和SET的值是以字符串形式出现的，但在内部，MySQL是以数值的形式存储它们的。
+
+### 3.6、BLOB和TEXT
+
+- BLOB是二进制字符串，TEXT是非二进制字符串，两者均可存储大容量的信息。
+
+- BLOB只要存储图片、音频信息等，而TEXT只能存储纯文本文件。
+
+## 3、常见运算符介绍
+
+### 3.1、运算符概述
+
+运算符是告诉MySQL执行特定算术或逻辑操作的符号。MySQL的内部运算符很丰富，主要有四大类，分别是算术运算符、比较运算符、逻辑运算符、位运算符。
+
+1. 算术运算符
+
+   算术运算符用于各类数值运算，包括（+）、减（-）、乘（*）、除（/）、求余（或称模运算，%）。
+
+2. 比较运算符
+
+   比较运算符用于比较运算，包括大于（>）、小于（<）、等于（=）、大于等于（>=）、小于等于（<=）、不等于（!=）、IN、BETWEEN、AND、IS NULL、GREATEST、LEAST、LIKE、REGEXPD等。
+
+3. 逻辑运算符
+
+   逻辑运算符的求值所得结果均为1（TRUE）、0（FALSE），这类运算符有逻辑非（NOT或者!）、逻辑与（AND或者&&）、逻辑或（OR或者||）、逻辑异或（XOR）。
+
+4. 位运算符
+
+   位运算符参与运算的操作数按二进制位进行运算，包括位与（&）、位或（|）、位非（~）、位异或（^）、左移（<<）、右移（>>）6种。
+
+### 3.2、算术运算符

@@ -1,3 +1,13 @@
+# English
+
+There is和There are的区别主要是与后面所接的名词的单复数、可数不可以有关。
+
+1. 
+
+
+
+
+
 ## 单元一、问候及介绍
 
 ### 1、自我介绍
@@ -1388,7 +1398,117 @@ B: Yes, a glass of milk.
 
 
 
+带‘-ly’的副词
 
+方式副词修饰动词的意义。它们通常由形容词后加-ly形成。例如副词slowly和quickly给我们关于动词decreasing的重要信息。
+
+slow > slowly
+
+The price is decreasing slowly.	价格正缓慢下降。
+
+quick > quickly
+
+The price is decreasing quickly.	价格正迅速下降。
+
+如果形容词以辅音+y结尾，该y为i，再在末尾加ly。
+
+busy > busily
+
+The people in the office are working busily. 办公室里的人们正在忙碌工作。
+
+lazy > lazily
+
+He's walking lazily down the street.	他慢吞吞走在街上。
+
+不是所有的形容词都能通过加-ly变成副词的。这里有三个重要的例子。
+
+good > well
+
+He is doing well in school.	他学习成绩很好。
+
+fast > fast
+
+Gas prices are going up fast.	油价上涨得很快。
+
+hard > hard
+
+She studies really hard.	她学习非常努力。
+
+
+
+单元6、工作和公司
+
+
+
+动词'be'的过去式
+
+使用动词be的过去时态，谈论人们以前的工作。动词be有两种过去时态形式：was和were。
+
+使用was搭配代词I、he、she和it。
+
+
+
+要构成动词‘be’的过去时态疑问句，将该动词移至句首。
+
+
+
+**一般过去时的时间标志**
+
+有一些词汇和表达方式可以帮助我们谈论过去并且将事情排序。
+
+使用形容词last谈论最近发生的事情。
+
+Last week I was on vacation.
+
+Where were you last night.
+
+I like my job now, but my last job was terrible.
+
+使用before，before that，after以及after that来按顺序表达过去的事件。我们将用一个在餐厅工作的妇女来距离。
+
+She was a waiter before  before she was a supervisor.
+
+She was a supervisor. Before that, she was a waiter.
+
+After she was a supervisor, she was the manager.
+
+She was a supervisor. After that, she was the manager.
+
+**谈谈您的工作**
+
+谈论现在的和过去的工作是谈话中很常见的一个话题。
+
+How's your job?	您的工作怎么样？
+
+What's your job like?	您的工作是怎样的？
+
+How was your last job?	您之前的工作怎样？
+
+What was your last job like?	您之前的工作是怎么样的？
+
+Where were you before?	你以前在哪工作？
+
+当谈论您的工作时，您可以谈一谈您的工作时间，您的薪水或这您的上司。
+
+I like my job, but I work to many hours.	我喜欢我的工作，但是工作时间过长。
+
+The pay is really good in my new job.	我的新工作的报酬真的不错。
+
+My boss is OK, but sometimes he's difficult.	我的上司还好，但是有时候他挺难伺候的。
+
+您也可以把您现在的工作和以前从事过的工作进行比较。
+
+My last job was easier then this job.	我只想的那份工作要比现在这份工作更轻松。
+
+My pay is better now, but I work longer hours.	我现在的报酬好多了，但是工作时间更长了。
+
+I was at LM Computers for only one year.	我以前在LM Computers公司只做过一年。
+
+My last boss was terrible.	我之前那个上司太可怕了。
+
+
+
+ 
 
 
 

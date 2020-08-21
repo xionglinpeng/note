@@ -14,7 +14,7 @@ official：https://www.jekyll.com.cn/
 
 
 
-如下图所示，将Ruby+Devkit安装在D:\developer目录下（根据个人情况设置）。
+如下图所示，将Ruby+Devkit安装在`D:\developer`目录下（根据个人情况设置）。
 
 > 注意：
 >
@@ -127,18 +127,18 @@ C:\Users\xlp>gem -v
 
 ```shell
 # 查看当前源
-C:\Users\xlp>gem sources -l
+$ gem sources -l
 *** CURRENT SOURCES ***
 
 https://rubygems.org/
 # 删除默认源
-C:\Users\xlp>gem sources -r https://rubygems.org/
+$ gem sources -r https://rubygems.org/
 https://rubygems.org/ removed from sources
 # 添加国内源
-C:\Users\xlp>gem sources -a https://gems.ruby-china.com
+$ gem sources -a https://gems.ruby-china.com
 https://gems.ruby-china.com added to sources
 # 再次查看当前源
-C:\Users\xlp>gem source -l
+$ gem source -l
 *** CURRENT SOURCES ***
 
 https://gems.ruby-china.com
@@ -147,17 +147,17 @@ https://gems.ruby-china.com
 如果删除旧源的时候提示如下错误：
 
 ```shell
-C:\Users\xlp>gem sources -a https://rubygems.org/
+$ gem sources -a https://rubygems.org/
 https://rubygems.org/ is too similar to https://rubygems.org
 
 Do you want to add this source? [yn]  y
 source https://rubygems.org/ already present in the cache
 ```
 
-执行命令``清除缓存即可
+执行命令`gem sources -c`清除缓存即可
 
 ```shell
-C:\Users\xlp>gem sources -c
+$ gem sources -c
 *** Removed specs cache ***
 ```
 
@@ -323,10 +323,10 @@ Done installing documentation for bundler after 18 seconds
 ## 测试jekyll和bundler
 
 ```shell
-C:\Users\xlp\Desktop>jekyll -v
+$ jekyll -v
 jekyll 4.0.0
 
-C:\Users\xlp>bundle -v
+$ bundle -v
 Bundler version 2.1.4
 ```
 
@@ -337,7 +337,7 @@ Bundler version 2.1.4
 1. 在 `./myblog` 目录下创建一个全新的 Jekyll 网站。
 
    ```shell
-   C:\Users\xlp\Desktop>jekyll new myblog
+   $ jekyll new myblog
    Running bundle install in C:/Users/xlp/Desktop/myblog...
      Bundler: Fetching gem metadata from https://rubygems.org/............
      Bundler: Fetching gem metadata from https://rubygems.org/..

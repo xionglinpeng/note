@@ -1,8 +1,32 @@
 # English
 
+## There is和There are的区别
+
 There is和There are的区别主要是与后面所接的名词的单复数、可数不可以有关。
 
-1. 
+1. There is后加单数名词、不可数名词或者复数名词表示单个概念，例如：
+   1. 单数名词：There is book.
+   2. 不可数名词：There is some bread.
+   3. 复数名词表示一笔金额或一个总数或表达一个单个概念：There is five hundred dollars to pay.
+2. There are加复数名词，例如：复数名词There are many trees.
+
+扩展资料：
+
+1. There is/are是there be句型，be动词的选择要与后面的主语保持一致，如果是多个主语时，谓语动词要遵循“就近原则”。
+2. There be疑问句形式是将be或will/have/can/must等助动词、情态动词提至there之前，否定形式则直接在be或助动词、情态动词后加not。因此要表达“某个地方或某个时间存在什么事物或人”的时候常用“There be + 名词 + 地点（时间）”这一句型。
+3. There be句型是英语中常用句型，意思是“有”，表示“人或事物的存在”或“某地有某物”。There be后面的名词是句子的主语，属倒装结构。There在此结构中是引导词，以及没有副词“哪里”的含义。
+
+
+
+adj.	adjective	形容词
+
+adv.	adverb	副词
+
+v.	verb	动词
+
+n.	noun	名词
+
+
 
 
 

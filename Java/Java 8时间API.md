@@ -109,6 +109,26 @@ public ValueRange range(TemporalField field)
 
 
 
+plus
+
+```java
+public LocalDateTime plusDays(long days)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Instant
 
 `java.time.Instant`

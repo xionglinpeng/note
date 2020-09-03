@@ -84,6 +84,61 @@ $ docker run -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=597646251 --name mysql  mysq
 
 
 
+**mysql容器相关目录**
+
+- `/var/lib/mysql`：数据目录，必须挂载此目录，不然容器重建，数据就会丢失。
+- `/etc/mysql/conf.d`：自定义配置的配置目录，在此目录下放置以`.cnf`结尾的文件，在容器启动时将会被加载。
+- `/var/lib/mysql-files`：容器启动会报`Failed to access directory for --secure-file-priv`错误，然后启动失败，应该是没权限，没这个问题的就不用挂载这个目录。
+
+**环境变量**
+
+- `MYSQL_ROOT_PASSWORD`：数据库密码。
+
+
+
+
+
+**docker-compose**
+
+```yaml
+version: '3'
+services:
+  mysql:
+    image: mysql:8.0.21
+    container_name: db-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: a6ce8a15fe164d51b30923c6914ef9cc
+    restart: always
+    privileged: true
+    volumes:
+      # 数据目录
+      - /opt/mysql/datadir:/var/lib/mysql
+      # 配置目录
+      - /opt/mysql/conf:/etc/mysql/conf.d
+      # secure-file-priv 参数值
+      - /opt/mysql/mysql-files:/var/lib/mysql-files
+    networks:
+      - bridge-empty-window
+networks:
+  [network-name]:
+    external: true
+```
+
+**my.cnf**
+
+```mysql
+[mysqld]
+sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'
+```
+
+mysql更多系统变量：http://dev.mysql.com/doc/mysql/en/server-system-variables.html
+
+
+
+
+
 **连接报错**
 
 ```

@@ -17,8 +17,6 @@ MySQL日志主要分4类：
 
 ## 二、二进制日志
 
-
-
 ### 1. 启动和设置二进制日志
 
 默认情况下，二进制日志是开启的，可以通过修改MySQL的配置文件来启动和设置二进制日志。
@@ -32,6 +30,7 @@ log-bin=[path/to/[filename]]
 - log-bin：定义开启二进制日志。
 - path/to/：表明日志文件所在的目录路径。
 - filename：指定了日志文件的名称。
+	
 	> 日志文件的名称会以[filename].000001，[filename].000002，的形式递增。
 
 除了日志文件之外，还有一个名称为[filename].index的文件，文件内容为所有日志的
@@ -175,18 +174,29 @@ Query OK, 0 rows affected (0.30 sec)
 	mysql> purge master logs to 'binlog.000004';
 	Query OK, 0 rows affected (0.13 sec)
 	```
+	
 2. 删除指定日期以前的所有日志文件
+	
+	首先使用`reset master`清空所有二进制日志文件
 	
 	```mysql
 	mysql> reset master;
 	Query OK, 0 rows affected (0.15 sec)
+	```
 	
+	执行两次`flush logs`，以生成两个二进制日志文件
+	
+	```mysql
 	mysql> flush logs;
 	Query OK, 0 rows affected (0.30 sec)
 	
 	mysql> flush logs;
 	Query OK, 0 rows affected (0.17 sec)
+	```
 	
+	查看日志文件
+	
+	```mysql
 	mysql> show binary logs;
 	+---------------+-----------+-----------+
 	| Log_name      | File_size | Encrypted |
@@ -196,10 +206,18 @@ Query OK, 0 rows affected (0.30 sec)
 	| binlog.000003 |       156 | No        |
 	+---------------+-----------+-----------+
 	3 rows in set (0.00 sec)
+	```
 	
+	现在正式使用`purge master logs`命令删除`20200815`之前的二进制日志
+	
+	```mysql
 	mysql> purge master logs before '20200815';
 	Query OK, 0 rows affected (0.00 sec)
+	```
 	
+	因为今天就是20200815，所以一个文件日志文件都不会被删除
+	
+	```mysql
 	mysql> show binary logs;
 	+---------------+-----------+-----------+
 	| Log_name      | File_size | Encrypted |
@@ -209,10 +227,18 @@ Query OK, 0 rows affected (0.30 sec)
 	| binlog.000003 |       156 | No        |
 	+---------------+-----------+-----------+
 	3 rows in set (0.00 sec)
+	```
 	
+	延后一天，再次删除
+	
+	```mysql
 	mysql> purge master logs before '20200816';
 	Query OK, 0 rows affected, 1 warning (0.16 sec)
+	```
 	
+	再次查看，可以发现删除成功了
+	
+	```mysql
 	mysql> show binary logs;
 	+---------------+-----------+-----------+
 	| Log_name      | File_size | Encrypted |
@@ -221,6 +247,55 @@ Query OK, 0 rows affected (0.30 sec)
 	+---------------+-----------+-----------+
 	1 row in set (0.00 sec)
 	```
+
+### 4. 使用二进制恢复数据库
+
+如果MySQL服务器启用了二进制日志，在数据库出现意外丢失数据室时，可以使用MySQLbinlog工具从指定的时间点开始（例如最后一次备份）直到现在，或另一个指定的时间点的日志中恢复数据。
+
+MySQLbinlog恢复数据库的语法如下：
+
+```shell
+$ mysqlbinlog [options] /path/to/filename | mysql -u[user] -p[pass]
+```
+
+选项及参数说明：
+
+- `options`：一些可选项。
+  - `--start-datetime`：指定恢复数据库的**起始**时间点。
+  - `--stop-datetime`：指定恢复数据库的**结束**时间点。
+  - `--start-position`：指定恢复数据库的**开始**位置。
+  - `--stop-position`：指定恢复数据库的**结束**位置。
+- `/path/to/filename`：日志文件所在路径及名称。
+
+示例：
+
+```shell
+$ mysqlbinlog --stop-datetime="2020-08-17 23:07:00" D:/program/Mysql/data/binlog.000001 | mysql -uroot -p123456
+```
+
+### 5. 暂时停止二进制日志功能
+
+如果在MySQL的配置文件中配置启动了二进制日志，MySQL会一直记录二进制日志。修改配置文件，可以停止二进制日志，但是需要重启MySQL数据库。MySQL提供了暂时停止二进制日志的功能。通过`SET SQL_LOG_BIN`语句可以使MySQL暂停或者启动二进制日志。
+
+`SET SQL_LOG_BIN`语法如下：
+
+```mysql
+SET SQL_LOG_BIN={0|1}
+```
+
+停止记录二进制日志：
+
+```mysql
+mysql> set sql_log_bin=0;
+Query OK, 0 rows affected (0.00 sec)
+```
+
+启用记录二进制日志：
+
+```mysql
+mysql> set sql_log_bin=1;
+Query OK, 0 rows affected (0.00 sec)
+```
 
 ## 三、错误日志
 
@@ -264,6 +339,7 @@ MySQL的错误日志是以文本文件的形式存储在文件系统中的，可
 在运行状态下删除错误日志文件后，MySQL并不会自动创建日志文件。`flush logs`在
 重新加载日志的时候，如果文件不存在，则会自动创建。所以在删除错误日志之后，如果
 需要重建日志文件，需要在服务器端执行以下命令：
+
 ```shell
 $ mysqladmin -uroot -p[password] flush-logs
 ```
@@ -276,3 +352,271 @@ Query OK, 0 rows affected (0.52 sec)
 > 对于MySQL5.5.7以前的版本，`flush logs`可以将错误日志文件重命名为filename.err.old，
 > 并创建新的日志文件。但是从MySQL5.5.7开始，`flush logs`只是重新打开日志文件，
 > 并不做日志备份和创建操作。
+
+## 四、通用查询日志
+
+### 1. 启动通用查询日志
+
+MySQL服务器默认情况下没有开启通用查询日志。
+
+查看查询日志状态：
+
+```mysql
+mysql> show variables like '%general%';
++------------------+-------------------------------+
+| Variable_name    | Value                         |
++------------------+-------------------------------+
+| general_log      | OFF                           |
+| general_log_file | D:\program\Mysql\data\xlp.log |
++------------------+-------------------------------+
+```
+
+开启通用查询日志：
+
+1. 方式一：
+
+   在my.ini文件或my.cnf文件中添加配置开启。
+
+   ```
+   [mysqld]
+   # 慢查询日志
+   general_log=ON
+   general_log_file=/program/Mysql/data/logs/general-queries.log
+   ```
+
+2. 方式二：
+
+   在MySQL控制台使用命令启动。
+
+   ```mysql
+   # 停用
+   mysql> set @@global.general_log=0;
+   # 启用
+   mysql> set @@global.general_log=1;
+   ```
+
+### 2. 查看通用查询日志
+
+通用查询日志中记录了用户的所有操作。通过查看通用查询日志，可以了解用户对MySQL进行的操作。通用查询日志是以文本文件的形式存储数据库目录中。可以直接打开查看。
+
+例如，数据目录为`D:/program/Mysql/data/`，主机名为`admin`，则通过查询日志为`D:/program/Mysql/data/admin.log`。
+
+内容示例如下：
+
+```log
+D:\developer\Mysql\bin\mysqld.exe, Version: 8.0.20 (MySQL Community Server - GPL). started with:
+TCP Port: 3306, Named Pipe: MySQL
+Time                 Id Command    Argument
+2020-08-19T11:48:20.020650Z	  228 Query	show variables like '%general%'
+2020-08-19T11:59:38.272104Z	  228 Query	show variables like 'log_error'
+2020-08-19T12:00:16.446700Z	  228 Query	show variables like '%general%'
+2020-08-19T12:00:46.565483Z	  228 Query	SELECT DATABASE()
+2020-08-19T12:00:46.575617Z	  228 Init DB	empty-window
+2020-08-19T12:00:52.351292Z	  228 Query	select * from user
+```
+
+### 3. 删除通用查询日志
+
+通用查询日志记录用户的所有操作，因此在用户查询，更新频繁的情况下，通用查询日志会增长的很快。因此有必要定期删除比较早的通用日志，以节省磁盘空间。
+
+通用查询日志是以文本文件的形式存储文件系统中，所以删除的话，直接删除即可。
+
+要重新建立新的日志文件，可以使用语句`flush logs`。
+
+示例：
+
+mysqladmin：
+
+```shell
+$ mysqladmin -uroot -p[password] flush-logs
+```
+
+mysql终端：
+
+```mysql
+mysql> flush logs;
+```
+
+## 五、慢查询日志
+
+慢查询日志是记录查询时长超过指定时间的日志。慢查询日志主要用来记录执行时间较长的查询语句。通过慢查询日志，可以找出执行时间较长、执行效率较低的语句，然后进行优化。
+
+### 1. 启动和设置慢查询日志
+
+<div style="color:green">慢查询日志默认是关闭的。</div>
+
+**启用和关闭慢查询日志**
+
+查询慢查询日志配置状态：
+
+```mysql
+mysql> show variables like '%slow_query%';
++---------------------+------------------------------------+
+| Variable_name       | Value                              |
++---------------------+------------------------------------+
+| slow_query_log      | OFF                                |
+| slow_query_log_file | D:\program\Mysql\data\xlp-slow.log |
++---------------------+------------------------------------+
+```
+
+如上所示
+
+`slow_query_log`用于开启和关闭慢查询日志，默认关闭。
+
+`slow_query_log_file`用于设置慢查询日志文件，默认在数据库下，名为`[hostname]-slow.log`
+
+开启慢查询日志：
+
+1. 方式一：
+
+   在my.ini文件或my.cnf文件中添加配置开启。
+
+   ```
+   [mysqld]
+   # 慢查询日志
+   slow-query-log=ON
+   slow_query_log_file=/program/Mysql/data/logs/slow-queries.log
+   ```
+
+2. 方式二：
+
+   在MySQL控制台使用命令启动。
+
+   ```mysql
+   # 停用
+   mysql> set @@global.slow_query_log=0;
+   # 启用
+   mysql> set @@global.slow_query_log=1;
+   ```
+
+**设置慢查询阈值**
+
+慢查询阈值由参数`long_query_time`控制，默认为10秒，如下：
+
+```mysql
+mysql> show variables like '%long_query_time%';
++-----------------+-----------+
+| Variable_name   | Value     |
++-----------------+-----------+
+| long_query_time | 10.000000 |
++-----------------+-----------+
+```
+
+可以通过配置文件设置：
+
+```
+[mysqld]
+# 慢查询阈值
+long_query_time=1
+```
+
+### 2. 查看慢查询日志
+
+慢查询日志以文本文件的形式存储，所以可以直接使用文本编辑器打开查看。
+
+执行如下语句以生成慢查询：
+
+```mysql
+SELECT BENCHMARK(100000000,MD5('password'));
+```
+
+示例：
+
+```mysql
+mysql> SELECT BENCHMARK(100000000,MD5('password'));
++--------------------------------------+
+| BENCHMARK(100000000,MD5('password')) |
++--------------------------------------+
+|                                    0 |
++--------------------------------------+
+1 row in set (18.65 sec)
+```
+
+最后显示耗时18.65秒。
+
+打开慢查询日志，内容如下：
+
+```
+D:\developer\Mysql\bin\mysqld.exe, Version: 8.0.20 (MySQL Community Server - GPL). started with:
+TCP Port: 3306, Named Pipe: MySQL
+Time                 Id Command    Argument
+# Time: 2020-08-20T13:21:07.883165Z
+# User@Host: root[root] @ localhost [127.0.0.1]  Id:     9
+# Query_time: 18.851995  Lock_time: 0.000000 Rows_sent: 1  Rows_examined: 1
+use mysql;
+SET timestamp=1597929649;
+SELECT BENCHMARK(100000000,MD5('password'));
+```
+
+> 提示
+>
+> 借助慢查询日志分析工具，可以更加方便的分析慢查询语句。比较著名的慢查询具有MySQL Dump Slow、MySQL SLA、MySQL Log Filter、MyProfi。
+
+### 3. 删除慢查询日志
+
+慢查询日志是以文本文件的形式存储文件系统中，所以删除的话，直接删除即可。
+
+要重新建立新的日志文件，可以使用语句`flush logs`。
+
+示例：
+
+mysqladmin：
+
+```shell
+$ mysqladmin -uroot -p[password] flush-logs
+```
+
+mysql终端：
+
+```mysql
+mysql> flush logs;
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

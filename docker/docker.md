@@ -1484,8 +1484,6 @@ expose 8761
 
 
 
-
-
 1. 修改配置，添加`-H tcp://0.0.0.0:2375`
 
 ```shell
@@ -1504,7 +1502,7 @@ ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
 $ systemctl daemon-reload
 ```
 
-如果不，直接重启docker会报如下警告信息
+如果不重新加载，而直接重启docker会报如下警告信息
 
 ```
 docker.service changed on disk. Run 'systemctl daemon-reload' to reload units.
@@ -1516,7 +1514,6 @@ docker.service changed on disk. Run 'systemctl daemon-reload' to reload units.
 
 ```shell
 $ systemctl restart docker
-
 ```
 
 4. 使用docker info命令查看是否配置成功

@@ -107,3 +107,20 @@ http {
 
 上面最终效果过于平淡，不仅白底黑字，而且访问过的链接还会变色。 nginx 第三方的模块 [Fancy Index](https://www.nginx.com/resources/wiki/modules/fancy_index/) , 可以给下载页面增添一些样式。
 
+
+
+
+
+nginx匹配规则及优先级
+
+
+
+| 优先级 | 模式                | 含义                                                         |
+| ------ | ------------------- | ------------------------------------------------------------ |
+| 1      | location = /uri     | =表示精确匹配，只有完全匹配才能生效。                        |
+| 2      | location ^~ /uri    | ^~开头对URL路径进行前缀匹配。                                |
+| 3      | location ~ pattern  | 表示以前缀区分大小写的正则匹配                               |
+| 4      | location ~* pattern | 表示以前缀不区分大小写的正则匹配                             |
+| 5      | location /uri       | 表示以前缀匹配                                               |
+| 6      | location /          | 通用匹配，任何未匹配到其他location的请求都会匹配带，相当于switch的default。 |
+

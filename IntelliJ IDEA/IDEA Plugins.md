@@ -49,7 +49,7 @@ IDEA Plugin：https://plugins.jetbrains.com/plugin/7115-visualvm-launcher
 
 ## JRebel
 
-
+参见Tools → JRebel
 
 ## Protobuf Support
 
@@ -60,6 +60,20 @@ IDEA Plugin：https://plugins.jetbrains.com/plugin/7115-visualvm-launcher
 
 
 ## Alibaba Java Coding Guidelines
+
+
+
+
+
+## nginx support
+
+
+
+
+
+## Alibaba Cloud Toolkit
+
+一键部署插件
 
 
 

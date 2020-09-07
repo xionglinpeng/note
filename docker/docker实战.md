@@ -120,7 +120,7 @@ services:
       # secure-file-priv 参数值
       - /opt/mysql/mysql-files:/var/lib/mysql-files
     networks:
-      - bridge-empty-window
+      - [network-name]
 networks:
   [network-name]:
     external: true
@@ -218,7 +218,69 @@ mysql> SHOW VARIABLES WHERE Variable_name = 'version';
    mysql> flush privileges;
    ```
 
-   
+### Redis
+
+Docker Hub : https://hub.docker.com/_/redis?tab=description
+
+特性说明：
+
+- redis容器数据目录位于`/data`。
+
+- 默认情况下没有配置文件，需要自定义配置文件，并映射到容器的`/etc/redis/redis.conf`。
+
+- 启动Redis容器开启持久化：追加容器启动命令`redis-server --appendonly yes`。
+- 启动Redis容器时指定配置文件`redis-server /etc/redis/redis.conf --appendonly yes`。
+
+*docker command line*
+
+```shell
+$ docker run \
+	--name no-sql-redis \
+	--privileged \
+	--restart always \
+	-p 6379:6379 \
+	-v /opt/redis/data:/data \
+	-v /opt/redis/conf/redis.conf:/etc/redis/redis.conf \
+	--net [network] \
+	--network-alias no-sql-redis \
+	-d \
+	redis:6.0.7-alpine3.12 \
+	redis-server /etc/redis/redis.conf --appendonly yes
+```
+
+*docker-compose.yaml*
+
+```yaml
+version: '3'
+services:
+  no-sql: 
+    image: redis:6.0.7-alpine3.12
+    container_name: no-sql-redis
+    ports:
+      - "6379:6379"
+    restart: always
+    privileged: true
+    volumes:
+      - /opt/redis/data:/data
+      - /opt/redis/conf/redis.conf:/etc/redis/redis.conf
+    command: ["redis-server","/etc/redis/redis.conf","--appendonly","yes"]
+    networks:
+      [network]:
+        aliases:
+          - no-sql-redis
+networks:
+  [network]:
+    external: true
+```
+
+*connect to redis*
+
+```shell
+$ docker exec -it [container_name || container_id] redis-cli
+$ docker exec -it [container_name || container_id] redis-cli -h [host]
+$ docker exec -it [container_name || container_id] redis-cli -h [host] -p 6379
+$ docker exec -it [container_name || container_id] redis-cli -h [host] -p 6379 -a [password]
+```
 
 ### Nginx
 

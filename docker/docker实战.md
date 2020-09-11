@@ -72,17 +72,11 @@ $ docker run -d -p 9000:9000 --privileged uifd/ui-for-docker -H tcp://127.0.0.1:
 
 ## 数据库应用
 
-
-
 ### MySQL
 
-使用官方mysql镜像构建
+Docker hub：https://hub.docker.com/_/mysql
 
-```shell
-$ docker run -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=597646251 --name mysql  mysql:latest
-```
-
-
+特性说明：
 
 **mysql容器相关目录**
 
@@ -90,15 +84,53 @@ $ docker run -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=597646251 --name mysql  mysq
 - `/etc/mysql/conf.d`：自定义配置的配置目录，在此目录下放置以`.cnf`结尾的文件，在容器启动时将会被加载。
 - `/var/lib/mysql-files`：容器启动会报`Failed to access directory for --secure-file-priv`错误，然后启动失败，应该是没权限，没这个问题的就不用挂载这个目录。
 
+MySQL的默认配置位于`/etc/mysql/my.cnf`，包括其他目录`/etc/mysql/conf.d`或`/etc/mysql/mysql.conf.d`。
+
+`/etc/mysql/conf.d`目录中的配置文件和默认配置文件`/etc/mysql/my.cnf`将会同时起作用，但前者优先。
+
 **环境变量**
 
-- `MYSQL_ROOT_PASSWORD`：数据库密码。
+- ##### `MYSQL_ROOT_PASSWORD`：数据库密码。
 
+- ##### `MYSQL_DATABASE`：该变量是可选的，允许您指定镜像启动时创建的数据库的名称。如果提供了用户/密码(见下面)，那么该用户将被授予超级用户
 
+- ##### `MYSQL_USER`，`MYSQL_PASSWORD`：这些变量是可选的，用于创建新用户和设置该用户的密码。这个用户将被授予`MYSQL_DATABASE`变量指定的数据库的超级用户权限(见上面)。这两个变量都是创建用户所必需的。请注意，不需要使用此机制来创建根超级用户，该用户在默认情况下使用`MYSQL_ROOT_PASSWORD`变量指定的密码创建。
 
+- ##### `MYSQL_ALLOW_EMPTY_PASSWORD`：可选值。允许ROOT用户密码为空，*非空值*，例如yes。注意：不建议这样做。
 
+- ##### `MYSQL_RANDOM_ROOT_PASSWORD`：可选值。随机生成ROOT用户密码，*非空值*，例如yes。密码将被打印到stdout (GENERATED ROOT PASSWORD: .....)。
 
-**docker-compose**
+- ##### `MYSQL_ONETIME_PASSWORD`：强制用户更改密码。一旦init完成，将root(不是MYSQL_USER!中指定的用户)用户设置为过期，强制在第一次登录时更改密码。任何*非空值*都将激活该设置。注意:此功能仅在MySQL 5.6+上支持。在MySQL 5.5上使用这个选项将在初始化期间抛出一个适当的错误。
+
+- ##### `MYSQL_INITDB_SKIP_TZINFO`：默认情况下，entrypoint脚本自动加载`CONVERT_TZ()`函数所需的时区数据。如果不需要，任何*非空值*都将禁用时区加载。
+
+**没有cnf配置**
+
+许多配置选项可作为命令行参数传递给mysqld。这样可以灵活的定义容器，而不需要cnf配置文件。例如使用UTF-8（utf8mb4）改变所有表的默认编码和排序规则，只需要运行一下代码：
+
+```shell
+$ docker run --name some-mysql -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql:tag --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+```
+
+查看可用选项的完整列表
+
+```shell
+$ docker exec -it [container_name || container_id] mysql --verbose --help
+```
+
+**connect to mysql**
+
+```shell
+$ docker exec -it [container_name || container_id] mysql -h [host] -u[user] -p[password]
+```
+
+**docker command line**
+
+```shell
+$ docker run -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=597646251 --name mysql  mysql:latest
+```
+
+**docker-compose.yaml**
 
 ```yaml
 version: '3'
@@ -134,10 +166,6 @@ sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_
 ```
 
 mysql更多系统变量：http://dev.mysql.com/doc/mysql/en/server-system-variables.html
-
-
-
-
 
 **连接报错**
 
@@ -191,7 +219,7 @@ mysql> SHOW VARIABLES WHERE Variable_name = 'version';
 
 4. 修改root用户密码
 
-   ```shell
+   ```mysql
    mysql> ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY '597646251';
    ```
 
@@ -214,9 +242,11 @@ mysql> SHOW VARIABLES WHERE Variable_name = 'version';
 
 6. 最后刷新授权（这一步不是必须的）
 
-   ```shell
+   ```mysql
    mysql> flush privileges;
    ```
+
+## NoSQL数据库
 
 ### Redis
 
@@ -282,11 +312,44 @@ $ docker exec -it [container_name || container_id] redis-cli -h [host] -p 6379
 $ docker exec -it [container_name || container_id] redis-cli -h [host] -p 6379 -a [password]
 ```
 
+## Web服务器
+
 ### Nginx
 
+Docker Hub : https://hub.docker.com/_/nginx
 
+特性说明：
 
+- nginx镜像配置文件位于`/etc/nginx/nginx.conf`。
+- 默认数据目录位于`/usr/share/nginx/html`。
+- nginx常常需要将一些不同的资源放置在自定义的目录中，用以区分，这是自定义数据卷挂载即可。
+- nginx镜像还包含了其他很多高级特性，但一般情况下都是用不到的，具体参考[Docker Hub](https://hub.docker.com/_/nginx)。
 
+*docker-compose.yaml*
+
+```yaml
+version: '3'
+services:
+  web:
+    image: nginx:1.19.2-alpine
+    container_name: web-nginx
+    ports:
+      - "80:80"
+    restart: always
+    privileged: true
+    volumes:
+      - /usr/share/nginx/html:/usr/share/nginx/html:ro
+      - /usr/share/nginx/config/nginx.conf:/etc/nginx/nginx.conf:ro
+      - [volume-name]:/usr/share/nginx/resource:ro
+    networks:
+      - [network-name]
+networks:
+  [network-name]:
+    external: true
+volumes:
+  [volume-name]:
+    external: true
+```
 
 **搭建文件下载服务器**
 

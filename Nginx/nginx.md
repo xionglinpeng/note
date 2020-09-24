@@ -100,7 +100,7 @@ http {
 
 **注意事项：**
 
-1. 只能处理与斜杠字符(‘/’) 结尾的请求，即`location / {...}`（关于这一点已经在ngx_http_autoindex_module模块的文档中有所描述）。
+1. 只能处理与斜杠字符(‘/’) 结尾的请求，即`location / {...}`（关于这一点已经在`ngx_http_autoindex_module`模块的文档中有所描述）。
 2. 文件目录下（`root /...`）不能包含`index.html`文件，如果包含此文件，将会直接加载`index.html`，而不会是文件目录列表。
 
 **续:修改页面的外观**
@@ -123,4 +123,10 @@ nginx匹配规则及优先级
 | 4      | location ~* pattern | 表示以前缀不区分大小写的正则匹配                             |
 | 5      | location /uri       | 表示以前缀匹配                                               |
 | 6      | location /          | 通用匹配，任何未匹配到其他location的请求都会匹配带，相当于switch的default。 |
+
+
+
+
+
+
 

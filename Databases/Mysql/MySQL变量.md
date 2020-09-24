@@ -43,19 +43,19 @@ STRICT_TRANS_TABLES
 TIME_TRUNCATE_FRACTIONAL
 ```
 
-
-
-
-
-
-
-
-
 ## 查询变量
 
-
+```mysql
+select @@sql_mode;
+select session.@@sql_mode;
+select global.@@sql_mode;
+```
 
 ## 设置变量
+
+```mysql
+set sql_mode = xxx
+```
 
 
 

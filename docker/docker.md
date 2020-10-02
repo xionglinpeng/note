@@ -1753,6 +1753,35 @@ Docker官方中国区（目前不可用）：https://registry.docker-cn.com
 
    ![](./docker-images/aliyun-2.png)
 
+#### 阿里云个人镜像仓库
+
+阿里云提供了镜像仓库，我们可以把自己的镜像上传到这个仓库当中。
+
+![1601196027582](docker-images\1601196027582.png)
+
+- 镜像仓库->创建镜像仓库 用于 创建镜像仓库。
+
+- 命令空间可以查看创建镜像仓库所设置的命名空间，每个命名空间就是一个仓库。
+
+- 访问凭证可以设置访问仓库的用户名和密码。
+
+示例：
+
+首先登陆仓库
+
+```shell
+$ docker login --username=13*******61 registry.cn-hangzhou.aliyuncs.com
+Password:5***4***p
+```
+
+推送镜像
+
+```shell
+$ docker push registry.cn-hangzhou.aliyuncs.com/xionglinpeng/[REPOSITORY]:[TAG]
+```
+
+#### 阿里云镜像加速器
+
 4. 选择镜像加速器，即可看到相应的加速器地址，并且描述了Ubuntu、CentOs、Mac和Windows环境的安装和配置方式。
 
    ![](./docker-images/aliyun-3.png)

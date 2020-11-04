@@ -56,10 +56,6 @@ G1将堆划分为多个大小相等的堆区域（region），每个region的连
 
 一个回收周期完成以后，会从另一个young-only阶段开始一个新的回收周期。在垃圾回收时，如果内存不足，G1也会像其他收集器一样STW，做整个堆的压缩（也就是Full GC）。
 
-> old区的占有率达到一个阈值时，这个阈值是多少？
->
-> 那些情况会导致内存不足？
-
 ### Garbage Collection Pauses and Collection Set
 
 

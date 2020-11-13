@@ -206,8 +206,8 @@ use pipelined : 10 ms
 
 如你所见，开启管道后，我们的速度效率提升了5-10呗。
 
-### 管道（Pipelining）VS 脚背（Scripting）
+### 管道（Pipelining）VS 脚本（Scripting）
 
-大量pipeline应用场景可通过Redis脚本（Redis版本>=2.6）得到更搞笑的处理，后者在服务器端执行大量工作。脚本的一大优势是可通过最小的延迟读写数据，让读、计算、写等操作变得非常快（pipeline在这种情况下不能使用，因为客户端在写命令前需要读命令返回的结果）。
+大量pipeline应用场景可通过Redis脚本（Redis版本>=2.6）得到更高效的处理，后者在服务器端执行大量工作。脚本的一大优势是可通过最小的延迟读写数据，让读、计算、写等操作变得非常快（pipeline在这种情况下不能使用，因为客户端在写命令前需要读命令返回的结果）。
 
 应用程序有时可能在pipeline中发送`eval`或`evalsha`命令。Redis通过`script load`命令（保证`evalsha`成功被调用）明确支持这种情况。

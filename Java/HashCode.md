@@ -437,10 +437,11 @@ static inline intptr_t get_next_hash(Thread* self, oop obj) {
 product(intx, hashCode, 5, EXPERIMENTAL, "(Unstable) select hashCode generation algorithm") 
 ```
 
-需要注意的是`-XX:hashCode=n`是一个实验性质（experimental）的参数，因此在`-XX:hashCode=n`之前添加`-XX:+UnlockExperimentalVMOptions`用于解锁试验性质的参数。
+需要注意的是`-XX:hashCode=n`是一个实验性质（experimental）的参数，因此在`-XX:hashCode=n`之前需要添加`-XX:+UnlockExperimentalVMOptions`用于解锁试验性质的参数。
 
 ```
--XX:+UnlockExperimentalVMOptions -XX:hashCode=2
+-XX:+UnlockExperimentalVMOptions 
+-XX:hashCode=2
 ```
 
 ## `-XX:hashCode=0`

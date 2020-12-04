@@ -4,7 +4,7 @@
 
 
 
-
+![](https://upload-images.jianshu.io/upload_images/10439291-1a03ba780894a139.png?imageMogr2/auto-orient/strip|imageView2/2/w/614/format/webp)
 
 
 
@@ -41,6 +41,16 @@ Try 'git flow <subcommand> help' for details.
 
 
 ## 初始化Git-Flow
+
+
+
+在Git 2.7.4版本测试是不支持`git flow`命令
+
+
+
+
+
+
 
 
 
@@ -106,7 +116,7 @@ Now, start committing on your feature. When done, use:
 
 2. 完成一个功能
 
-   经过一段时间的开发和提交，完成了功能的开发，就需要将对应的feature分支合并会develop分支中：
+   经过一段时间的开发和提交，完成了功能的开发，就需要将对应的feature分支合并回develop分支中：
 
    ```shell
    $ git flow feature finish demo

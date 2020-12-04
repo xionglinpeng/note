@@ -366,9 +366,7 @@ intptr_t ObjectSynchronizer::FastHashCode(Thread* self, oop obj) {
 }
 ```
 
-
-
-
+*get_next_hash*
 
 ```java
 // hashCode() generation :
@@ -429,8 +427,6 @@ static inline intptr_t get_next_hash(Thread* self, oop obj) {
 }
 ```
 
-
-
 `get_next_hash()`是实际生成哈希码值的函数，可以看到它有6个`if`分支，变量`hashCode`是一个虚拟机参数，可以通过`-XX:hashCode=n`设置，其默认值为5，定义在[globals.hpp](https://github.com/openjdk/jdk/blob/master/src/hotspot/share/runtime/globals.hpp)：
 
 ```c++
@@ -439,26 +435,96 @@ product(intx, hashCode, 5, EXPERIMENTAL, "(Unstable) select hashCode generation 
 
 需要注意的是`-XX:hashCode=n`是一个实验性质（experimental）的参数，因此在`-XX:hashCode=n`之前需要添加`-XX:+UnlockExperimentalVMOptions`用于解锁试验性质的参数。
 
-```
+```jvm
 -XX:+UnlockExperimentalVMOptions 
 -XX:hashCode=2
 ```
 
-## `-XX:hashCode=0`
+## `-XX:hashCode` 5分支
 
-Park-Miller RNG(Random Number Generator)
+- `-XX:hashCode=0`
 
-## `-XX:hashCode=1`
+当`-XX:hashCode=0`时，是利用Park-Miller随机数生成器（RNG - Random Number Generator）生成的哈希值，调用的是`os::random()`方法，源码位于[os.cpp](https://github.com/openjdk/jdk/blob/master/src/hotspot/share/runtime/os.cpp)。
 
-## `-XX:hashCode=2`
+相关源码：
 
-2是用于敏感度测试，例如某些集合是否对哈希值敏感。固定返回1。
+```c++
+......
+volatile unsigned int os::_rand_seed      = 1234567;
+......
+int os::next_random(unsigned int rand_seed) {
+  /* standard, well-known linear congruential random generator with
+   * next_rand = (16807*seed) mod (2**31-1)
+   * see
+   * (1) "Random Number Generators: Good Ones Are Hard to Find",
+   *      S.K. Park and K.W. Miller, Communications of the ACM 31:10 (Oct 1988),
+   * (2) "Two Fast Implementations of the 'Minimal Standard' Random
+   *     Number Generator", David G. Carta, Comm. ACM 33, 1 (Jan 1990), pp. 87-88.
+  */
+  const unsigned int a = 16807;
+  const unsigned int m = 2147483647;
+  const int q = m / a;        assert(q == 127773, "weird math");
+  const int r = m % a;        assert(r == 2836, "weird math");
 
-## `-XX:hashCode=3`
+  // compute az=2^31p+q
+  unsigned int lo = a * (rand_seed & 0xFFFF);
+  unsigned int hi = a * (rand_seed >> 16);
+  lo += (hi & 0x7FFF) << 16;
 
+  // if q overflowed, ignore the overflow and increment q
+  if (lo > m) {
+    lo &= m;
+    ++lo;
+  }
+  lo += hi >> 15;
 
+  // if (p+q) overflowed, ignore the overflow and increment (p+q)
+  if (lo > m) {
+    lo &= m;
+    ++lo;
+  }
+  return lo;
+}
 
+int os::random() {
+  // Make updating the random seed thread safe.
+  while (true) {
+    unsigned int seed = _rand_seed;
+    unsigned int rand = next_random(seed);
+    if (Atomic::cmpxchg(&_rand_seed, seed, rand) == seed) {
+      return static_cast<int>(rand);
+    }
+  }
+}
+```
 
+### 1、`-XX:hashCode=1`
+
+首先是获取`oop`的地址，然后将地址经过`addr_bits ^ (addr_bits >> 5) ^ GVars.stw_random`运算使其哈希值更加散列化，减少哈希碰撞。
+
+获取oop地址的相关源码位于[oopsHierarchy.hpp](https://github.com/openjdk/jdk/blob/master/src/hotspot/share/oops/oopsHierarchy.hpp)：
+
+```c++
+// For CHECK_UNHANDLED_OOPS, it is ambiguous C++ behavior to have the oop
+// structure contain explicit user defined conversions of both numerical
+// and pointer type. Define inline methods to provide the numerical conversions.
+template <class T> inline oop cast_to_oop(T value) {
+  return (oop)(CHECK_UNHANDLED_OOPS_ONLY((void *))(value));
+}
+template <class T> inline T cast_from_oop(oop o) {
+  return (T)(CHECK_UNHANDLED_OOPS_ONLY((oopDesc*))o);
+}
+```
+
+### 2、`-XX:hashCode=2`
+
+当`-XX:hashCode=2`时，是用于敏感度测试，例如某些集合是否对哈希值敏感。固定返回1。
+
+### 3、`-XX:hashCode=3`
+
+当`-XX:hashCode=3`时，利用自增序列生成哈希值。
+
+`hc_sequence`是一个全局的int型变量，当每次调用任何对象的`hashCode()`方法时候，其值加1。源码就位于[synchronizer.cpp](https://github.com/openjdk/jdk/blob/master/src/hotspot/share/runtime/synchronizer.cpp)中。
 
 ```c++
 struct SharedGlobals {
@@ -473,15 +539,52 @@ struct SharedGlobals {
 };
 
 static SharedGlobals GVars;
-
 ```
 
+**验证**
 
+```java
+/**
+  * -XX:+UnlockExperimentalVMOptions -XX:hashCode=3
+  */
+public static void main(String[] args) {
+    System.out.println(new User().hashCode());
+    System.out.println(new User().hashCode());
+    System.out.println(new User().hashCode());
+    System.out.println(new User().hashCode());
+    System.out.println(new User().hashCode());
+}
+```
 
+测试结果
 
+```
+917
+918
+919
+920
+921
+```
 
-## `-XX:hashCode=4`
+验证代码中，将`-XX:hashCode`设置为3，测试输出的结果顺序递增。注意，这里之所以没有从1开始，是因为虚拟机启动本身就会加载很多的类，其中有些类调用了`hashCode()`方法。
 
+### 4、`-XX:hashCode=4`
 
+跟`-XX:hashCode=1`时差不多，只是当`-XX:hashCode=4`时，是直接以`oop`的地址作为哈希值。
 
-## `-XX:hashCode=5`
+### 5、`-XX:hashCode=5`
+
+利用Marsaglia's xor-shift随机数生成算法生成哈希值。
+
+xor-shift算法参考资料
+
+维基百科：https://en.wikipedia.org/wiki/Xorshift
+
+Xorshift RNGs（PDF）：http://www.jstatsoft.org/v08/i14/paper
+
+PDF：https://www.jstatsoft.org/article/view/v008i14/xorshift.pdf（https://www.jstatsoft.org/article/view/v008i14）
+
+## 参考资料
+
+- [hashcode() 方法底层实现](https://zhanghaoxin.blog.csdn.net/article/details/108627063)
+

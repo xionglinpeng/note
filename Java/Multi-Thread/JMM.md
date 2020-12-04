@@ -1,5 +1,7 @@
 # JMM
 
+![](https://upload-images.jianshu.io/upload_images/2184951-877439e958624bfa.png?imageMogr2/auto-orient/strip|imageView2/2/w/1200/format/webp)
+
 Java内存模型的结构及操作
 
 原子性、可见性、有序性在Java内存模型中的体现

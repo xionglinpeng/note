@@ -20,7 +20,7 @@ G1垃圾收集器主要是为那些拥有**大内存**的**多核处理器**而�
 
 ## Basic Concepts
 
-G1是一款分代、增量、并行、主要是并发、stop-the-world、标记整理的垃圾收集器，在每一个STW停顿的时间，它都会监控停顿时间的目标。跟其他的收集器类似，G1把对分成逻辑上的yong区和old区。内存回收主要集中在yong区，在这个区域的内存回收也是非常高效的，偶尔也会发生在old区。
+G1是一款分代、增量、并行、主要是并发、stop-the-world、标记整理的垃圾收集器，在每一个STW停顿的时间，它都会监控停顿时间的目标。跟其他的收集器类似，G1把堆分成逻辑上的yong区和old区。内存回收主要集中在yong区，在这个区域的内存回收也是非常高效的，偶尔也会发生在old区。
 
 为了提高吞吐量，有些操作总是STW，还有一些操作在应用停止的情况下会花费更多的时间，比如一些对整个堆的操作，像全局的标记就是并行和并发来执行的，在空间回收的时候，为了让STW时间更短，G1是增量的分步和并行来回收的。G1是通过记录上一次应用的行为和GC的停顿信息来实现可预计的停顿时间的，可以利用这些信息来计算在停顿时间之内要做的工作的多少。比如：G1会首先回收那些可以高效回收的内存区域（也就是大部分都被填满垃圾的区域，这也是为什么叫G1的原因）。
 
@@ -40,13 +40,13 @@ G1将堆划分为多个大小相等的堆区域（region），每个region的连
 
 ### Garbage Collection Cycle
 
-宏观上看，G1的垃圾回收在两个阶段中来回交替执行。young-only阶段会逐步把old区填满存回对象，space-reclamation阶段除了会回收young区的内存以外，还会增量回收old区的内存。然后就会重新开启young-only阶段。
+宏观上看，G1的垃圾回收在两个阶段中来回交替执行。young-only阶段会逐步把old区填满对象，space-reclamation阶段除了会回收young区的内存以外，还会增量回收old区的内存。然后就会重新开启young-only阶段。
 
 *有关此循环的概述：*
 
 ![Description of Figure 7-2 follows](https://docs.oracle.com/en/java/javase/15/gctuning/img/jsgct_dt_001_grbgcltncyl.png)
 
-222
+
 
 1. Young-only阶段：这个阶段从young区的一些普通的yong GC开始，这些GC会把yong区的对象晋升到old区。当old区的占有率达到一个阈值时，就开始young-only阶段到space-reclamation阶段的转换，这个时候，就开始Concurrent Start的yong GC，而不是普通的yong GC。
    - Concurrent Start : 这种类型的GC除了做普通的yong GC之外，还会开始标记（marking）过程。并发标记会找出当前old区中所有存活的对象以备随后的space-reclamation阶段来使用。当并发标记还没有结束的过程中，还是可能会发生普通的yong GC。标记经过两个特殊的STW停顿之后才会结束：重新标记（remark）和清理（cleanup）。
@@ -118,7 +118,7 @@ G1使用SATB算法来做标记。在初始标记开始的时候，G1会保存堆
 
 ### Behavior in Very Tight Heap Situations
 
-当应用的存活对象占用了大量的内存。无法容纳回收剩余的对象的时候，就会发生evacuation失败。evacuation失败发生的时候，G1为了完成当前的GC，它会保持已经位于新的位置上的存活对象，仅仅是调整对象之间的引用，而不会复制或者移动这些对象，evacuation失败会知道一些额外的开销，但是一般会跟别的young GC一样快。evacuation失败完成以后，G1会跟往常一样继续恢复应用的执行。G1会假设evacuation失败时发生在GC的后期，也就是说，大部分对象已经被移动过了，已经有足够的剩余内存来继续执行应用程序一直到mark结束，space-reclamation开始。
+当应用的存活对象占用了大量的内存。无法容纳回收剩余的对象的时候，就会发生evacuation失败。evacuation失败发生的时候，G1为了完成当前的GC，它会保持已经位于新的位置上的存活对象，仅仅是调整对象之间的引用，而不会复制或者移动这些对象，evacuation失败会制造一些额外的开销，但是一般会跟别的young GC一样快。evacuation失败完成以后，G1会跟往常一样继续恢复应用的执行。G1会假设evacuation失败时发生在GC的后期，也就是说，大部分对象已经被移动过了，已经有足够的剩余内存来继续执行应用程序一直到mark结束，space-reclamation开始。
 
 如果这个假设不成立，G1最终会发起Full GC。这种类型的GC会对整个堆做压缩，可能会非常的慢！
 

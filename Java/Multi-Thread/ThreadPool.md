@@ -65,7 +65,7 @@ ThreadPoolExecutor(int corePoolSize,int maximumPoolSize,long keepAliveTime,
 
 - `CallerRunsPolicy`：该策略会使用调用者线程执行当前任务
 
-- `DiscardOldestPolicy`：该策略会丢弃队列里最进的一个任务，并执行当前任务。
+- `DiscardOldestPolicy`：该策略会丢弃队列里最近的一个任务，并执行当前任务。
 
 - `DiscardPolicy`：该策略会直接丢弃任务。
 
@@ -78,7 +78,7 @@ public interface RejectedExecutionHandler {
 }
 ```
 
-r表示请求执行的任务，executor是当前线程池。
+`r`表示请求执行的任务，`executor`是当前线程池。
 
 ## 自定义线程创建
 

@@ -43,7 +43,7 @@
 
 3. 空间索引
 
-   空间索引是对空间数据类型字段建立的索引，MySQL中的空间数据类型由4中，分别是geometry、point、linestring和polygon。MySQL使用spatial关键字进行扩展，使得能够创建正规索引类似的语句创建空间索引。创建空间索引的列，必须将其声明为NOT NULL，空间索引只能在存储引擎为MyISAM的表中创建。
+   空间索引是对空间数据类型字段建立的索引，MySQL中的空间数据类型有4中，分别是geometry、point、linestring和polygon。MySQL使用spatial关键字进行扩展，使得能够创建正规索引类似的语句创建空间索引。创建空间索引的列，必须将其声明为NOT NULL，空间索引只能在存储引擎为MyISAM的表中创建。
 
 ### 1.3、索引的设计原则
 

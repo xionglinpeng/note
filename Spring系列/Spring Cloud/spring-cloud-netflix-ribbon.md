@@ -2,7 +2,46 @@
 
 
 
-![](.\RibbonLoadBalancerClient.png)
+- `LoadBalancerAutoConfiguration`
+
+  **全类名**：`org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration`
+
+  **JAR包**：`spring-cloud-commons`
+
+  **bean**：
+
+  - `LoadBalancerRequestFactory`
+
+  - `LoadBalancerInterceptor`
+
+  - 为`RestTemplate`设置负载均衡拦截器
+
+- `RibbonAutoConfiguration`
+
+  **全类名**：`org.springframework.cloud.netflix.ribbon.RibbonAutoConfiguration`
+
+  **JAR包**：`spring-cloud-netflix-ribbon`
+
+  **bean**：
+
+  - `LoadBalancerClient`
+  - SpringClientFactory
+
+- `RibbonClientConfiguration`
+
+  **全类名**：`org.springframework.cloud.netflix.ribbon.RibbonClientConfiguration`
+
+  **JAR包**：`spring-cloud-netflix-ribbon`
+
+  **bean**：
+
+  - `ILoadBalancer`
+
+  - `IRule`
+
+  - `IPing`
+
+  
 
 ## ServiceInstanceChooser
 
@@ -27,11 +66,19 @@ public interface ServiceInstanceChooser {
 }
 ```
 
-
-
 ## LoadBalancerClient
 
 `LoadBalancerClient`是一个负载均衡客户端。其中有两个`execute()`方法，均用来执行请求。`reconstructURI()`用于重构URL。
+
+
+
+![](images/LoadBalancerClient.png)
+
+
+
+
+
+
 
 ```java
 package org.springframework.cloud.client.loadbalancer;
@@ -76,9 +123,7 @@ public interface LoadBalancerClient extends ServiceInstanceChooser {
 }
 ```
 
-
-
-## RibbonLoadBalancerClient
+### RibbonLoadBalancerClient
 
 `org.springframework.cloud.netflix.ribbon.RibbonLoadBalancerClient`是一个非常重要的类，最终的负载均衡的请求处理由它来执行。
 
@@ -320,17 +365,31 @@ public class RibbonLoadBalancerClient implements LoadBalancerClient {
 }
 ```
 
+### RibbonServer
+
+## RibbonLoadBalancerContext
+
+RibbonStatsRecorder
+
+## IClientConfig
+
 ## ILoadBalancer
 
-`addServers()`：用于添加一个Server集合
 
-`chooseServer()`：用于根据key取货物Server
 
-`markServerDown()`：用于标记某个服务下线
+![](images/ILoadBalancer.png)
 
-`getReachableServers()`：用于获取可用的Server集合
 
-`getAllServers()`：用于获取所有Server集合
+
+- `addServers()`：向负载均衡器中维护的实例列表增加服务实例。
+
+- `chooseServer()`：通过某种策略，从负载均衡器中挑选出一个具体的服务实例。
+
+- `markServerDown()`：用来通知和标识负载均衡器中某个具体实例已经停止服务，不然负载均衡在下一次获取服务实例清单前都会认为服务实例均是正常服务的。
+
+- `getReachableServers()`：获取当前正常服务的实例列表。
+
+- `getAllServers()`：获取所有已知的服务实例列表，包括正常服务和停止服务的实例。
 
 ```java
 package com.netflix.loadbalancer;
@@ -421,9 +480,44 @@ public interface ILoadBalancer {
 
 
 
+## IRule
+
+负载均衡常见策略：
+
+1. 随机（Random）
+2. 轮询（RoundRobin）
+3. 一致性哈希（ConsistentHash）
+4. 哈希（Hash）
+5. 加权（Weighted）
 
 
 
+
+
+```java
+public interface IRule{
+    public Server choose(Object key);
+    public void setLoadBalancer(ILoadBalancer lb);
+    public ILoadBalancer getLoadBalancer();    
+}
+```
+
+
+
+
+
+![](images/IRule.png)
+
+----------------------------
+
+
+
+12 
+
+- RandomRule：随机策略
+- RoundRobinRule：轮询策略（默认）
+- WeightedResponseTimeRule：加权策略
+- BestAvailableRule：请求数最少策略
 
 
 

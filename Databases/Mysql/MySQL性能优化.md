@@ -32,7 +32,7 @@ show status like 'value';
 
 ### 2.1. 分析查询语句
 
-MySQL提高了`explain`和`describe`语句，用来分析查询语句。
+MySQL提供了`explain`和`describe`语句，用来分析查询语句。
 
 语法：
 
@@ -337,7 +337,7 @@ possible_keys: index_name,index_age
 
 ### 2.4. 优化子查询
 
-MySQL从4.1版本开始支持子查询，使用子查询可以进行SELECT语句的嵌套查询，即一个SELECT查询的结果作为另一个SELECTL语句的条件。
+MySQL从4.1版本开始支持子查询，使用子查询可以进行SELECT语句的嵌套查询，即一个SELECT查询的结果作为另一个SELECT语句的条件。
 
 子查询可以一次性完成很多逻辑上需要多个步骤才能完成的SQL操作。子查询虽然可以使查询语句很灵活，但执行效率不高。执行子查询时，MySQL需要为内层查询语句的查询结果建立一个临时表。然后外层查询语句从临时表中查询记录。查询完毕后，再撤销这些临时表。因此，子查询的速度会受到一定的影响。如果查询的数据量比较大，这种影响就会随之增大。
 
@@ -376,13 +376,13 @@ MySQL从4.1版本开始支持子查询，使用子查询可以进行SELECT语句
    禁用索引：
 
    ```mysql
-   ALTER TABLE TABLE_NAME DISABLE KEYS;
+   ALTER TABLE {TABLE_NAME} DISABLE KEYS;
    ```
 
    启用索引：
 
    ```mysql
-   ALTER TABLE TABLE_NAME ENABLE KEYS;
+   ALTER TABLE {TABLE_NAME} ENABLE KEYS;
    ```
 
    对于空表批量导入数据，则不需要进行此操作，因为MyISAM引擎的表示在导入数据之后才建立索引的。

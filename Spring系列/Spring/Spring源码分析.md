@@ -1,4 +1,4 @@
-BeanNameGenerator
+`BeanNameGenerator
 
 conditional
 
@@ -114,11 +114,140 @@ public void refresh() throws BeansException, IllegalStateException {
 
 
 
+## 为Refresh准备上下文
+
+
+
+```java
+protected void prepareRefresh() {
+    // Switch to active.
+    this.startupDate = System.currentTimeMillis();
+    this.closed.set(false);
+    this.active.set(true);
+
+    if (logger.isDebugEnabled()) {
+        if (logger.isTraceEnabled()) {
+            logger.trace("Refreshing " + this);
+        }
+        else {
+            logger.debug("Refreshing " + getDisplayName());
+        }
+    }
+
+    // Initialize any placeholder property sources in the context environment.
+    initPropertySources();
+
+    // Validate that all properties marked as required are resolvable:
+    // see ConfigurablePropertyResolver#setRequiredProperties
+    getEnvironment().validateRequiredProperties();
+
+    // Store pre-refresh ApplicationListeners...
+    if (this.earlyApplicationListeners == null) {
+        this.earlyApplicationListeners = new LinkedHashSet<>(this.applicationListeners);
+    }
+    else {
+        // Reset local application listeners to pre-refresh state.
+        this.applicationListeners.clear();
+        this.applicationListeners.addAll(this.earlyApplicationListeners);
+    }
+
+    // Allow for the collection of early ApplicationEvents,
+    // to be published once the multicaster is available...
+    this.earlyApplicationEvents = new LinkedHashSet<>();
+}
+```
 
 
 
 
-## 注册BeanPostProcessor
+
+
+
+
+
+## 创建BeanFactory
+
+## 准备BeanFactory
+
+
+
+```java
+protected void prepareBeanFactory(ConfigurableListableBeanFactory beanFactory) {
+    // Tell the internal bean factory to use the context's class loader etc.
+    beanFactory.setBeanClassLoader(getClassLoader());
+    if (!shouldIgnoreSpel) {
+        beanFactory.setBeanExpressionResolver(new StandardBeanExpressionResolver(beanFactory.getBeanClassLoader()));
+    }
+    beanFactory.addPropertyEditorRegistrar(new ResourceEditorRegistrar(this, getEnvironment()));
+
+    // Configure the bean factory with context callbacks.
+    beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
+    beanFactory.ignoreDependencyInterface(EnvironmentAware.class);
+    beanFactory.ignoreDependencyInterface(EmbeddedValueResolverAware.class);
+    beanFactory.ignoreDependencyInterface(ResourceLoaderAware.class);
+    beanFactory.ignoreDependencyInterface(ApplicationEventPublisherAware.class);
+    beanFactory.ignoreDependencyInterface(MessageSourceAware.class);
+    beanFactory.ignoreDependencyInterface(ApplicationContextAware.class);
+    beanFactory.ignoreDependencyInterface(ApplicationStartupAware.class);
+
+    // BeanFactory interface not registered as resolvable type in a plain factory.
+    // MessageSource registered (and found for autowiring) as a bean.
+    beanFactory.registerResolvableDependency(BeanFactory.class, beanFactory);
+    beanFactory.registerResolvableDependency(ResourceLoader.class, this);
+    beanFactory.registerResolvableDependency(ApplicationEventPublisher.class, this);
+    beanFactory.registerResolvableDependency(ApplicationContext.class, this);
+
+    // Register early post-processor for detecting inner beans as ApplicationListeners.
+    beanFactory.addBeanPostProcessor(new ApplicationListenerDetector(this));
+
+    // Detect a LoadTimeWeaver and prepare for weaving, if found.
+    if (!NativeDetector.inNativeImage() && beanFactory.containsBean(LOAD_TIME_WEAVER_BEAN_NAME)) {
+        beanFactory.addBeanPostProcessor(new LoadTimeWeaverAwareProcessor(beanFactory));
+        // Set a temporary ClassLoader for type matching.
+        beanFactory.setTempClassLoader(new ContextTypeMatchClassLoader(beanFactory.getBeanClassLoader()));
+    }
+
+    // Register default environment beans.
+    if (!beanFactory.containsLocalBean(ENVIRONMENT_BEAN_NAME)) {
+        beanFactory.registerSingleton(ENVIRONMENT_BEAN_NAME, getEnvironment());
+    }
+    if (!beanFactory.containsLocalBean(SYSTEM_PROPERTIES_BEAN_NAME)) {
+        beanFactory.registerSingleton(SYSTEM_PROPERTIES_BEAN_NAME, getEnvironment().getSystemProperties());
+    }
+    if (!beanFactory.containsLocalBean(SYSTEM_ENVIRONMENT_BEAN_NAME)) {
+        beanFactory.registerSingleton(SYSTEM_ENVIRONMENT_BEAN_NAME, getEnvironment().getSystemEnvironment());
+    }
+    if (!beanFactory.containsLocalBean(APPLICATION_STARTUP_BEAN_NAME)) {
+        beanFactory.registerSingleton(APPLICATION_STARTUP_BEAN_NAME, getApplicationStartup());
+    }
+}
+```
+
+
+
+
+
+1. 注册默认的环境Bean
+   1. 注册Environment。
+   2. 注册系统属性Bean。
+   3. 注册系统环境变量Bean。
+   4. 注册应用程序启动指标Bean。
+
+
+
+
+
+## Environment
+
+
+
+## BeanFactoryPostProcessor
+
+
+
+## BeanPostProcessor
+
+### 注册BeanPostProcessor
 
 
 
@@ -225,7 +354,15 @@ public static void registerBeanPostProcessors(
 
 
 
+## MessageSource
 
+
+
+## ApplicationEvent
+
+
+
+## ApplicationListener
 
 
 
@@ -1190,3 +1327,429 @@ protected Object doCreateBean(final String beanName, final RootBeanDefinition mb
 6. 循环依赖检查。
 7. 注册DisposableBean。
 8. 完成创建并返回。
+
+
+
+
+
+
+
+
+
+1. 
+
+
+
+
+
+```java
+@Override
+public void refresh() throws BeansException, IllegalStateException {
+    synchronized (this.startupShutdownMonitor) {
+        StartupStep contextRefresh = this.applicationStartup.start("spring.context.refresh");
+
+        // Prepare this context for refreshing.
+        prepareRefresh();
+
+        // Tell the subclass to refresh the internal bean factory.
+        ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
+
+        // Prepare the bean factory for use in this context.
+        prepareBeanFactory(beanFactory);
+
+        try {
+            // Allows post-processing of the bean factory in context subclasses.
+            postProcessBeanFactory(beanFactory);
+
+            StartupStep beanPostProcess = this.applicationStartup.start("spring.context.beans.post-process");
+            // Invoke factory processors registered as beans in the context.
+            invokeBeanFactoryPostProcessors(beanFactory);
+
+            // Register bean processors that intercept bean creation.
+            registerBeanPostProcessors(beanFactory);
+            beanPostProcess.end();
+
+            // Initialize message source for this context.
+            initMessageSource();
+
+            // Initialize event multicaster for this context.
+            initApplicationEventMulticaster();
+
+            // Initialize other special beans in specific context subclasses.
+            onRefresh();
+
+            // Check for listener beans and register them.
+            registerListeners();
+
+            // Instantiate all remaining (non-lazy-init) singletons.
+            finishBeanFactoryInitialization(beanFactory);
+
+            // Last step: publish corresponding event.
+            finishRefresh();
+        }
+
+        catch (BeansException ex) {
+            if (logger.isWarnEnabled()) {
+                logger.warn("Exception encountered during context initialization - " +
+                            "cancelling refresh attempt: " + ex);
+            }
+
+            // Destroy already created singletons to avoid dangling resources.
+            destroyBeans();
+
+            // Reset 'active' flag.
+            cancelRefresh(ex);
+
+            // Propagate exception to caller.
+            throw ex;
+        }
+
+        finally {
+            // Reset common introspection caches in Spring's core, since we
+            // might not ever need metadata for singleton beans anymore...
+            resetCommonCaches();
+            contextRefresh.end();
+        }
+    }
+}
+```
+
+
+
+
+
+
+
+## 循环依赖
+
+### 1、什么是循环依赖
+
+循环依赖是指多个对象相互引用产生的循环，例如有A、B、C三个对象，A引用B，B引用C，而C又引用A，此时A要完成初始化就需要B，B要完成初始化就需要C，而C要完成初始化又需要A，最终谁也初始化不了。
+
+如下图所示：
+
+![]()
+
+### 2、解决循环依赖
+
+解决A、B、C三个对象的循环依赖很简单，只需要打断其中一个节点，例如可以先将半成品的A（已经实例化，但没有填充和初始化）注入给C，使C先完成初始化，然后B就可以完成初始化，最后A也可以了。如此这个循环引用就解决了，这是应用了Java对象引用的原理。
+
+对于Spring而言，它也是这么做的，Spring提供了三级缓存用于解决这个问题。这个三个缓存位于`org.springframework.beans.factory.support.DefaultSingletonBeanRegistry`类中，是三个Map集合，以Bean的名称作为Key。代码如下：
+
+```java
+public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements SingletonBeanRegistry {
+        ......
+        /** Cache of singleton objects: bean name to bean instance. */
+        private final Map<String, Object> singletonObjects = new ConcurrentHashMap<>(256);
+
+        /** Cache of singleton factories: bean name to ObjectFactory. */
+        private final Map<String, ObjectFactory<?>> singletonFactories = new HashMap<>(16);
+
+        /** Cache of early singleton objects: bean name to bean instance. */
+        private final Map<String, Object> earlySingletonObjects = new ConcurrentHashMap<>(16);
+        ......
+}
+```
+
+- `singletonObjects`：一级缓存，单例对象的缓存：bean名称到bean实例。  存放完整的Bean实例，即已经被实例化并被填充和初始化好的Bean。
+
+- `earlySingletonObjects`：二级缓存，早期单例对象的缓存：bean名称到bean实例。存放的是半成品的Bean，即已经被实例化，但还没有被填充和初始化的Bean。如果目标Bean被AOP代理，则存放的是Bean的代理对象（目标Bean仍是半成品）。
+
+- `singletonFactories`：三级缓存，单例工厂的缓存：bean名称到`ObjectFactory`。`ObjectFactory`是一个函数式接口，它封装了对半成品Bean的操作。在Spring源码中，通过`ObjectFactory`完成了对半成品Bean的AOP代理操作。
+
+  
+
+### 3、三层缓存应用流程
+
+同样还是假设有A、B、C三个对象相互循环引用，Spring处理它们之间的循环引用关系的流程如下：
+
+1. 首先调用getBean方法实例化A，然后将A放入三级缓存，此时A还没有填充初始化。
+2. A开始填充依赖，此时发现依赖B，调用getBean方法开始加载B，首先尝试从一级缓存加载，然后是二级缓存，三级缓存中依次加载。
+3. 没有获取到B实例，开始实例化B，然后将B放入三级缓存，此时B还没有填充初始化。
+4. B开始填充依赖，此时发现依赖C，调用getBean方法开始加载C，首先尝试从一级缓存加载，然后是二级缓存，三级缓存中依次加载。
+5. 没有获取到C实例，开始实例化C，然后将C放入三级缓存，此时C还没有填充初始化。
+6. C开始填充依赖，此时发现依赖A，调用getBean方法开始加载A，首先尝试从一级缓存加载，然后是二级缓存，三级缓存中依次加载。
+7. 三级缓存中存在A的半成品Bean，返回A实例，同时从三级缓存中移除A实例，移入二级缓存。
+8. C获得了A实例，完成填充初始化，然后从三级缓存中移除C，将C移入一级缓存中，C加载完成。
+9. 加载B时调用的getBean返回C实例，B完成填充初始化，然后从三级缓存中移除B，将B移入一级缓存中，B加载完成。
+10. 加载A时调用的getBean返回B实例，A完成填充初始化，然后从二级缓存中移除A，将A移入一级缓存中，A加载完成。
+
+### 4、将半成品Bean实例加入三级缓存
+
+将半成品Bean实例加入三级缓存的代码位于`org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory`类的`doCreateBean`方法中，此方法是真正做Bean创建的方法。
+
+如下代码所示，首先判断了当前Bean必须是单例，允许循环引用，并且当前单例Bean是在创建中，就调用`addSingletonFactory`方法将其加入到三级缓存中。可以看到，其这一步动作是在实例化Bean之后，填充并初始化Bean之前。
+
+```java
+protected Object doCreateBean(String beanName, RootBeanDefinition mbd, @Nullable Object[] args)
+    throws BeanCreationException {
+
+    // Instantiate the bean.
+    //......
+   
+    // Eagerly cache singletons to be able to resolve circular references
+    // even when triggered by lifecycle interfaces like BeanFactoryAware.
+    boolean earlySingletonExposure = (mbd.isSingleton() && this.allowCircularReferences && isSingletonCurrentlyInCreation(beanName));
+    if (earlySingletonExposure) {
+        if (logger.isTraceEnabled()) {
+            logger.trace("Eagerly caching bean '" + beanName +
+                         "' to allow for resolving potential circular references");
+        }
+        addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
+    }
+
+    // Initialize the bean instance.
+    populateBean(beanName, mbd, instanceWrapper);
+    exposedObject = initializeBean(beanName, exposedObject, mbd);
+    
+    //......
+}
+```
+
+`addSingletonFactory`方法的源码如下：
+
+```java
+protected void addSingletonFactory(String beanName, ObjectFactory<?> singletonFactory) {
+    Assert.notNull(singletonFactory, "Singleton factory must not be null");
+    synchronized (this.singletonObjects) {
+        //判断是否存在一级缓存中
+        if (!this.singletonObjects.containsKey(beanName)) {
+            //加入到三级缓存中
+            this.singletonFactories.put(beanName, singletonFac tory);
+            //从二级缓存中移除
+            this.earlySingletonObjects.remove(beanName);
+            this.registeredSingletons.add(beanName);
+        }
+    }
+}
+```
+
+将Bean通过Lambda表达包装为了一个`ObjectFactory`对象，并调用了` singletonFactories`的`put`方法将其加入三级缓存中。
+
+> *这里的ObjectFactory将在“为什么需要二级缓存”小节说明。*
+
+### 5、从三层缓存中获取Bean（`ObjectFactory`对象）
+
+填充时，当发现依赖，开始通过getBean方法获取的时候，首先会从一级缓存中获取，如果获取不到，在从二级缓存中获取，如果二级缓存还是获取不到，则从三级缓存中获取，
+
+从三级缓存中获取Bean的相关代码如下，该代码位于`org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory`类中。
+
+```java
+protected Object getSingleton(String beanName, boolean allowEarlyReference) {
+    //从一级缓存中获取
+    Object singletonObject = this.singletonObjects.get(beanName);
+    if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
+        //从二级缓存中获取
+        singletonObject = this.earlySingletonObjects.get(beanName);
+        if (singletonObject == null && allowEarlyReference) {
+            //加锁
+            synchronized (this.singletonObjects) {
+                //从一级缓存中获取
+                singletonObject = this.singletonObjects.get(beanName);
+                if (singletonObject == null) {
+                    //从二级缓存中获取
+                    singletonObject = this.earlySingletonObjects.get(beanName);
+                    if (singletonObject == null) {
+                        //从三级缓存中获取
+                        ObjectFactory<?> singletonFactory = this.singletonFactories.get(beanName);
+                        if (singletonFactory != null) {
+                            //调用getObject，相当于调用了getEarlyBeanReference方法
+                            singletonObject = singletonFactory.getObject();
+                            //添加到二级缓存中
+                            this.earlySingletonObjects.put(beanName, singletonObject);
+                            //从三级缓存中移除
+                            this.singletonFactories.remove(beanName);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return singletonObject;
+}
+```
+
+执行流程如下：
+
+1. 首先调用了`singletonObjects`（一级缓存）的`get`方法获取Bean。
+2. 一级缓存没有获取到，调用了`earlySingletonObjects`（二级缓存）的`get`方法获取Bean。
+3. 二级缓存还是没有获取到，使用`singletonObjects`加锁（解决并发问题），再次从一级缓存，二级缓存中获取Bean。
+4. 还是没有获取到，调用`singletonFactories`（三级缓存）的get方法获取，返回一个`ObjectFactory`对象。
+5. 调用`ObjectFactory`的`getObject`方法获取Bean的实例（可能是Bean实例本身，也可能是Bean的代理对象）。
+6. 调用`earlySingletonObjects`的`put`方法将Bean实例添加到二级缓存中。
+7. 调用`singletonFactories`的`remove`从三级缓存中删除对应Bean的`ObjectFactory`对象。
+
+`getSingleton`方法有两个参数，分别是`beanName`和`allowEarlyReference`，要想从三级缓存中获取Bean，`allowEarlyReference`必须为`true`。通过idea的Find Usage工具查看，只有一个地方该参数设置为`true`，即
+
+`org.springframework.beans.factory.support.DefaultSingletonBeanRegistry#getSingleton(String)`:
+
+```java
+@Override
+@Nullable
+public Object getSingleton(String beanName) {
+    return getSingleton(beanName, true);
+}
+```
+
+而`getSingleton(String beanName)`又被`doGetBean`调用，如下：
+
+```java
+protected <T> T doGetBean(String name, @Nullable Class<T> requiredType, 
+    @Nullable Object[] args, boolean typeCheckOnly) throws BeansException {
+    ......
+    Object sharedInstance = getSingleton(beanName);
+    ......
+}
+```
+
+### 6、加入一级缓存
+
+前面已经说明了Bean是如何加入三级缓存、二级缓存中的，却没有说明如何加入一级缓存。在Spring中，Bean要加入一级缓存是要在Bean创建完成之后在能加入，即Bean已经实例化，并且完成填充和初始化等操作完成之后。
+
+相关操作位于位于`org.springframework.beans.factory.support.DefaultSingletonBeanRegistry`类的`getSingleton(String beanName, ObjectFactory<?> singletonFactory)`方法，此方法是在`doGetBean`中被调用。
+
+*`doGetBean`调用`getSingleton(beanName, singletonFactory)`*
+
+```java
+protected <T> T doGetBean(String name, @Nullable Class<T> requiredType, 
+    @Nullable Object[] args, boolean typeCheckOnly) throws BeansException {
+
+    ......
+        
+    // Eagerly check singleton cache for manually registered singletons.
+    Object sharedInstance = getSingleton(beanName);
+    ......
+
+	// Create bean instance.
+	if (mbd.isSingleton()) {
+        sharedInstance = getSingleton(beanName, () -> {
+            try {
+                return createBean(beanName, mbd, args);
+            }
+            catch (BeansException ex) {
+                destroySingleton(beanName);
+                throw ex;
+            }
+        });
+	    beanInstance = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);
+	} else if (mbd.isPrototype()) {
+        ......
+    } else {
+        ......
+    }
+    ......
+    return adaptBeanInstance(name, beanInstance, requiredType);
+}
+```
+
+它首先尝试了通过`getSingleton(String beanName)`方法直接从缓存中获取对应的Bean，没有获取到，则再次尝试通过`getSingleton(String beanName, ObjectFactory<?> singletonFactory)`方法获取Bean，而Bean的真正来源则是通过`ObjectFactory`这个函数式接口提供，如上代码所示，即`createBean(beanName, mbd, args);`方法。但这里要说的重点不是这个，而是如何添加到一级缓存。在这里，添加到一级缓存，就是在`getSingleton(String beanName, ObjectFactory<?> singletonFactory)`方法中完成的。如下代码所示：
+
+```java
+public Object getSingleton(String beanName, ObjectFactory<?> singletonFactory) {
+    Assert.notNull(beanName, "Bean name must not be null");
+    synchronized (this.singletonObjects) {
+        //从一级缓存中获取Bean
+        Object singletonObject = this.singletonObjects.get(beanName);
+        //从一级缓存中没有获取到Bean，那么此Bean没有被创建，或者正在创建中
+        if (singletonObject == null) {
+            if (this.singletonsCurrentlyInDestruction) {
+                throw new BeanCreationNotAllowedException(beanName,
+                                                          "Singleton bean creation not allowed while singletons of this factory are in destruction " +
+                                                          "(Do not request a bean from a BeanFactory in a destroy method implementation!)");
+            }
+            if (logger.isDebugEnabled()) {
+                logger.debug("Creating shared instance of singleton bean '" + beanName + "'");
+            }
+            //创建Bean之前的回调
+            beforeSingletonCreation(beanName);
+            boolean newSingleton = false;
+            boolean recordSuppressedExceptions = (this.suppressedExceptions == null);
+            if (recordSuppressedExceptions) {
+                this.suppressedExceptions = new LinkedHashSet<>();
+            }
+            try {
+                //创建Bean
+                singletonObject = singletonFactory.getObject();
+                //标记当前Bean是新的单例
+                newSingleton = true;
+            }
+            catch (IllegalStateException ex) {
+                // Has the singleton object implicitly appeared in the meantime ->
+                // if yes, proceed with it since the exception indicates that state.
+                singletonObject = this.singletonObjects.get(beanName);
+                if (singletonObject == null) {
+                    throw ex;
+                }
+            }
+            catch (BeanCreationException ex) {
+                if (recordSuppressedExceptions) {
+                    for (Exception suppressedException : this.suppressedExceptions) {
+                        ex.addRelatedCause(suppressedException);
+                    }
+                }
+                throw ex;
+            }
+            finally {
+                if (recordSuppressedExceptions) {
+                    this.suppressedExceptions = null;
+                }
+                //创建Bean之后的回调
+                afterSingletonCreation(beanName);
+            }
+            //到此时Bean已经创建Bean完毕，是新的单例
+            if (newSingleton) {
+                //添加到一级缓存中
+                addSingleton(beanName, singletonObject);
+            }
+        }
+        return singletonObject;
+    }
+}
+```
+
+执行流程如下：
+
+1. 从一级缓存中获取Bean。
+2. 从一级缓存中没有获取到Bean，那么此Bean没有被创建，或者正在创建中。
+3. 创建Bean之前的回调。
+4. 调用`ObjectFactory`的`getObject`方法创建Bean。
+5. 标记当前Bean是新的单例。
+6. 创建Bean之后的回调。
+7. 到此时Bean已经创建Bean完毕，是新的单例，将Bean添加到一级缓存中。
+
+这个方法的主要目的就是从一级缓存中获取Bean，如果一级缓存中没有，则创建Bean，并且在创建的前后执行回调，最后将其添加到一级缓存中。将Bean添加到一级缓存时，Bean已经完成实例化、填充和初始等所有操作。
+
+*addSingleton方法*
+
+`addSingleton`方法位于`org.springframework.beans.factory.support.DefaultSingletonBeanRegistry`类中，其目的就是将Bean添加到一级缓存中，并从二三级缓存中将其删除。
+
+```java
+protected void addSingleton(String beanName, Object singletonObject) {
+    synchronized (this.singletonObjects) {
+        //添加到一级缓存中
+        this.singletonObjects.put(beanName, singletonObject);
+        //从三级缓存中移除
+        this.singletonFactories.remove(beanName);
+        //从二级缓存中移除
+        this.earlySingletonObjects.remove(beanName);
+        this.registeredSingletons.add(beanName);
+    }
+}
+```
+
+### 7、为什么构造引用不能进行循环依赖
+
+当明白了解决循环引用的原理之后，自然也就明白了“为什么构造引用不能进行循环依赖”这类问题了！因为加入singletonFactories三级缓存的前提Bean已经被实例化，而要实例化必然需要执行构造器。所以构造引用不能产生的循环引用没有办法解决。
+
+### 8、为什么需要二级缓存
+
+前面说到，加入三级缓存的并不是bean对象本身，而是一个`ObjectFactory`对象，实际上是一个Lambda表达式：`() -> getEarlyBeanReference(beanName, mbd, bean)`。当从三级缓存中获取bean对象时，调用的是`ObjectFactory`的`getObject()`方法，实际上最终会调用`getEarlyBeanReference()`方法，`getEarlyBeanReference`这个方法的主要逻辑是—如果bean被AOP切面代理，则返回的是beanProxy对象，如果未被代理则返回的是原bean实例。调用`ObjectFactory.getObject()`拿到bean实例之后会将`ObjectFactory`从三级缓存中移除，并bean实例放到二级缓存`earlySingletonObjects`中。在需要注入依赖的时候，会从二级缓存中取出该半成品的bean进行注入。
+
+到此时，会发现一个问题：二级缓存的存在好像显得有点多余，貌似可以去掉，只需要一级和三级缓存就可以解决循环依赖问题？
+
+确实，只要两个缓存就可以解决循环依赖的问题。但Spring之所以在这里使用三层缓存是因为如果bean被AOP代理了，`getEarlyBeanReference()`方法会返回bean的代理对象，每次调用`getEarlyBeanReference()`方法返回的bean的代理对象都不同，即相当于如果当bean被AOP代理，每次调用`ObjectFactory.getObject()`方法拿到的bean就不同。在singleton模式下，这肯定是不行的。因此，在调用一次`ObjectFactory.getObject()`之后将获得的代理bean放到二级缓存中就可以避免这个问题。这就是二级缓存存在的原因。
+
+> 相关资料：[Spring 为何需要三级缓存解决循环依赖，而不是二级缓存](https://www.jianshu.com/p/068b312a80aa)
+
+
+

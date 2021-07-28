@@ -1,12 +1,4 @@
-位运算符详解：https://jingyan.baidu.com/article/1612d5008ff5b7e20f1eee4c.html
-java精确除法运算（BigDecimal）：https://blog.csdn.net/qq_39164396/article/details/80992577
-tar.xz文件如何解压：https://blog.csdn.net/u013439115/article/details/77935602
-CentOS安装新版RabbitMQ解决Erlang ：https://www.jianshu.com/p/f54dc259a9ed
-在linux下安装配置rabbitMQ详细教程：https://blog.csdn.net/qq_22075041/article/details/78855708
-
-
-
-RabbitMQ
+# RabbitMQ
 
 ## Erlang安装
 

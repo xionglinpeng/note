@@ -1,35 +1,457 @@
-`BeanNameGenerator
 
-conditional
 
-ComponentScan
-
-配置解析
+#   Spring 源码解析
 
 
 
+Spring包含了很多内容，但最核心的内容是BeanFactory和ApplicationConetxt，而其他的所有内容都是构建这两个基础之上，只有当搞明白了BeanFactory和ApplicationConetxt之后，对于其他的内容就很容易理解了。
 
+下面的源码将基于BeanFactory和ApplicationConetxt的常用实现进行分析，分别对应DefaultListableBeanFactory和AnnotationConfigApplicationContext。
 
-order
-
-AOP
-
-cache
-
-async
-
-transaction
-
-validator
-
-environment
-
-log
-
-​	spring-jcl模块
+## BeanFactory
 
 
 
+DefaultListableBeanFactory的UML类图如下：
+
+![](images/DefaultListableBeanFactory.png)
+
+
+
+主要分为四大块
+
+- `BeanFactory`：Bean工厂
+- `SingletonBeanRegistry`：单例Bean注册。通常情况下，Bean的注册都是先由BeanDefinition进行读取（Groovy，Annotation，xml等方式），然后在由getBean()加载Bean。而SingletonBeanRegistry接口提供了通过API注册Bean的的方式。
+- `AliasRegistry`：每个Bean都是有别名的。
+- `BeanDefinitionRegistry`：Bean定义的注册。通常情况下，Bean的注册都是先由BeanDefinition进行读取，即Groovy，Annotation，xml等方式。
+
+在BeanFactory之下，另外提供了其他功能：
+
+- `ListableBeanFactory`：用于迭代遍历所有的Bean定义的操作。
+
+- `HierarchicalBeanFactory`：BeanFactory之间是有父子级关系的。
+
+- `ConfigurableBeanFactory`：对BeanFactory进行配置。
+
+- `AutowireCapableBeanFactory`：Bean的注入，初始化等操作由该接口提供对应的行为。
+
+- `ConfigurableListableBeanFactory`：
+
+
+
+AbstractBeanFactory，AbstractAutowireCapableBeanFactory，DefaultListableBeanFactory基本上实现了所有的接口
+
+- AbstractBeanFactory：实现BeanFactory，HierarchicalBeanFactory以及ConfigurableBeanFactory接口
+- AbstractAutowireCapableBeanFactory：所有Bean的创建，获取，初始化，填充，回调等操作都由其完成。
+- DefaultListableBeanFactory：
+
+### BeanFactory
+
+```java
+public interface BeanFactory {
+	String FACTORY_BEAN_PREFIX = "&";
+
+	Object getBean(String name) throws BeansException;
+	<T> T getBean(String name, Class<T> requiredType) throws BeansException;
+	Object getBean(String name, Object... args) throws BeansException;
+	<T> T getBean(Class<T> requiredType) throws BeansException;
+	<T> T getBean(Class<T> requiredType, Object... args) throws BeansException;
+
+	<T> ObjectProvider<T> getBeanProvider(Class<T> requiredType);
+	<T> ObjectProvider<T> getBeanProvider(ResolvableType requiredType);
+
+	boolean containsBean(String name);
+
+	boolean isSingleton(String name) throws NoSuchBeanDefinitionException;
+	boolean isPrototype(String name) throws NoSuchBeanDefinitionException;
+
+	boolean isTypeMatch(String name, ResolvableType typeToMatch) throws NoSuchBeanDefinitionException;
+	boolean isTypeMatch(String name, Class<?> typeToMatch) throws NoSuchBeanDefinitionException;
+
+	@Nullable
+	Class<?> getType(String name) throws NoSuchBeanDefinitionException;
+
+	String[] getAliases(String name);
+}
+
+```
+
+
+
+#### ListableBeanFactory
+
+```java
+public interface ListableBeanFactory extends BeanFactory {
+	boolean containsBeanDefinition(String beanName);
+	int getBeanDefinitionCount();
+	String[] getBeanDefinitionNames();
+
+	String[] getBeanNamesForType(ResolvableType type);
+	String[] getBeanNamesForType(@Nullable Class<?> type);
+	String[] getBeanNamesForType(@Nullable Class<?> type, boolean includeNonSingletons, boolean allowEagerInit);
+
+	<T> Map<String, T> getBeansOfType(@Nullable Class<T> type) throws BeansException;
+	<T> Map<String, T> getBeansOfType(@Nullable Class<T> type, boolean includeNonSingletons, boolean allowEagerInit)
+			throws BeansException;
+
+	String[] getBeanNamesForAnnotation(Class<? extends Annotation> annotationType);
+    
+	Map<String, Object> getBeansWithAnnotation(Class<? extends Annotation> annotationType) throws BeansException;
+    
+	@Nullable
+	<A extends Annotation> A findAnnotationOnBean(String beanName, Class<A> annotationType) throws NoSuchBeanDefinitionException;
+
+}
+
+```
+
+ListableBeanFactory接口定义了11个抽象方法：
+
+- containsBeanDefinition：判断是否包含指定名称的BeanDefinition。
+- getBeanDefinitionCount：获取BeanDefinition的数量。
+- getBeanDefinitionNames：获取所有BeanDefinition的名称。
+- getBeanNamesForType - (3)：
+- getBeansOfType - (2)：
+- getBeanNamesForAnnotation：
+- getBeansWithAnnotation：
+- findAnnotationOnBean：
+
+> ListableBeanFactory的containsBeanDefinition，getBeanDefinitionCount和getBeanDefinitionNames与BeanDefinitionRegistry中的containsBeanDefinition，getBeanDefinitionCount和getBeanDefinitionNames是一样的，它们的实现也是同一个。
+
+
+
+#### HierarchicalBeanFactory
+
+HierarchicalBeanFactory接口定义了BeanFactory具有层次结构。
+
+> 可以通过ConfigurableBeanFactory接口中的setParentBeanFactory方法设置父级BeanFactory。
+
+HierarchicalBeanFactory源码如下：
+
+```java
+public interface HierarchicalBeanFactory extends BeanFactory {
+
+	@Nullable
+	BeanFactory getParentBeanFactory();
+
+	boolean containsLocalBean(String name);
+}
+```
+
+HierarchicalBeanFactory接口定义了2个抽象方法：
+
+- getParentBeanFactory：获取父级BeanFactory。
+- containsLocalBean：判断在当前BeanFactory中是否包含给定名称的bean。注意是当前，判断时将会忽略父级BeanFactory中的Bean（与BeanFactory接口中的containsBean方法差异）。
+
+#### ConfigurableBeanFactory
+
+parentBeanFactory
+
+beanClassLoader
+
+tempClassLoader
+
+cacheBeanMetadata
+
+BeanExpressionResolver
+
+ConversionService
+
+
+
+PropertyEditorRegistrar
+
+TypeConverter
+
+BeanPostProcessor
+
+```java
+public interface ConfigurableBeanFactory extends HierarchicalBeanFactory, SingletonBeanRegistry {
+
+	String SCOPE_SINGLETON = "singleton";
+
+	String SCOPE_PROTOTYPE = "prototype";
+
+	void setParentBeanFactory(BeanFactory parentBeanFactory) throws IllegalStateException;
+
+	void setBeanClassLoader(@Nullable ClassLoader beanClassLoader);
+	@Nullable
+	ClassLoader getBeanClassLoader();
+	void setTempClassLoader(@Nullable ClassLoader tempClassLoader);
+	@Nullable
+	ClassLoader getTempClassLoader();
+	void setCacheBeanMetadata(boolean cacheBeanMetadata);
+	boolean isCacheBeanMetadata();
+	void setBeanExpressionResolver(@Nullable BeanExpressionResolver resolver);
+	@Nullable
+	BeanExpressionResolver getBeanExpressionResolver();
+	void setConversionService(@Nullable ConversionService conversionService);
+	@Nullable
+	ConversionService getConversionService();
+//------------------------
+	void addPropertyEditorRegistrar(PropertyEditorRegistrar registrar);
+
+	void registerCustomEditor(Class<?> requiredType, Class<? extends PropertyEditor> propertyEditorClass);
+
+	void copyRegisteredEditorsTo(PropertyEditorRegistry registry);
+
+	void setTypeConverter(TypeConverter typeConverter);
+
+	TypeConverter getTypeConverter();
+
+	void addEmbeddedValueResolver(StringValueResolver valueResolver);
+
+	boolean hasEmbeddedValueResolver();
+
+	@Nullable
+	String resolveEmbeddedValue(String value); 
+    //--------------------
+
+	void addBeanPostProcessor(BeanPostProcessor beanPostProcessor);
+
+	int getBeanPostProcessorCount();
+
+	void registerScope(String scopeName, Scope scope);
+
+	String[] getRegisteredScopeNames();
+
+	@Nullable
+	Scope getRegisteredScope(String scopeName);
+
+	AccessControlContext getAccessControlContext();
+
+	void copyConfigurationFrom(ConfigurableBeanFactory otherFactory);
+
+	void registerAlias(String beanName, String alias) throws BeanDefinitionStoreException;
+
+	void resolveAliases(StringValueResolver valueResolver);
+
+	BeanDefinition getMergedBeanDefinition(String beanName) throws NoSuchBeanDefinitionException;
+
+	boolean isFactoryBean(String name) throws NoSuchBeanDefinitionException;
+
+	void setCurrentlyInCreation(String beanName, boolean inCreation);
+
+	boolean isCurrentlyInCreation(String beanName);
+
+	void registerDependentBean(String beanName, String dependentBeanName);
+
+	String[] getDependentBeans(String beanName);
+
+	String[] getDependenciesForBean(String beanName);
+
+	void destroyBean(String beanName, Object beanInstance);
+
+	void destroyScopedBean(String beanName);
+
+	void destroySingletons();
+}
+```
+
+
+
+#### AutowireCapableBeanFactory
+
+```java
+public interface AutowireCapableBeanFactory extends BeanFactory {
+
+	int AUTOWIRE_NO = 0;
+	int AUTOWIRE_BY_NAME = 1;
+	int AUTOWIRE_BY_TYPE = 2;
+	int AUTOWIRE_CONSTRUCTOR = 3;
+	@Deprecated
+	int AUTOWIRE_AUTODETECT = 4;
+	String ORIGINAL_INSTANCE_SUFFIX = ".ORIGINAL";
+
+	//-------------------------------------------------------------------------
+	// Typical methods for creating and populating external bean instances
+	//-------------------------------------------------------------------------
+
+	<T> T createBean(Class<T> beanClass) throws BeansException;
+
+	void autowireBean(Object existingBean) throws BeansException;
+
+	Object configureBean(Object existingBean, String beanName) throws BeansException;
+
+
+	//-------------------------------------------------------------------------
+	// Specialized methods for fine-grained control over the bean lifecycle
+	//-------------------------------------------------------------------------
+
+	Object createBean(Class<?> beanClass, int autowireMode, boolean dependencyCheck) throws BeansException;
+
+	Object autowire(Class<?> beanClass, int autowireMode, boolean dependencyCheck) throws BeansException;
+
+	void autowireBeanProperties(Object existingBean, int autowireMode, boolean dependencyCheck)
+			throws BeansException;
+
+	void applyBeanPropertyValues(Object existingBean, String beanName) throws BeansException;
+
+	Object initializeBean(Object existingBean, String beanName) throws BeansException;
+
+	Object applyBeanPostProcessorsBeforeInitialization(Object existingBean, String beanName)
+			throws BeansException;
+
+	Object applyBeanPostProcessorsAfterInitialization(Object existingBean, String beanName)
+			throws BeansException;
+
+	void destroyBean(Object existingBean);
+
+
+	//-------------------------------------------------------------------------
+	// Delegate methods for resolving injection points
+	//-------------------------------------------------------------------------
+
+	<T> NamedBeanHolder<T> resolveNamedBean(Class<T> requiredType) throws BeansException;
+
+	Object resolveBeanByName(String name, DependencyDescriptor descriptor) throws BeansException;
+
+	@Nullable
+	Object resolveDependency(DependencyDescriptor descriptor, @Nullable String requestingBeanName) throws BeansException;
+
+	@Nullable
+	Object resolveDependency(DependencyDescriptor descriptor, @Nullable String requestingBeanName,
+			@Nullable Set<String> autowiredBeanNames, @Nullable TypeConverter typeConverter) throws BeansException;
+
+}
+```
+
+
+
+#### ConfigurableListableBeanFactory
+
+```java
+public interface ConfigurableListableBeanFactory
+		extends ListableBeanFactory, AutowireCapableBeanFactory, ConfigurableBeanFactory {
+
+	void ignoreDependencyType(Class<?> type);
+	void ignoreDependencyInterface(Class<?> ifc);
+    
+	void registerResolvableDependency(Class<?> dependencyType, @Nullable Object autowiredValue);
+
+	boolean isAutowireCandidate(String beanName, DependencyDescriptor descriptor)
+			throws NoSuchBeanDefinitionException;
+
+	BeanDefinition getBeanDefinition(String beanName) throws NoSuchBeanDefinitionException;
+
+	Iterator<String> getBeanNamesIterator();
+
+	void clearMetadataCache();
+
+	void freezeConfiguration();
+
+	boolean isConfigurationFrozen();
+
+	void preInstantiateSingletons() throws BeansException;
+}
+```
+
+ConfigurableListableBeanFactory接口提供了10个抽象方法：
+
+- ignoreDependencyType：
+- ignoreDependencyInterface：
+- registerResolvableDependency：
+- isAutowireCandidate：
+- getBeanDefinition：
+- getBeanNamesIterator：
+- clearMetadataCache：
+- freezeConfiguration：
+- isConfigurationFrozen：
+- preInstantiateSingletons：
+
+
+
+### SingletonBeanRegistry
+
+```java
+public interface SingletonBeanRegistry {
+	void registerSingleton(String beanName, Object singletonObject);
+	@Nullable
+	Object getSingleton(String beanName);
+	boolean containsSingleton(String beanName);
+	String[] getSingletonNames();
+	int getSingletonCount();
+	Object getSingletonMutex();
+}
+```
+
+SingletonBeanRegistry接口定义了6个抽象方法：
+
+- `registerSingleton`：注册单例Bean。
+- `getSingleton`：获取指定名称的单例Bean。
+- `containsSingleton`：判断是否包含指定名称的单例Bean。
+- `getSingletonNames`：获取所有单例Bean的名称。
+- `getSingletonCount`：获取所有单例Bean的数量。
+- `getSingletonMutex`：
+
+
+
+#### DefaultSingletonBeanRegistry
+
+SingletonBeanRegistry的主要实现位于DefaultSingletonBeanRegistry，DefaultSingletonBeanRegistry提供了单例Bean的注册和获取。
+
+DefaultSingletonBeanRegistry成员变量：
+
+1. `singletonObjects`：Cache of singleton objects: bean name to bean instance.
+
+2. `singletonFactories`：Cache of singleton factories: bean name to ObjectFactory.
+
+3. `earlySingletonObjects`：Cache of early singleton objects: bean name to bean instance.
+
+4. `registeredSingletons`：Set of registered singletons, containing the bean names in registration order.
+
+5. `singletonsCurrentlyInCreation`：singletonsCurrentlyInCreation
+
+6. `inCreationCheckExclusions`：Names of beans currently excluded from in creation checks.
+
+7. `suppressedExceptions`：List of suppressed Exceptions, available for associating related causes.
+
+8. `singletonsCurrentlyInDestruction`：Flag that indicates whether we're currently within destroySingletons.
+
+9. `disposableBeans`：Disposable bean instances: bean name to disposable instance.
+
+10. `containedBeanMap`：Map between containing bean names: bean name to Set of bean names that the bean contains.
+
+11. `dependentBeanMap`：Map between dependent bean names: bean name to Set of dependent bean names.
+
+12. `dependenciesForBeanMap`：Map between depending bean names: bean name to Set of bean names for the bean's dependencies.
+
+    
+
+
+
+
+
+### AbstractBeanFactory
+
+在BeanFactory体系中，6个接口有3个被AbstractBeanFactory直接实现，分别是BeanFactory，HierarchicalBeanFactory以及ConfigurableBeanFactory。在AbstractBeanFactory源码中有注释如下：
+
+- Implementation of BeanFactory interface
+- Implementation of HierarchicalBeanFactory interface
+- Implementation of ConfigurableBeanFactory interface
+- Implementation methods
+- Abstract methods to be implemented by subclasses
+
+AbstractBeanFactory成员变量：
+
+1. `parentBeanFactory`：Parent bean factory, for bean inheritance support.
+2. `beanClassLoader`：ClassLoader to resolve bean class names with, if necessary.
+3. `tempClassLoader`：ClassLoader to temporarily resolve bean class names with, if necessary.
+4. `cacheBeanMetadata`：Whether to cache bean metadata or rather reobtain it for every access.
+5. `beanExpressionResolver`：Resolution strategy for expressions in bean definition values.
+6. `conversionService`：Spring ConversionService to use instead of PropertyEditors.
+7. `propertyEditorRegistrars`：Custom PropertyEditorRegistrars to apply to the beans of this factory.
+8. `customEditors`：Custom PropertyEditors to apply to the beans of this factory.
+9. `typeConverter`：A custom TypeConverter to use, overriding the default PropertyEditor mechanism.
+10. `embeddedValueResolvers`：String resolvers to apply e.g. to annotation attribute values.
+11. `beanPostProcessors`：BeanPostProcessors to apply in createBean.
+12. `hasInstantiationAwareBeanPostProcessors`：Indicates whether any InstantiationAwareBeanPostProcessors have been registered.
+13. `hasDestructionAwareBeanPostProcessors`：Indicates whether any DestructionAwareBeanPostProcessors have been registered.
+14. `scopes`：Map from scope identifier String to corresponding Scope.
+15. `securityContextProvider`：Security context used when running with a SecurityManager. 
+16. `mergedBeanDefinitions`：Map from bean name to merged RootBeanDefinition.
+17. `alreadyCreated`：Names of beans that have already been created at least once.
+18. `prototypesCurrentlyInCreation`：Names of beans that are currently in creation.
 
 
 
@@ -39,6 +461,140 @@ log
 
 
 
+### AbstractAutowireCapableBeanFactory
+
+创建，自动装配（autowire），应用，初始化，销毁，解析，工厂Bean
+
+1. Typical methods for creating and populating external bean instances用于创建和填充外部bean实例的典型方法  
+2. Specialized methods for fine-grained control over the bean lifecycle用于对bean生命周期进行细粒度控制的专用方法  
+3. Delegate methods for resolving injection points委托解决注入点的方法  
+4. Implementation of relevant AbstractBeanFactory template methods
+5. Implementation methods
+
+
+
+AbstractAutowireCapableBeanFactory成员变量：
+
+1. `instantiationStrategy`：Strategy for creating bean instances.
+
+2. `parameterNameDiscoverer`：Resolver strategy for method parameter names.
+
+3. `allowCircularReferences`：Whether to automatically try to resolve circular references between beans.
+
+4. `allowRawInjectionDespiteWrapping`：Whether to resort to injecting a raw bean instance in case of circular reference,  even if the injected bean eventually got wrapped.
+
+5. `ignoredDependencyTypes`：Dependency types to ignore on dependency check and autowire, as Set of
+
+    Class objects: for example, String. Default is none.
+
+6. `ignoredDependencyInterfaces`：Dependency interfaces to ignore on dependency check and autowire, as Set of Class objects. By default, only the BeanFactory interface is ignored.
+
+7. `currentlyCreatedBean`：The name of the currently created bean, for implicit dependency registration on getBean etc invocations triggered from a user-specified Supplier callback.
+
+8. `factoryBeanInstanceCache`：Cache of unfinished FactoryBean instances: FactoryBean name to BeanWrapper.
+
+9. `factoryMethodCandidateCache`：Cache of candidate factory methods per factory class.
+
+10. `filteredPropertyDescriptorsCache`：Cache of filtered PropertyDescriptors: bean Class to PropertyDescriptor array.
+
+
+
+
+
+### DefaultListableBeanFactory
+
+DefaultListableBeanFactory包含如下实现：
+
+- Implementation of remaining BeanFactory methods
+- Implementation of ListableBeanFactory interface
+- Implementation of ConfigurableListableBeanFactory interface
+- Implementation of BeanDefinitionRegistry interface
+- Dependency resolution functionality
+- Serialization support
+
+DefaultListableBeanFactory包含的成员变量
+
+- `serializationId`：Optional id for this factory, for serialization purposes.
+- `allowBeanDefinitionOverriding`：Whether to allow re-registration of a different definition with the same name.默认true
+- `allowEagerClassLoading`：Whether to allow eager class loading even for lazy-init beans.默认true
+- `dependencyComparator`：Optional OrderComparator for dependency Lists and arrays.
+- `autowireCandidateResolver`：Resolver to use for checking if a bean definition is an autowire candidate.
+- `resolvableDependencies`：Map from dependency type to corresponding autowired value.
+- `beanDefinitionMap`：Map of bean definition objects, keyed by bean name.
+- `allBeanNamesByType`：Map of singleton and non-singleton bean names, keyed by dependency type.
+- `singletonBeanNamesByType`：Map of singleton-only bean names, keyed by dependency type.
+- `beanDefinitionNames`：List of bean definition names, in registration order.
+- `manualSingletonNames`：List of names of manually registered singletons, in registration order.
+- `frozenBeanDefinitionNames`：Cached array of bean definition names in case of frozen configuration.
+- `configurationFrozen`：Whether bean definition metadata may be cached for all beans. 默认false
+
+
+
+### AliasRegistry
+
+```java
+public interface AliasRegistry {
+	void registerAlias(String name, String alias);
+	void removeAlias(String alias);
+	boolean isAlias(String name);
+	String[] getAliases(String name);
+}
+```
+
+AliasRegistry接口定义了4个抽象方法：
+
+- `registerAlias`：
+- `removeAlias`：
+- `isAlias`：
+- `getAliases`：
+
+​	
+
+#### SimpleAliasRegistry
+
+
+
+### BeanDefinitionRegistry
+
+通常情况下，Spring是通过读取Bean定义，然后在通过Bean定义，即BeanDefinition进行Bean的加载。
+
+Bean定义的读取一般可以通过XML，Annotation，Groovy等配置。
+
+BeanFactory内部并不负责BeanDefinition的读取，因为BeanDefinition来源各不相同，只由BeanDefinitionRegistry接口定义，负责BeanDefinition的注册，获取，删除等操作。
+
+```java
+public interface BeanDefinitionRegistry extends AliasRegistry {
+	void registerBeanDefinition(String beanName, BeanDefinition beanDefinition) throws BeanDefinitionStoreException;
+	void removeBeanDefinition(String beanName) throws NoSuchBeanDefinitionException;
+	BeanDefinition getBeanDefinition(String beanName) throws NoSuchBeanDefinitionException;
+	boolean containsBeanDefinition(String beanName);
+	String[] getBeanDefinitionNames();
+	int getBeanDefinitionCount();
+	boolean isBeanNameInUse(String beanName);
+}
+```
+
+`BeanDefinitionRegistry`接口定义了7个抽象方法：
+
+- `registerBeanDefinition`：注册BeanDefinition。
+- `removeBeanDefinition`：删除BeanDefinition。
+- `getBeanDefinition`：获取BeanDefinition。
+- `containsBeanDefinition`：判断是否包含指定名称的BeanDefinition。
+- `getBeanDefinitionNames`：获取所有BeanDefinition的名称。
+- `getBeanDefinitionCount`：获取BeanDefinition的数量。
+- `isBeanNameInUse`：
+
+
+
+### FactoryBeanRegistrySupport
+
+FactoryBeanRegistrySupport提供了对FactoryBean注册的支持，通过FactoryBean创建好的Bean实例也存放在FactoryBeanRegistrySupport中，FactoryBeanRegistrySupport只有一个成员变量factoryBeanObjectCache，是一个Map集合，Bean实例就存放在其中。
+
+
+
+
+
+## ApplicationConetxt
 
 
 
@@ -46,9 +602,76 @@ log
 
 
 
+AnnotationConfigApplicationContext的UML类图如下：
 
 
-# Spring 源码分析
+
+![](images/AnnotationConfigApplicationContext.png)
+
+主要分为五大块：
+
+- `BeanFactory`：
+
+- `MessageSource`：
+
+- `EnvironmentCapable`：
+
+- `ApplicationEventPublisher`：
+
+- `ResourceLoader`：
+
+- `ApplicationContext`：
+
+- `Lifecycle`：
+
+- `AliasRegistry`：
+
+- `BeanDefinitionRegistry`：
+
+  
+
+基于AnnotationConfigApplicationContext的类图，有具体实现的类只有4个，大部分都是接口。其中DefaultResourceLoader还是与资源加载相关的， 也就是说ApplicationContext体系的主要实现都在AbstractApplicationContext，GenericApplicationContext和AnnotationConfigApplicationContext中，如果排除AnnotationConfigApplicationContext这个具有明显指向性的类，那么就只有AbstractApplicationContext和GenericApplicationContext去完成ApplicationContext的核心功能了。
+
+
+
+### AbstractApplicationContext
+
+在AbstractApplicationContext中实现了除AliasRegistry和BeanDefinitionRegistry之外的所有接口，
+
+
+
+1. Implementation of ApplicationContext interface
+2. Implementation of ConfigurableApplicationContext interface
+3. Implementation of BeanFactory interface
+4. Implementation of ListableBeanFactory interface
+5. Implementation of HierarchicalBeanFactory interface
+6. Implementation of MessageSource interface
+7. Implementation of ResourcePatternResolver interface
+8. Implementation of Lifecycle interface
+9. Abstract methods that must be implemented by subclasses
+
+
+
+### GenericApplicationContext
+
+1. ResourceLoader / ResourcePatternResolver override if necessary
+2. Implementations of AbstractApplicationContext's template methods
+3. Implementation of BeanDefinitionRegistry
+4. Convenient methods for registering individual beans
+
+
+
+
+
+## BeanFactory与FactoryBean
+
+
+
+## BeanFactory与ApplicationContext
+
+
+
+
 
 
 
@@ -114,7 +737,9 @@ public void refresh() throws BeansException, IllegalStateException {
 
 
 
-## 为Refresh准备上下文
+## Spring IOC启动
+
+### 为Refresh准备上下文
 
 
 
@@ -157,17 +782,9 @@ protected void prepareRefresh() {
 }
 ```
 
+### 创建BeanFactory
 
-
-
-
-
-
-
-
-## 创建BeanFactory
-
-## 准备BeanFactory
+### 准备BeanFactory
 
 
 
@@ -372,117 +989,7 @@ public static void registerBeanPostProcessors(
 
 
 
-```java
-package org.springframework.beans.factory.support;
 
-import org.springframework.beans.factory.BeanDefinitionStoreException;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.core.AliasRegistry;
-
-/**
- * Interface for registries that hold bean definitions, for example RootBeanDefinition
- * and ChildBeanDefinition instances. Typically implemented by BeanFactories that
- * internally work with the AbstractBeanDefinition hierarchy.
- *
- * <p>This is the only interface in Spring's bean factory packages that encapsulates
- * <i>registration</i> of bean definitions. The standard BeanFactory interfaces
- * only cover access to a <i>fully configured factory instance</i>.
- *
- * <p>Spring's bean definition readers expect to work on an implementation of this
- * interface. Known implementors within the Spring core are DefaultListableBeanFactory
- * and GenericApplicationContext.
- *
- * @author Juergen Hoeller
- * @since 26.11.2003
- * @see org.springframework.beans.factory.config.BeanDefinition
- * @see AbstractBeanDefinition
- * @see RootBeanDefinition
- * @see ChildBeanDefinition
- * @see DefaultListableBeanFactory
- * @see org.springframework.context.support.GenericApplicationContext
- * @see org.springframework.beans.factory.xml.XmlBeanDefinitionReader
- * @see PropertiesBeanDefinitionReader
- */
-public interface BeanDefinitionRegistry extends AliasRegistry {
-
-	/**
-	 * Register a new bean definition with this registry.
-	 * Must support RootBeanDefinition and ChildBeanDefinition.
-	 * @param beanName the name of the bean instance to register
-	 * @param beanDefinition definition of the bean instance to register
-	 * @throws BeanDefinitionStoreException if the BeanDefinition is invalid
-	 * @throws BeanDefinitionOverrideException if there is already a BeanDefinition
-	 * for the specified bean name and we are not allowed to override it
-	 * @see GenericBeanDefinition
-	 * @see RootBeanDefinition
-	 * @see ChildBeanDefinition
-	 */
-	void registerBeanDefinition(String beanName, BeanDefinition beanDefinition)
-			throws BeanDefinitionStoreException;
-
-	/**
-	 * Remove the BeanDefinition for the given name.
-	 * @param beanName the name of the bean instance to register
-	 * @throws NoSuchBeanDefinitionException if there is no such bean definition
-	 */
-	void removeBeanDefinition(String beanName) throws NoSuchBeanDefinitionException;
-
-	/**
-	 * Return the BeanDefinition for the given bean name.
-	 * @param beanName name of the bean to find a definition for
-	 * @return the BeanDefinition for the given name (never {@code null})
-	 * @throws NoSuchBeanDefinitionException if there is no such bean definition
-	 */
-	BeanDefinition getBeanDefinition(String beanName) throws NoSuchBeanDefinitionException;
-
-	/**
-	 * Check if this registry contains a bean definition with the given name.
-	 * @param beanName the name of the bean to look for
-	 * @return if this registry contains a bean definition with the given name
-	 */
-	boolean containsBeanDefinition(String beanName);
-
-	/**
-	 * Return the names of all beans defined in this registry.
-	 * @return the names of all beans defined in this registry,
-	 * or an empty array if none defined
-	 */
-	String[] getBeanDefinitionNames();
-
-	/**
-	 * Return the number of beans defined in the registry.
-	 * @return the number of beans defined in the registry
-	 */
-	int getBeanDefinitionCount();
-
-	/**
-	 * Determine whether the given bean name is already in use within this registry,
-	 * i.e. whether there is a local bean or alias registered under this name.
-	 * @param beanName the name to check
-	 * @return whether the given bean name is already in use
-	 */
-	boolean isBeanNameInUse(String beanName);
-
-}
-
-```
-
-`BeanDefinitionRegistry`接口定义了7个抽象方法，从它们的方法名字就可以看出它们的作用是什么
-
-- `void registerBeanDefinition(String beanName, BeanDefinition beanDefinition)`
-
-- `void removeBeanDefinition(String beanName)`
-
-- `BeanDefinition getBeanDefinition(String beanName)`
-
-- `boolean containsBeanDefinition(String beanName);`
-
-- `String[] getBeanDefinitionNames();`
-
-- `int getBeanDefinitionCount();`
-
-- `boolean isBeanNameInUse(String beanName);`
 
   
 

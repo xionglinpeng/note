@@ -2,7 +2,7 @@
 
 [TOC]
 
-##　1、Introduction
+## 1、Introduction
 
 sds全称为*简单动态字符串*（Simple dynamic strings），是Redis中为了表示字符串对象而定义的一种数据结构。
 
@@ -58,7 +58,7 @@ Redis是基于**C语言**实现的一个分布式缓存NoSQL数据库，因此SD
 5. 支持部分C函数
 
    SDS中的buf之所以以空字符结尾，就是为了支持部分c函数，如下所示：
-
+   
    ```cpp
    //通过c语言API直接对比buf和c字符串
    strcasecmp(sds->buf, "hello world");
@@ -317,7 +317,15 @@ sds sdscatlen(sds s, const void *t, size_t len) {
 流程很简单，不在过多描述，主要的关键点在于`sdsMakeRoomFor`函数，这个函数的作用是保证有足够的内存空间用于追加字符串，源码如下：
 
 ```c
-/* 扩大sds字符串末尾的空闲空间，这对于避免重复追加到sds时的重复重新分配非常有用。*/sds sdsMakeRoomFor(sds s, size_t addlen) {    return _sdsMakeRoomFor(s, addlen, 1);}/* 与sdsMakeRoomFor()不同，该函数只会扩容刚好需要的大小。 */sds sdsMakeRoomForNonGreedy(sds s, size_t addlen) {    return _sdsMakeRoomFor(s, addlen, 0);}
+/* 扩大sds字符串末尾的空闲空间，这对于避免重复追加到sds时的重复重新分配非常有用。*/
+sds sdsMakeRoomFor(sds s, size_t addlen) {
+    return _sdsMakeRoomFor(s, addlen, 1);
+}
+
+/* 与sdsMakeRoomFor()不同，该函数只会扩容刚好需要的大小。 */
+sds sdsMakeRoomForNonGreedy(sds s, size_t addlen) {
+    return _sdsMakeRoomFor(s, addlen, 0);
+}
 ```
 
 可以看到，它们仅仅只是转调了`_sdsMakeRoomFor`函数。而它才是正在执行sds扩容操作的函数。
@@ -325,7 +333,80 @@ sds sdscatlen(sds s, const void *t, size_t len) {
 `_sdsMakeRoomFor`函数源码如下：
 
 ```c
-/* 扩大sds字符串末尾的空间，以便调用者确定调用此函数之后字符串末尾至少有addlen字节的空间可以使用， * 并且还要加上一个nul字节。如果已经有足够的空闲空间，该函数将不做任何操作直接返回，如果没有足够的 * 空闲空间，则将分配缺少的空间，甚至更多: * 当greedy等于1时，增加一定的冗余空间，以避免将来需要对增量增长进行重新分配。 * 当greedy等于0时，增加刚好addlen的空间，以便给addlen使用。 * * Note: 该函数不会改变sdslen()所计算得到sds字符串的*length*，只改变所拥有的空闲缓冲区的空间。*/sds _sdsMakeRoomFor(sds s, size_t addlen, int greedy) {    void *sh, *newsh;    //可用的空闲缓冲区空间    size_t avail = sdsavail(s);    size_t len, newlen, reqlen;    //新的header类型和当前sds的header类型（oldtype）    char type, oldtype = s[-1] & SDS_TYPE_MASK;     int hdrlen;    size_t usable;	//如果空闲缓冲区大于等于追加的字符串的长度，则什么都不做，直接返回当前sds    if (avail >= addlen) return s;    //原sds的长度    len = sdslen(s);    //原sds的头指针    sh = (char*)s-sdsHdrSize(oldtype);    //原sds的字符串长度+新追加的字符串的长度 = 新sds字符串的长度    reqlen = newlen = (len+addlen);    assert(newlen > len);   /* Catch size_t overflow */    //greedy等于1时增加冗余空间    if (greedy == 1) {        //如果新sds字符串的长度小于1M，则空闲缓冲区增加一倍        if (newlen < SDS_MAX_PREALLOC)            newlen *= 2;        else            //如果大于1M，则直接增加1M空闲缓冲区            newlen += SDS_MAX_PREALLOC;    }	//根据新的sds的字符串长度计算出其header类型    type = sdsReqType(newlen);    /* 不使用SDS_TYPE_5，因为SDS_TYPE_5不能记住缓冲区空间信息，即没有len和alloc成员*/    if (type == SDS_TYPE_5) type = SDS_TYPE_8;    //新的header类型的大小    hdrlen = sdsHdrSize(type);    assert(hdrlen + newlen + 1 > reqlen);  /* Catch size_t overflow */    //如果新的header类型与旧的header类型一致    if (oldtype==type) {        //新的header类型与旧的header类型一致，因此header不变（内存地址），重新分配缓冲区空间。        newsh = s_realloc_usable(sh, hdrlen+newlen+1, &usable);        //内存分配失败直接返回空        if (newsh == NULL) return NULL;        //重新设置s指针的引用        s = (char*)newsh+hdrlen;    } else {        //由于header大小改变，需要将字符串向前移动，不能使用realloc，即分配新的内存空间        newsh = s_malloc_usable(hdrlen+newlen+1, &usable);        //内存分配失败直接返回空        if (newsh == NULL) return NULL;        //将旧的sds的字符串拷贝到新的sds的buf[]中。注意加上了末尾的\0        memcpy((char*)newsh+hdrlen, s, len+1);        s_free(sh);        //重新设置s指针的引用        s = (char*)newsh+hdrlen;        //设置flags        s[-1] = type;        //设置len        sdssetlen(s, len);    }    //计算alloc    usable = usable-hdrlen-1;    //超出header最大可表示空间，则usable直接设置为最大可用空间    if (usable > sdsTypeMaxSize(type))        usable = sdsTypeMaxSize(type);    //设置alloc    sdssetalloc(s, usable);    return s;}
+/* 扩大sds字符串末尾的空间，以便调用者确定调用此函数之后字符串末尾至少有addlen字节的空间可以使用，
+ * 并且还要加上一个nul字节。如果已经有足够的空闲空间，该函数将不做任何操作直接返回，如果没有足够的
+ * 空闲空间，则将分配缺少的空间，甚至更多:
+ * 当greedy等于1时，增加一定的冗余空间，以避免将来需要对增量增长进行重新分配。
+ * 当greedy等于0时，增加刚好addlen的空间，以便给addlen使用。
+ *
+ * Note: 该函数不会改变sdslen()所计算得到sds字符串的*length*，只改变所拥有的空闲缓冲区的空间。*/
+sds _sdsMakeRoomFor(sds s, size_t addlen, int greedy) {
+    void *sh, *newsh;
+    //可用的空闲缓冲区空间
+    size_t avail = sdsavail(s);
+    size_t len, newlen, reqlen;
+    //新的header类型和当前sds的header类型（oldtype）
+    char type, oldtype = s[-1] & SDS_TYPE_MASK; 
+    int hdrlen;
+    size_t usable;
+	//如果空闲缓冲区大于等于追加的字符串的长度，则什么都不做，直接返回当前sds
+    if (avail >= addlen) return s;
+    //原sds的长度
+    len = sdslen(s);
+    //原sds的头指针
+    sh = (char*)s-sdsHdrSize(oldtype);
+    //原sds的字符串长度+新追加的字符串的长度 = 新sds字符串的长度
+    reqlen = newlen = (len+addlen);
+    assert(newlen > len);   /* Catch size_t overflow */
+    //greedy等于1时增加冗余空间
+    if (greedy == 1) {
+        //如果新sds字符串的长度小于1M，则空闲缓冲区增加一倍
+        if (newlen < SDS_MAX_PREALLOC)
+            newlen *= 2;
+        else
+            //如果大于1M，则直接增加1M空闲缓冲区
+            newlen += SDS_MAX_PREALLOC;
+    }
+	//根据新的sds的字符串长度计算出其header类型
+    type = sdsReqType(newlen);
+
+    /* 不使用SDS_TYPE_5，因为SDS_TYPE_5不能记住缓冲区空间信息，即没有len和alloc成员*/
+    if (type == SDS_TYPE_5) type = SDS_TYPE_8;
+    //新的header类型的大小
+    hdrlen = sdsHdrSize(type);
+    assert(hdrlen + newlen + 1 > reqlen);  /* Catch size_t overflow */
+    //如果新的header类型与旧的header类型一致
+    if (oldtype==type) {
+        //新的header类型与旧的header类型一致，因此header不变（内存地址），重新分配缓冲区空间。
+        newsh = s_realloc_usable(sh, hdrlen+newlen+1, &usable);
+        //内存分配失败直接返回空
+        if (newsh == NULL) return NULL;
+        //重新设置s指针的引用
+        s = (char*)newsh+hdrlen;
+    } else {
+        //由于header大小改变，需要将字符串向前移动，不能使用realloc，即分配新的内存空间
+        newsh = s_malloc_usable(hdrlen+newlen+1, &usable);
+        //内存分配失败直接返回空
+        if (newsh == NULL) return NULL;
+        //将旧的sds的字符串拷贝到新的sds的buf[]中。注意加上了末尾的\0
+        memcpy((char*)newsh+hdrlen, s, len+1);
+        s_free(sh);
+        //重新设置s指针的引用
+        s = (char*)newsh+hdrlen;
+        //设置flags
+        s[-1] = type;
+        //设置len
+        sdssetlen(s, len);
+    }
+    //计算alloc
+    usable = usable-hdrlen-1;
+    //超出header最大可表示空间，则usable直接设置为最大可用空间
+    if (usable > sdsTypeMaxSize(type))
+        usable = sdsTypeMaxSize(type);
+    //设置alloc
+    sdssetalloc(s, usable);
+    return s;
+}
 ```
 
 `_sdsMakeRoomFor`函数包含三个参数：
@@ -339,11 +420,70 @@ sds sdscatlen(sds s, const void *t, size_t len) {
 `sdsclear`函数修改sds字符串，使其为空(零长度)，但是现有的缓冲区都不会被丢弃，而是被设置为空闲空间，以便下一个追加操作可以直接分配。
 
 ```c
-void sdsclear(sds s) {    //直接将len设置为0    sdssetlen(s, 0);    //缓冲区首字符设置为空    s[0] = '\0';}
+void sdsclear(sds s) {
+    //直接将len设置为0
+    sdssetlen(s, 0);
+    //缓冲区首字符设置为空
+    s[0] = '\0';
+}
 ```
 
 ### 5.4、回收空闲空间
 
 ```c
-/* 重新分配sds字符串，使其在末尾没有空闲空间。 所包含的字符串将保持不变，但下一个连接操作将需要重新分配。 * * 调用之后，传递的sds字符串不再有效，所有引用必须用调用返回的新指针替换。 */sds sdsRemoveFreeSpace(sds s) {    void *sh, *newsh;    char type, oldtype = s[-1] & SDS_TYPE_MASK; //旧SDS header类型    int hdrlen, oldhdrlen = sdsHdrSize(oldtype); //旧SDS header长度    size_t len = sdslen(s);    //可用空间的大小    size_t avail = sdsavail(s);    //原SDS头部起始指针(sh)    sh = (char*)s-oldhdrlen;    //如果没有可用空间，则直接返回    if (avail == 0) return s;    //新SDS Header类型和长度    type = sdsReqType(len);    hdrlen = sdsHdrSize(type);    /* 如果类型相同，或者至少仍然需要足够大的类型，则只需要realloc()，让分配器只在真正需要时进行复制。     * 否则，如果变化很大，我们手动重新分配字符串以使用不同的头文件类型。*/    if (oldtype==type || type > SDS_TYPE_8) {        //重新以sh指针开始申请空间，即复用原来的空间，因为这里是字符串缩短，原来的空间肯定是足够用。        /* 注意：执行realloc()的条件是flags类型没变，或者类型大于SDS_TYPE_8，也就是说，当类型不         * 管变没变，只要大于SDS_TYPE_8，就会重新申请（缩短）空间，就可能导致flags与实际的字符串大小不         * 匹配。例如剩下的字符串大小对应的flags是SDS_TYPE_16，但flags却是SDS_TYPE_32。这里是基于延         * 迟加载的考虑：让分配器只在真正需要时进行重新设置，例如追加字符串时调用函数_sdsMakeRoomFor()         * 扩容时。*/        newsh = s_realloc(sh, oldhdrlen+len+1);        //内存分配失败直接返回空        if (newsh == NULL) return NULL;        //新SDS的s指针        s = (char*)newsh+oldhdrlen;    } else {        //重新分配一块内存空间为新的SDS        newsh = s_malloc(hdrlen+len+1);        //内存分配失败直接返回空        if (newsh == NULL) return NULL;        //将旧SDS的字符串拷贝到新SDS的缓冲区中        memcpy((char*)newsh+hdrlen, s, len+1);        //释放旧SDS字符串        s_free(sh);        //新SDS的s指针        s = (char*)newsh+hdrlen;        //设置新SDS→flags        s[-1] = type;        //设置新SDS→len        sdssetlen(s, len);    }    //设置SDS→alloc    sdssetalloc(s, len);    return s;}
+/* 重新分配sds字符串，使其在末尾没有空闲空间。 所包含的字符串将保持不变，但下一个连接操作将需要重新分配。
+ *
+ * 调用之后，传递的sds字符串不再有效，所有引用必须用调用返回的新指针替换。 */
+sds sdsRemoveFreeSpace(sds s) {
+    void *sh, *newsh;
+    char type, oldtype = s[-1] & SDS_TYPE_MASK; //旧SDS header类型
+    int hdrlen, oldhdrlen = sdsHdrSize(oldtype); //旧SDS header长度
+    size_t len = sdslen(s);
+    //可用空间的大小
+    size_t avail = sdsavail(s);
+    //原SDS头部起始指针(sh)
+    sh = (char*)s-oldhdrlen;
+
+    //如果没有可用空间，则直接返回
+    if (avail == 0) return s;
+
+    //新SDS Header类型和长度
+    type = sdsReqType(len);
+    hdrlen = sdsHdrSize(type);
+
+    /* 如果类型相同，或者至少仍然需要足够大的类型，则只需要realloc()，让分配器只在真正需要时进行复制。
+     * 否则，如果变化很大，我们手动重新分配字符串以使用不同的头文件类型。*/
+    if (oldtype==type || type > SDS_TYPE_8) {
+        //重新以sh指针开始申请空间，即复用原来的空间，因为这里是字符串缩短，原来的空间肯定是足够用。
+        /* 注意：执行realloc()的条件是flags类型没变，或者类型大于SDS_TYPE_8，也就是说，当类型不
+         * 管变没变，只要大于SDS_TYPE_8，就会重新申请（缩短）空间，就可能导致flags与实际的字符串大小不
+         * 匹配。例如剩下的字符串大小对应的flags是SDS_TYPE_16，但flags却是SDS_TYPE_32。这里是基于延
+         * 迟加载的考虑：让分配器只在真正需要时进行重新设置，例如追加字符串时调用函数_sdsMakeRoomFor()
+         * 扩容时。*/
+        newsh = s_realloc(sh, oldhdrlen+len+1);
+        //内存分配失败直接返回空
+        if (newsh == NULL) return NULL;
+        //新SDS的s指针
+        s = (char*)newsh+oldhdrlen;
+    } else {
+        //重新分配一块内存空间为新的SDS
+        newsh = s_malloc(hdrlen+len+1);
+        //内存分配失败直接返回空
+        if (newsh == NULL) return NULL;
+        //将旧SDS的字符串拷贝到新SDS的缓冲区中
+        memcpy((char*)newsh+hdrlen, s, len+1);
+        //释放旧SDS字符串
+        s_free(sh);
+        //新SDS的s指针
+        s = (char*)newsh+hdrlen;
+        //设置新SDS→flags
+        s[-1] = type;
+        //设置新SDS→len
+        sdssetlen(s, len);
+    }
+    //设置SDS→alloc
+    sdssetalloc(s, len);
+    return s;
+}
 ```
+

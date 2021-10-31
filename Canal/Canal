@@ -1,0 +1,96 @@
+# Canal
+
+
+
+${canal}\logs\canal\canal.log
+
+```
+2021-10-23 14:26:25.815 [main] INFO  com.alibaba.otter.canal.deployer.CanalLauncher - ## set default uncaught exception handler
+2021-10-23 14:26:25.864 [main] INFO  com.alibaba.otter.canal.deployer.CanalLauncher - ## load canal configurations
+2021-10-23 14:26:25.875 [main] INFO  com.alibaba.otter.canal.deployer.CanalStarter - ## start the canal server.
+2021-10-23 14:26:26.692 [main] INFO  com.alibaba.otter.canal.deployer.CanalController - ## start the canal server[192.168.0.100(192.168.0.100):11111]
+2021-10-23 14:26:29.100 [main] INFO  com.alibaba.otter.canal.deployer.CanalStarter - ## the canal server is running now ......
+```
+
+
+
+${canal}\logs\example\example.log
+
+```
+2021-10-23 14:26:28.731 [main] INFO  c.a.otter.canal.instance.spring.CanalInstanceWithSpring - start CannalInstance for 1-example 
+2021-10-23 14:26:28.745 [main] WARN  c.a.o.canal.parse.inbound.mysql.dbsync.LogEventConvert - --> init table filter : ^.*\..*$
+2021-10-23 14:26:28.745 [main] WARN  c.a.o.canal.parse.inbound.mysql.dbsync.LogEventConvert - --> init table black filter : ^mysql\.slave_.*$
+2021-10-23 14:26:29.045 [main] INFO  c.a.otter.canal.instance.core.AbstractCanalInstance - start successful....
+2021-10-23 14:26:29.046 [destination = example , address = /192.168.56.4:3306 , EventParser] WARN  c.a.o.c.p.inbound.mysql.rds.RdsBinlogEventParserProxy - ---> begin to find start position, it will be long time for reset or first position
+2021-10-23 14:26:29.046 [destination = example , address = /192.168.56.4:3306 , EventParser] WARN  c.a.o.c.p.inbound.mysql.rds.RdsBinlogEventParserProxy - prepare to find start position just show master status
+2021-10-23 14:26:30.200 [destination = example , address = /192.168.56.4:3306 , EventParser] WARN  c.a.o.c.p.inbound.mysql.rds.RdsBinlogEventParserProxy - ---> find start position successfully, EntryPosition[included=false,journalName=binlog.000015,position=4,serverId=1,gtid=<null>,timestamp=1634969234000] cost : 1104ms , the next step is binlog dump
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+```xml
+<dependency>
+    <groupId>com.alibaba.otter</groupId>
+    <artifactId>canal.client</artifactId>
+    <version>1.1.4</version>
+</dependency>
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```
+
+================&gt; binlog[binlog.000015:1783] , name[test1,book] , eventType : INSERT
+id : 3    update=true
+name : 枪炮、病菌与钢铁    update=true
+
+
+
+
+
+================&gt; binlog[binlog.000015:2139] , name[test1,book] , eventType : DELETE
+id : 3    update=false
+name : 枪炮、病菌与钢铁    update=false
+
+
+
+
+
+================&gt; binlog[binlog.000015:2504] , name[test1,book] , eventType : UPDATE
+-------&gt; before
+id : 2    update=false
+name : 资本论    update=false
+-------&gt; after
+id : 2    update=false
+name : 自私的基因    update=true
+
+
+
+```
+
+
+
+
+

@@ -6,7 +6,7 @@ ID是数据的唯一标识，传统的做法是利用UUID和数据库的自增ID
 
 下面来分析各个生成分布式ID的机制
 
-![1591436128215](C:\Users\xlp\AppData\Roaming\Typora\typora-user-images\1591436128215.png)
+![1591436128215](images\1591436128215.png)
 
 ## UUID
 
@@ -17,7 +17,7 @@ ID是数据的唯一标识，传统的做法是利用UUID和数据库的自增ID
 
 ## 自增ID
 
-![1591436690534](C:\Users\xlp\AppData\Roaming\Typora\typora-user-images\1591436690534.png)
+![1591436690534](images\1591436690534.png)
 
 
 
@@ -34,7 +34,7 @@ Snowflake是twitter开源的分布式ID生成算法，是一种算法，所以�
 
 核心思想：分布式ID固定是一个long型的数字，一个long型占8个字节，也就是64个bit，原始的snowflake算法中对于bit的分配如下图：
 
-![](https://cdn.nlark.com/yuque/0/2019/png/365147/1567401079637-609e8756-6dc2-4198-b91f-10e83d858558.png?x-oss-process=image%2Fresize%2Cw_1020)
+![](images/snowflake.png)
 
 - 第一个bit位是标识部分，在java中由于long的最高位是符号位，正数是0，负数是1，一般生成的ID为正数，所以固定为0。
 - 时间戳部分占41bit，这个是毫秒级的时间，一般实现上不会存储当前的时间戳，而是时间戳的差值（当前时间 - 固定的开始时间），这样可以使产生的ID从更小值开始；41位的时间戳可以使用69年，(1L << 41)/(1000 * 60 * 60 * 24 * 365) = 69年。
@@ -49,7 +49,6 @@ Snowflake是twitter开源的分布式ID生成算法，是一种算法，所以�
  *
  * @author xlp
  * @version 1.0.0
- * @since 2020/6/7 15:16
  */
 public class Snowflake {
 

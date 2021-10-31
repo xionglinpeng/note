@@ -66,7 +66,7 @@ Redis是基于**C语言**实现的一个分布式缓存NoSQL数据库，因此SD
 
 ## 3、总体布局
 
-​																						图A![](images/sds-1.png)
+​																						                          图A![](images/sds-1.png)
 
 sds主要分为两大部分：`sdshdr`和`buf[]`。其中`sdshdr`是sds的头部（header），`buf[]`是真正存储字符串的body。
 

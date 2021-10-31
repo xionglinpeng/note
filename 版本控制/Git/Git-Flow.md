@@ -38,21 +38,11 @@ Available subcommands are:
 Try 'git flow <subcommand> help' for details.
 ```
 
-
+在Git 2.7.4版本测试是不支持`git flow`命令
 
 ## 初始化Git-Flow
 
-
-
-在Git 2.7.4版本测试是不支持`git flow`命令
-
-
-
-
-
-
-
-
+刚开始时一个项目默认只有master分支，通过git flow init名称进行flow模式的初始化，这样后续git flow相关命令时才会知道怎样生成相应的分支信息。命令如下：
 
 ```shell
 $ git flow init
@@ -69,24 +59,60 @@ Release branches? [release/]
 Hotfix branches? [hotfix/]
 Support branches? [support/]
 Version tag prefix? []
-Hooks and filters directory? [D:/program/Workspace/violet/.git/hooks]
-
-D:\program\Workspace\violet>git flow feature start demo
-Switched to a new branch 'feature/demo'
-
-Summary of actions:
-- A new branch 'feature/demo' was created, based on 'develop'
-- You are now on branch 'feature/demo'
-
-Now, start committing on your feature. When done, use:
-
-     git flow feature finish demo
-
+Hooks and filters directory? [${PROJECT_HOME}/.git/hooks]
 ```
 
+首先会询问：使用哪个分支作为生产版本?  （Which branch should be used for bringing forth production releases?）下面会列出当前已有的分支——如上所示：- master。默认为master，因此在这里直接默认回车进行下一步（如果有其他需要可以在Branch name for production releases: [master]之后输入需要作为生成版本的分支名）。
 
+紧接着，要求输入开发分支的名称（Branch name for "next release" development: [develop]），这里直接保持默认名为develop的分支即可。因为这里只有master分支，所以在初始化完成之后会基于master创建develop分支。另外，后续在创建feature分支的时候，会基于该分支创建。
 
+接下来会询问如何命名您的支持分支前缀?（How to name your supporting branch prefixes?），它的作用是设置在使用git flow时生成相应的feature分支，release分支等其分支的前缀。例如我们将Feature branches? [feature/]设置为abc，那么在执行命令git flow feature start demo时，生成的feature分支名为abc/demo 。因此下面的一般所有都保持默认即可。
 
+**初始存在多个分支的情况**
+
+上面的示例只存在一个master分支，如果存在多个分支，情况稍微有点差异。如下所示：
+
+```shell
+$ git flow init
+
+Which branch should be used for bringing forth production releases?
+   - dev
+   - master
+Branch name for production releases: [master]
+
+Which branch should be used for integration of the "next release"?
+   - dev
+Branch name for "next release" development: [] dev
+
+How to name your supporting branch prefixes?
+Feature branches? [feature/]
+Bugfix branches? [bugfix/]
+Release branches? [release/]
+Hotfix branches? [hotfix/]
+Support branches? [support/]
+Version tag prefix? []
+Hooks and filters directory? [${PROJECT_HOME}/.git/hooks]
+```
+
+差异在于在要求输入开发分支的名称时，没有默认选择提供，因此这里可以输入一个已经存在或者不存在的分支名。
+
+在没有提供默认名称的情况下，必须输入名称，如果不输入，将会报错，如下所示：
+
+```shell
+Fatal: Missing branch name
+```
+
+当然，无论是存在多个分支，还是只有一个master分支，其本质都是一样的。
+
+### 重新初始化
+
+已经初始化了，但是需要重新初始化，使用命令`git flow init -f`。如果不加`-f`参数进行初始化，将会有如下提示：
+
+```shell
+git flow init
+Already initialized for gitflow.
+To force reinitialization, use: git flow init -f
+```
 
 ## 新功能开发工作流
 
@@ -282,6 +308,30 @@ Git-Flow提供了“hotfix”工作流程，用于修复产品BUG。
    3. 切换develop分支
    4. 合并release分支
    5. 删除`release/1.0.0`分支
+
+
+
+
+
+## git flow help
+
+```shell
+git flow
+usage: git flow <subcommand>
+
+Available subcommands are:
+   init      Initialize a new git repo with support for the branching model.
+   feature   Manage your feature branches.
+   bugfix    Manage your bugfix branches.
+   release   Manage your release branches.
+   hotfix    Manage your hotfix branches.
+   support   Manage your support branches.
+   version   Shows version information.
+   config    Manage your git-flow configuration.
+   log       Show log deviating from base branch.
+
+Try 'git flow <subcommand> help' for details.
+```
 
 
 

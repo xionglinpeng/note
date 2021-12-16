@@ -5,11 +5,11 @@ JAVA
 
 ## 数据结构
 
-- [Skiplist](Skiplist.md)
-- [Quicklist](Quicklist.md)
-- [SDS](SDS.md)
-- [ziplist](ziplist.md)
-- [堆排序](堆排序.md)
+- [Skiplist](数据结构/Skiplist.md)
+- [Quicklist](数据结构/Quicklist.md)
+- [SDS](数据结构/SDS.md)
+- [ziplist](数据结构/ziplist.md)
+- [堆排序](数据结构/堆排序.md)
 
 
 

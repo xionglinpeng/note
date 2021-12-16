@@ -1,5 +1,20 @@
 # note
-笔记
+
+
+JAVA
+
+## 数据结构
+
+- [Skiplist](Skiplist.md)
+- [Quicklist](Quicklist.md)
+- [SDS](SDS.md)
+- [ziplist](ziplist.md)
+- [堆排序](堆排序.md)
+
+
+
+
+
 
 
 

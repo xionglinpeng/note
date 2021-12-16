@@ -38,7 +38,7 @@
 
    会提示jetbrainsAgent加载成功
 
-   ![img](images\TW_M`]QPV}ONEU90W$TP~W4.png)
+   ![img](images\active-1.png)
 
 5. 激活
 
@@ -46,13 +46,13 @@
 
    > 激活码位于jetbrains-agent-latest.zip中的`lib/ACTIVATION_CODE.txt`文件中。
 
-   ![1590203897814](images\1590203897814.png)
+   ![1590203897814](images\active-2.png)
 
 6. 查看激活信息
 
    Help->About，有效期到2089年。
 
-   ![1590204021660](images\1590204021660.png)
+   ![1590204021660](images\active-3.png)
 
 ## 其他参考信息
 

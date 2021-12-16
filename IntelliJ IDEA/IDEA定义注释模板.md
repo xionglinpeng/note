@@ -20,4 +20,4 @@ public class ${NAME} {
 }
 ```
 
-![1583069989737](C:\Users\xlp\AppData\Roaming\Typora\typora-user-images\1583069989737.png)
+![1583069989737](images/annotation-1.png)

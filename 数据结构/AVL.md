@@ -325,11 +325,14 @@ public class AvlTree<K extends Comparable<K>, V> {
             node.right = remove(node.right, key);
         else {
             if (node.left != null && node.right != null) {
-                node.val = findMin(node.right).val;
-                node.right = remove(node.right, node.key);
-            } else
+                Node<K, V> minNode = findMin(node.right);
+                node.key = minNode.key;
+                node.val = minNode.val;
+                node.right = remove(node.right, minNode.key);
+            } else {
                 node = node.left == null ? node.right : node.left;
-            size--;
+                size--;
+            }
         }
         return balance(node);
     }

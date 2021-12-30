@@ -312,10 +312,47 @@ public int kmp(char[] ps, char[] ss) {
 }
 ```
 
-
-
 #### C Next
 
+**Next数组模式 - `T[j] = T[j-1]{k}+1` :** 
 
+```c
+int *getNext(const char s[], int len) {
+    int *next = malloc(len * sizeof(int));
+    int k = -1;
+    next[0] = k;
+    for (int i = 1; i < len; ++i) {
+        while (k != -1 && s[i] != s[k])
+            k = next[k];
+        next[i] = ++k;
+    }
+    return next;
+}
+```
 
 #### C KMP
+
+**Next数组模式 - `T[j] = T[j-1]{k}+1` :** 
+
+```c
+int indexOf(const char ps[], int psLen, const char ss[], int ssLen) {
+    int *next = getNext(ss, ssLen);
+    int i = 0, j = 0;
+    while (i < psLen && j < ssLen) {
+        if (j == -1 || ps[i] == ss[j]) {
+            i++;
+            j++;
+        } else
+            j = next[j];
+    }
+    free(next);
+    return j == ssLen ? i - j : -1;
+}
+```
+
+
+
+
+
+
+

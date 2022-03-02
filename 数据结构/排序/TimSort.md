@@ -1034,7 +1034,7 @@ private void mergeForceCollapse() {
 
 **空间复杂度**
 
-T(n)
+T(n)  = O(n)
 
 **稳定性**
 

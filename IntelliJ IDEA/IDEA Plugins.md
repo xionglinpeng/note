@@ -1,6 +1,12 @@
 # IDEA Plugins
 
+## Rainbow Brackets（彩虹括号）
 
+![](images/彩虹括号.png)
+
+## Nyan Progress Bar（彩虹进度条）
+
+![](images/彩虹进度条.png)
 
 ## jclasslib
 
@@ -12,7 +18,7 @@ IDEA Plugin：https://plugins.jetbrains.com/plugin/9248-jclasslib-bytecode-viewe
 
 IDEA插件通过视图菜单`view`—>`Show Bytecode With jclasslib`打开：
 
-![](/images/1597114009267.png)
+![](images/1597114009267.png)
 
 ## Docker
 

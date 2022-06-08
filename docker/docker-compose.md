@@ -10,7 +10,7 @@ Githup：https://github.com/docker/compose
 
 2. 二进制包
 
-   docker官方发布的docker-compose二进制包可以在githup的https://github.com/docker/compose/releases页面找到，截止（2020-1-25）当前最新版本1.25.3。将二进制包下载到执行路径下，并添加可执行权限即可。
+   docker官方发布的docker-compose二进制包可以在githup的https://github.com/docker/compose/releases页面找到，截止（2020-1-25）当前最新版本1.25.3。将二进制包下载到/usr/local/bin目录下，并赋予可执行权限即可。
 
    ```shell
    # 下载相应版本的二进制包
@@ -34,7 +34,7 @@ Githup：https://github.com/docker/compose
 3. 镜像安装
 
    ```shell
-   [root@localhost ~]# curl -L https://github.com/docker/compose/releases/download/1.25.3/run.sh > /usr/local/bin/docker-compose
+   $ curl -L https://github.com/docker/compose/releases/download/1.25.3/run.sh > /usr/local/bin/docker-compose
      % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                     Dload  Upload   Total   Spent    Left  Speed
    100   596    0   596    0     0     77      0 --:--:--  0:00:07 --:--:--   188
@@ -44,7 +44,69 @@ Githup：https://github.com/docker/compose
    ```
    
 
-## Command line
+
+
+
+
+
+
+## Usage
+
+  docker-compose [-f <arg>...] [options] [COMMAND] [ARGS...]
+  docker-compose -h|--help
+
+## Option
+
+| Command | Description |
+| ---- | ---- |
+|   -f, --file FILE          | Specify an alternate compose file (default: docker-compose.yml)  |
+|   -p, --project-name NAME  | Specify an alternate project name (default: directory name)  |
+|   --verbose                | Show more output  |
+|   --log-level LEVEL        | Set log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)  |
+|   --no-ansi                | Do not print ANSI control characters  |
+|   -v, --version            | Print version and exit  |
+|   -H, --host HOST          | Daemon socket to connect to  |
+|   --tls                    | Use TLS; implied by --tlsverify  |
+|   --tlscacert CA_PATH      | Trust certs signed only by this CA  |
+|   --tlscert CLIENT_CERT_PATH  | Path to TLS certificate file  |
+|   --tlskey TLS_KEY_PATH     | Path to TLS key file  |
+|   --tlsverify              | Use TLS and verify the remote  |
+|   --skip-hostname-check    | Don't check the daemon's hostname against the name specified in the client certificate  |
+|   --project-directory PATH  | Specify an alternate working directory (default: the path of the Compose file)  |
+|   --compatibility          | If set, Compose will attempt to convert keys in v3 files to their non-Swarm equivalent  |
+|   --env-file PATH          | Specify an alternate environment file  |
+
+## Command
+
+| Command | Description |
+| ---- | ---- |
+| build  |   Build or rebuild services  |
+| config  |  Validate and view the Compose file  |
+| create  |  Create services  |
+| down  |    Stop and remove containers, networks, images, and volumes  |
+| events  |  Receive real time events from containers  |
+| exec  |    Execute a command in a running container  |
+| help  |    Get help on a command  |
+| images  |  List images  |
+| kill  |    Kill containers  |
+| logs  |    View output from containers  |
+| pause  |   Pause services  |
+| port  |    Print the public port for a port binding  |
+| ps  |      List containers  |
+| pull  |    Pull service images  |
+| push  |    Push service images  |
+| restart  | Restart services  |
+| rm  |      Remove stopped containers  |
+| run  |     Run a one-off command  |
+| scale  |   Set number of containers for a service  |
+| start  |   Start services  |
+| stop  |    Stop services  |
+| top  |     Display the running processes  |
+| unpause  | Unpause services  |
+| up  |      Create and start containers  |
+| version  | Show the Docker-Compose version information  |
+
+
 
 ### up
 
@@ -147,6 +209,8 @@ services:
 > - 当使用（version 3）Compose文件以集群模式部署时，将会忽略此选项。
 
 #### entrypoint?
+
+
 
 #### environment?
 
@@ -275,6 +339,8 @@ ports:
 
 #### links
 
+
+
 #### network_mode
 
 网络模式。使用与docker客户端`--network`参数相同的值，加上特殊形式的`service:[service name]`。
@@ -293,6 +359,8 @@ network_mode: "container:[container name/id]"
 > - `network_mode:"host"`不能与links混合。
 
 #### networks
+
+
 
 #### restart
 

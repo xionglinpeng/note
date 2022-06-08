@@ -10,20 +10,21 @@
 1970年，R.Bayer和E.mccreight发表论文[《Organization and Maintenance of Large Ordered Indices》](https://infolab.usc.edu/csci585/Spring2010/den_ar/indexing.pdf)提出了一种新的数据结构来维护大型索引，这种数据结构被称为B-Tree（B树或B-树、B_树），是一种适用于外查找的树，并且是一种**平衡的多路查找树**。
 
 其论文摘要如下：
-> ABSTRACT 
+> ABSTRACT
 >
-> Organization and maintenance of an index for a dynamic random access file is considered. It is assumed that the index must be kept on some pseudo random access backup store like a disc or a drum. The index organization described allows retrieval, insertion, and deletion of keys in time proportional to lOgkl where I is the size of the index and k is a device dependent natural number such that the performance of the scheme becomes near optimal. Storage utilization is at least 50% but generally much higher. The pages of the index are organized in a special data-structure, so-called B-trees. The scheme is analyzed, performance bounds are obtained, and a near optimal k is computed. Experiments have been performed with indices up to i00,000 keys. An index of size 15,000 (i00,000) can be maintained with an average of 9 (at least 4) transactions per second on an IBM 360/44 with a 2311 disc. 
+> Organization and maintenance of an index for a dynamic random access file is considered. It is assumed that the index must be kept on some pseudo random access backup store like a disc or a drum. The index organization described allows retrieval, insertion, and deletion of keys in time proportional to $$(log_k)^I$$ where I is the size of the index and k is a device dependent natural number such that the performance of the scheme becomes near optimal. Storage utilization is at least 50% but generally much higher. The pages of the index are organized in a special data-structure, so-called B-trees. The scheme is analyzed, performance bounds are obtained, and a near optimal k is computed. Experiments have been performed with indices up to 100,000 keys. An index of size 15,000 (100,000) can be maintained with an average of 9 (at least 4) transactions per second on an IBM 360/44 with a 2311 disc.
 >
 > Key Words and Phrases: Data structures, random access files, dynamic index maintenance, key insertion, key deletion, key retrieval, paging, information retrieval.
 >
 > CR Categories: 3.70, 3.73, 3.74. 
 >
-> 译文
-> 考虑组织和维护动态随机访问文件的索引， 假设索引必须保存在某些伪随机访问备份存储中，如光盘
+> **译文**
 >
-> 考虑组织和维护动态随机访问文件的索引， 假设索引必须保存在某些伪随机访问备份存储中，如光盘或鼓。 所描述的索引组织必须在l o g k I log_kI*l**o**g**k**I*时间内成比例地检索，插入和删除键，其中I I*I*是索引的大小，k k*k*是依赖于设备的自然数，使得方案的性能变得接近最优。 存储利用率至少为50％，但通常要高得多。 索引的页面组织在一个特殊的数据结构中，即所谓的**B树**。 分析该方案〜获得性能界限，并计算近似最优k。 已经使用高达100,000个键的索引进行了实验。 在具有2311个光盘的IBM 360/44上，可以维持大小为15,000（i00,000）的索引，平均每秒9次（至少4次）事务。
+> 考虑动态随机访问文件索引的组织和维护。假设索引必须保存在某个伪随机访问备份存储中，比如磁盘或磁鼓。所描述的索引组织允许检索、插入和删除键的时间与$$(log_k)^I$$成正比，其中I是索引的大小，k是一个与设备相关的自然数，因此该方案的性能接近最优。存储利用率至少为50%，但通常要高得多。索引的页面被组织成一种特殊的数据结构，即所谓的B树。对该方案进行了分析，得到了性能边界，并计算了近似最优k。已经进行了索引高达100,000密钥的实验。在带有2311磁盘的IBM 360/44上，平均每秒9个(至少4个)事务就可以维护大小为15,000(100,000)的索引。
 >
-> https://blog.csdn.net/jimo_lonely/article/details/82716142
+> 关键词和短语：数据结构，随机访问文件，动态索引维护，键插入，键删除，键检索，分页，信息检索。
+>
+> CR类别：3.70、3.73、3.74。
 
 论文中对B树有如下定义：
 
@@ -212,93 +213,9 @@ NOTE：无论叶子结点是否携带信息，它们都是B树，其本质是一
 
 ![](images/B-Tree-10.png)
 
-## 7、Summary
-
-阶数为m，高度为h的B树最大节点数：(m-1)(1+m+m²+m³+...mʰ⁻¹) = mʰ-1
-
-2(⌈m/2⌉)ʰ⁻¹
-
-
-
-## 8、参考资料
+## 7、参考资料
 
 - [百度百科 - B树](https://baike.baidu.com/item/B%E6%A0%91/5411672?fr=aladdin)
 - [百度百科-B-树](https://baike.baidu.com/item/B-%E6%A0%91/1975968?fr=aladdin)
 - [一个可以在线调试B+树的工具](https://www.cs.usfca.edu/~galles/visualization/BPlusTree.html)
 - [看图轻松理解数据结构与算法系列(B树的删除)](https://mp.weixin.qq.com/s?__biz=MjM5MzA1Mzc3Nw==&mid=2247484674&idx=1&sn=8f908ee565531ff7a5c1a481466f3e86&chksm=a69da83c91ea212a44146e21ce147d0815651a4ccffd4ac3834b0420f4cd64e35b74328ed313&token=648694665&lang=zh_CN&utm_medium=hao.caibaojian.com&utm_source=hao.caibaojian.com)
-
-## 9、附录
-
-向上或向下取整
-
-向上取整⌈⌉和向下取整⌊⌋符号
-
-向下取整的运算称为Floor，用数学符号⌊⌋表示；向上取整的运算称为Ceiling，用数学符号⌈⌉表示。例如：
-
-⌊59/60⌋=0
-
-⌈59/60⌉=1
-
-
-
-
-⌊-59/60⌋=-1
-
-
-
-⌈-59/60⌉=0
-
-
-
-
-
-向上向下 取整函数数只会对小数点后面的 数字不为零 的数进行操作,
-要是给它一个整数 它就返回整数本身
-对小数不为零的数操作:
-给定 4.9
-调用用向下取整函数 得到的是 4
-调用用向上取整函数 得到的是 5
-
-
-
-- 向上取整：比自己大的最小整数；
-- 向下取整：比自己小的最大整数；
-- 四舍五入：更接近自己的整数；
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-##  
-
-
-
-
-
-之所以在向上取整时，分子部分要减去1，是为了避免出现，a 能被 b 整除的情况。
-
-向上取整 ： 12 / 3 == 4， （12+3）/3==5，而对 3 向上取整仍为 3.
-
-向下取整： 1/2 ⇒ 0     -1/2 ⇒ -1

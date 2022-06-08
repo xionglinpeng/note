@@ -2,8 +2,6 @@
 
 [TOC]
 
-![]()
-
 ## Code
 
 File → Settings → Editor → Color Scheme → Color Scheme Font: Use console font instead of th default

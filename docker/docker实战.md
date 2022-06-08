@@ -124,17 +124,17 @@ $ docker exec -it [container_name || container_id] mysql -h [host] -u[user] -p[p
 ```shell
 $ docker run \
 	-p 3306:3306 \
-	-e MYSQL_ROOT_PASSWORD=a6ce8a15fe164d51b30923c6914ef9cc \
+	-e MYSQL_ROOT_PASSWORD=123456 \
 	--restart always \
 	--privileged \
-	--net bridge-empty-window \
+	--net [network-name] \
 	--memory 300M \
 	--name db-mysql \
 	-v /opt/mysql/datadir:/var/lib/mysql \
 	-v /opt/mysql/conf:/etc/mysql/conf.d \
 	-v /opt/mysql/mysql-files:/var/lib/mysql-files \
 	-d \
-	mysql:8.0.21
+	mysql:debian
 ```
 
 **docker-compose.yaml**

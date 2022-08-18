@@ -10,7 +10,7 @@ sds全称为*简单动态字符串*（Simple dynamic strings），是Redis中为
 
 ## 2、Why need sds?
 
-Redis是基于**C语言**实现的一个分布式缓存NoSQL数据库，因此SDS自然也是基础C语言实现的，SDS的存在主要解决了以下几个问题。
+Redis是基于**C语言**实现的一个分布式缓存NoSQL数据库，因此SDS自然也是基于C语言实现的，SDS的存在主要解决了以下几个问题。
 
 1. 常数时间获取字符串长度
 
